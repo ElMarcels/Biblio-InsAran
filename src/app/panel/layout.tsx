@@ -4,11 +4,15 @@ import { PanelNav } from "@/components/panel/PanelNav";
 import { PanelNavList } from "@/components/panel/PanelNavList";
 import { itemsForRole } from "@/components/panel/nav-items";
 import { requireUser } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Panel" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("Panel") };
+}
 
 export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
-  const user = await requireUser();
+  const [user, t] = await Promise.all([requireUser(), getT()]);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -16,13 +20,13 @@ export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
         <div className="shell flex flex-col gap-5 py-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="micro mb-1.5">Panel de gestión</p>
+              <p className="micro mb-1.5">{t("Panel de gestión")}</p>
               <h1 className="font-display text-[26px] font-bold">
                 {user.displayName}
               </h1>
             </div>
             <span className="tag-muted">
-              {user.role === "OWNER" ? "Dueño de la plataforma" : "Editor"}
+              {user.role === "OWNER" ? t("Dueño de la plataforma") : t("Editor")}
             </span>
           </div>
 

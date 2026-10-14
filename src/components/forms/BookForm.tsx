@@ -9,6 +9,7 @@ import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
+import { useT } from "../i18n/LocaleProvider";
 import type { BookFormValues } from "./book-form-values";
 import { Field, inputClass } from "./Field";
 
@@ -19,6 +20,7 @@ export function BookForm({
   mode: "create" | "edit";
   values: BookFormValues;
 }) {
+  const t = useT();
   const [state, formAction] = useActionState(
     mode === "create" ? createBookAction : updateBookAction,
     initialActionState,
@@ -33,26 +35,26 @@ export function BookForm({
       {duplicate ? <input type="hidden" name="confirm" value="1" /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{state.message}</Notice>
+        <Notice tone="danger">{t(state.message)}</Notice>
       ) : null}
 
       {duplicate ? (
         <Notice tone="warning">
           <span>
-            {state.message}{" "}
+            {t(state.message ?? "")}{" "}
             <Link
               href={`/libro/${duplicate.id}`}
               className="font-semibold underline underline-offset-2"
             >
-              Ver la ficha existente
+              {t("Ver la ficha existente")}
             </Link>
-            . Si aun así quieres registrarlo, vuelve a guardar.
+            {t(". Si aun así quieres registrarlo, vuelve a guardar.")}
           </span>
         </Notice>
       ) : null}
 
       <fieldset className="flex flex-col gap-4">
-        <legend className="micro mb-1">Datos principales</legend>
+        <legend className="micro mb-1">{t("Datos principales")}</legend>
 
         <Field label="Título" htmlFor="title" error={errors.title} required>
           <input
@@ -122,13 +124,13 @@ export function BookForm({
             defaultValue={values.tags}
             className={inputClass(Boolean(errors.tags))}
             maxLength={1000}
-            placeholder="Aventuras, Clásicos…"
+            placeholder={t("Aventuras, Clásicos…")}
           />
         </Field>
       </fieldset>
 
       <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
-        <legend className="micro mb-1">Edición y ejemplares</legend>
+        <legend className="micro mb-1">{t("Edición y ejemplares")}</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Editorial" htmlFor="publisher" error={errors.publisher}>
@@ -206,7 +208,7 @@ export function BookForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
-        <legend className="micro mb-1">Reseña</legend>
+        <legend className="micro mb-1">{t("Reseña")}</legend>
         <Field label="Descripción" htmlFor="description" error={errors.description}>
           <textarea
             id="description"
@@ -221,13 +223,13 @@ export function BookForm({
       <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-line pt-5">
         <SubmitButton pendingLabel="Guardando…">
           {duplicate
-            ? "Guardar de todas formas"
+            ? t("Guardar de todas formas")
             : mode === "create"
-              ? "Añadir libro"
-              : "Guardar cambios"}
+              ? t("Añadir libro")
+              : t("Guardar cambios")}
         </SubmitButton>
         <Link href="/panel/libros" className="btn-ghost">
-          Cancelar
+          {t("Cancelar")}
         </Link>
       </div>
     </form>

@@ -1,42 +1,46 @@
 import Link from "next/link";
 
+import { getT } from "@/lib/i18n/server";
 import { tagHref } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Materias" };
 
 export default async function TagsPage() {
-  const rows = await prisma.$queryRaw<Array<{ tag: string; count: number }>>`
-    SELECT unnest(tags) AS tag, count(*)::int AS count
-    FROM "Book"
-    GROUP BY tag
-    ORDER BY count DESC, tag ASC
-  `;
+  const [rows, t] = await Promise.all([
+    prisma.$queryRaw<Array<{ tag: string; count: number }>>`
+      SELECT unnest(tags) AS tag, count(*)::int AS count
+      FROM "Book"
+      GROUP BY tag
+      ORDER BY count DESC, tag ASC
+    `,
+    getT(),
+  ]);
 
   const max = rows.reduce((top, row) => Math.max(top, row.count), 0);
 
   return (
     <div className="shell flex flex-1 flex-col py-10">
       <header className="mb-8">
-        <p className="micro mb-3">Materias</p>
+        <p className="micro mb-3">{t("Materias")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
-            Etiquetas del catálogo
+            {t("Etiquetas del catálogo")}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
-            {rows.length === 1 ? "1 etiqueta" : `${rows.length} etiquetas`}
+            {rows.length === 1 ? t("1 etiqueta") : t("{n} etiquetas", { n: rows.length })}
           </p>
         </div>
         <p className="mt-3 max-w-2xl text-[14px] text-ink-soft">
-          Materias libres que el personal añade a cada libro. El tamaño indica
-          cuántos títulos llevan la etiqueta.
+          {t(
+            "Materias libres que el personal añade a cada libro. El tamaño indica cuántos títulos llevan la etiqueta.",
+          )}
         </p>
       </header>
 
       {rows.length === 0 ? (
         <p className="border-2 border-dashed border-hairline bg-surface p-10 text-center text-[14px] text-ink-soft">
-          Todavía no hay etiquetas. Puedes añadirlas al registrar o editar un
-          libro.
+          {t("Todavía no hay etiquetas. Puedes añadirlas al registrar o editar un libro.")}
         </p>
       ) : (
         <ul className="flex flex-wrap items-center gap-2.5">

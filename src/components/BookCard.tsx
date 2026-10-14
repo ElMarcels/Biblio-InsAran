@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 
 import { BookCover } from "./BookCover";
+import { useT } from "./i18n/LocaleProvider";
 
 export type BookSummary = {
   id: string;
@@ -14,6 +17,7 @@ export type BookSummary = {
 };
 
 export function BookCard({ book }: { book: BookSummary }) {
+  const t = useT();
   const available = book.available;
   const allGone = typeof available === "number" && available <= 0;
   return (
@@ -41,11 +45,14 @@ export function BookCard({ book }: { book: BookSummary }) {
             {typeof available === "number" ? (
               <span className={allGone ? "font-semibold text-danger" : undefined}>
                 {allGone
-                  ? "Sin ejemplares"
-                  : `${available} de ${book.copies} disp.`}
+                  ? t("Sin ejemplares")
+                  : t("{available} de {copies} disp.", {
+                      available,
+                      copies: book.copies,
+                    })}
               </span>
             ) : (
-              `${book.copies} ej.`
+              t("{copies} ej.", { copies: book.copies })
             )}
           </span>
         </div>

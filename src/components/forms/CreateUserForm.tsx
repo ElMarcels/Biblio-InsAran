@@ -7,9 +7,11 @@ import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
+import { useT } from "../i18n/LocaleProvider";
 import { Field, inputClass } from "./Field";
 
 export function CreateUserForm() {
+  const t = useT();
   const [state, formAction] = useActionState(createUserAction, initialActionState);
   const formRef = useRef<HTMLFormElement>(null);
   const errors = state.fieldErrors ?? {};
@@ -21,10 +23,10 @@ export function CreateUserForm() {
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{state.message}</Notice>
+        <Notice tone="danger">{t(state.message)}</Notice>
       ) : null}
       {state.status === "success" && state.message ? (
-        <Notice tone="success">{state.message}</Notice>
+        <Notice tone="success">{t(state.message)}</Notice>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -78,7 +80,7 @@ export function CreateUserForm() {
       </Field>
 
       <div>
-        <SubmitButton pendingLabel="Creando…">Crear cuenta</SubmitButton>
+        <SubmitButton pendingLabel="Creando…">{t("Crear cuenta")}</SubmitButton>
       </div>
     </form>
   );

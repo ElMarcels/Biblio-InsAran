@@ -8,6 +8,7 @@ import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
+import { useT } from "../i18n/LocaleProvider";
 import { Field, inputClass } from "./Field";
 
 export type ReaderFormValues = {
@@ -38,6 +39,7 @@ export function ReaderForm({
   values: ReaderFormValues;
   compact?: boolean;
 }) {
+  const t = useT();
   const [state, formAction] = useActionState(
     mode === "create" ? createReaderAction : updateReaderAction,
     initialActionState,
@@ -49,7 +51,7 @@ export function ReaderForm({
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{state.message}</Notice>
+        <Notice tone="danger">{t(state.message)}</Notice>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -71,7 +73,7 @@ export function ReaderForm({
             defaultValue={values.cardNumber}
             className={inputClass(Boolean(errors.cardNumber))}
             maxLength={32}
-            placeholder="Opcional"
+            placeholder={t("Opcional")}
           />
         </Field>
 
@@ -120,11 +122,11 @@ export function ReaderForm({
 
       <div className={`flex flex-wrap items-center gap-2.5 ${compact ? "" : "border-t-2 border-line pt-4"}`}>
         <SubmitButton pendingLabel="Guardando…">
-          {mode === "create" ? "Dar de alta" : "Guardar cambios"}
+          {mode === "create" ? t("Dar de alta") : t("Guardar cambios")}
         </SubmitButton>
         {mode === "edit" ? (
           <Link href="/panel/lectores" className="btn-ghost">
-            Volver al listado
+            {t("Volver al listado")}
           </Link>
         ) : null}
       </div>

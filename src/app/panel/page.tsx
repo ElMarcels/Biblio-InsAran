@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AUDIT_LABELS } from "@/lib/audit";
 import { requireUser } from "@/lib/auth";
 import { formatDate, formatDateTime, pluralize } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 function StatTile({
@@ -26,7 +27,7 @@ function StatTile({
 }
 
 export default async function PanelHomePage() {
-  const user = await requireUser();
+  const [user, t] = await Promise.all([requireUser(), getT()]);
   const isOwner = user.role === "OWNER";
 
   const [totalBooks, copies, editors, recentBooks, activeLoans, overdueLoans, activeReservations, readers] =
@@ -52,75 +53,87 @@ export default async function PanelHomePage() {
   return (
     <div className="flex flex-col gap-9">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatTile label="Títulos" value={totalBooks} hint="Libros distintos en el fondo" />
         <StatTile
-          label="Ejemplares"
+          label={t("Títulos")}
+          value={totalBooks}
+          hint={t("Libros distintos en el fondo")}
+        />
+        <StatTile
+          label={t("Ejemplares")}
           value={copies._sum.copies ?? 0}
-          hint="Suma de copias físicas"
+          hint={t("Suma de copias físicas")}
         />
         <StatTile
-          label="En préstamo"
+          label={t("En préstamo")}
           value={activeLoans}
-          hint={`${overdueLoans} ${overdueLoans === 1 ? "vencido" : "vencidos"}`}
+          hint={t(overdueLoans === 1 ? "{n} vencido" : "{n} vencidos", {
+            n: overdueLoans,
+          })}
         />
         <StatTile
-          label="Reservas pendientes"
+          label={t("Reservas pendientes")}
           value={activeReservations}
-          hint="Libros esperando estar libres"
+          hint={t("Libros esperando estar libres")}
         />
         <StatTile
-          label="Lectores activos"
+          label={t("Lectores activos")}
           value={readers}
-          hint="Personas con carné en vigor"
+          hint={t("Personas con carné en vigor")}
         />
         <StatTile
-          label={isOwner ? "Usuarios editores" : "Tu rol"}
-          value={isOwner ? editors : "Editor"}
-          hint={isOwner ? "Cuentas además de la tuya" : "Puedes gestionar préstamos y libros"}
+          label={isOwner ? t("Usuarios editores") : t("Tu rol")}
+          value={isOwner ? editors : t("Editor")}
+          hint={
+            isOwner
+              ? t("Cuentas además de la tuya")
+              : t("Puedes gestionar préstamos y libros")
+          }
         />
       </section>
 
       <section className="flex flex-wrap items-center gap-2.5 border-2 border-line bg-surface p-4">
-        <span className="micro mr-1">Acciones rápidas</span>
+        <span className="micro mr-1">{t("Acciones rápidas")}</span>
         <Link href="/panel/prestamos/nuevo" className="btn-primary btn-sm">
-          Registrar préstamo
+          {t("Registrar préstamo")}
         </Link>
         <Link href="/panel/libros/nuevo" className="btn-outline btn-sm">
-          Añadir libro
+          {t("Añadir libro")}
         </Link>
         <Link href="/panel/lectores" className="btn-outline btn-sm">
-          Lectores
+          {t("Lectores")}
         </Link>
         {overdueLoans > 0 ? (
           <Link href="/panel/prestamos?estado=vencidos" className="btn-outline btn-sm text-danger">
-            Ver vencidos ({overdueLoans})
+            {t("Ver vencidos ({n})", { n: overdueLoans })}
           </Link>
         ) : null}
         {isOwner ? (
           <Link href="/panel/usuarios" className="btn-outline btn-sm">
-            Gestionar usuarios
+            {t("Gestionar usuarios")}
           </Link>
         ) : null}
         <Link href="/catalogo" className="btn-ghost btn-sm">
-          Ver catálogo público
+          {t("Ver catálogo público")}
         </Link>
       </section>
 
       <div className="grid gap-9 lg:grid-cols-[1.3fr_1fr]">
         <section>
           <div className="mb-4 flex items-end justify-between gap-3">
-            <h2 className="font-display text-[22px] font-bold">Últimos cambios</h2>
+            <h2 className="font-display text-[22px] font-bold">
+              {t("Últimos cambios")}
+            </h2>
             <Link href="/panel/libros" className="text-[13px] font-semibold text-accent underline underline-offset-2">
-              Ver todos
+              {t("Ver todos")}
             </Link>
           </div>
 
           {recentBooks.length === 0 ? (
             <div className="border-2 border-dashed border-hairline bg-surface p-8 text-center">
               <p className="text-[14px] text-ink-soft">
-                Todavía no hay libros.{" "}
+                {t("Todavía no hay libros.")}{" "}
                 <Link href="/panel/libros/nuevo" className="font-semibold text-accent underline underline-offset-2">
-                  Añade el primero
+                  {t("Añade el primero")}
                 </Link>
                 .
               </p>
@@ -150,7 +163,7 @@ export default async function PanelHomePage() {
                     href={`/panel/libros/${book.id}/editar`}
                     className="btn-outline btn-sm shrink-0"
                   >
-                    Editar
+                    {t("Editar")}
                   </Link>
                 </li>
               ))}
@@ -159,16 +172,19 @@ export default async function PanelHomePage() {
         </section>
 
         <section>
-          <h2 className="mb-4 font-display text-[22px] font-bold">Actividad reciente</h2>
+          <h2 className="mb-4 font-display text-[22px] font-bold">
+            {t("Actividad reciente")}
+          </h2>
 
           {!isOwner ? (
             <div className="border-2 border-dashed border-hairline bg-surface p-6 text-[13px] text-ink-soft">
-              El historial de actividad está disponible para la cuenta de dueño
-              de la plataforma.
+              {t(
+                "El historial de actividad está disponible para la cuenta de dueño de la plataforma.",
+              )}
             </div>
           ) : activity.length === 0 ? (
             <div className="border-2 border-dashed border-hairline bg-surface p-6 text-[13px] text-ink-soft">
-              Aún no se ha registrado ninguna acción.
+              {t("Aún no se ha registrado ninguna acción.")}
             </div>
           ) : (
             <ol className="border-2 border-line bg-surface">
@@ -178,11 +194,11 @@ export default async function PanelHomePage() {
                   className="border-b border-hairline px-4 py-3 last:border-b-0"
                 >
                   <p className="text-[13px] font-semibold">
-                    {AUDIT_LABELS[entry.action] ?? entry.action}
+                    {t(AUDIT_LABELS[entry.action] ?? entry.action)}
                   </p>
                   <p className="mt-0.5 text-[13px] text-ink-soft">{entry.summary}</p>
                   <p className="mt-1 text-[11px] uppercase tracking-wide text-ink-faint">
-                    {entry.user?.displayName ?? "Sistema"} ·{" "}
+                    {entry.user?.displayName ?? t("Sistema")} ·{" "}
                     {formatDateTime(entry.createdAt)}
                   </p>
                 </li>
@@ -191,7 +207,8 @@ export default async function PanelHomePage() {
           )}
 
           <p className="mt-3 text-[12px] text-ink-faint">
-            {pluralize(editors, "cuenta editora", "cuentas editoras")} en la plataforma.
+            {t(pluralize(editors, "cuenta editora", "cuentas editoras"))}{" "}
+            {t("en la plataforma.")}
           </p>
         </section>
       </div>

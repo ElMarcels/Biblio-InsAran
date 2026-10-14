@@ -8,9 +8,13 @@ import { ReaderForm, EMPTY_READER } from "@/components/forms/ReaderForm";
 import { ReaderStatusButton } from "@/components/panel/ReaderStatusButton";
 import { requireUser } from "@/lib/auth";
 import { PANEL_PAGE_SIZE } from "@/lib/constants";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = { title: "Lectores" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("Lectores") };
+}
 
 const FLASH: Record<string, string> = {
   creado: "El lector o lectora se ha dado de alta.",
@@ -27,6 +31,7 @@ export default async function ReadersPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireUser();
+  const t = await getT();
   const params = await searchParams;
   const query = one(params.q).trim();
   const aviso = one(params.aviso);
@@ -65,17 +70,18 @@ export default async function ReadersPage({
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h2 className="font-display text-[26px] font-bold">Lectores y lectoras</h2>
+        <h2 className="font-display text-[26px] font-bold">{t("Lectores y lectoras")}</h2>
         <p className="mt-1.5 max-w-2xl text-[14px] text-ink-soft">
-          Personas que pueden llevarse libros en préstamo. No necesitan cuenta:
-          el personal registra sus préstamos y reservas desde aquí.
+          {t(
+            "Personas que pueden llevarse libros en préstamo. No necesitan cuenta: el personal registra sus préstamos y reservas desde aquí.",
+          )}
         </p>
       </header>
 
-      {FLASH[aviso] ? <Notice tone="success">{FLASH[aviso]}</Notice> : null}
+      {FLASH[aviso] ? <Notice tone="success">{t(FLASH[aviso])}</Notice> : null}
 
       <section className="border-2 border-line bg-surface p-6">
-        <h3 className="font-display text-[18px] font-semibold">Dar de alta un lector o lectora</h3>
+        <h3 className="font-display text-[18px] font-semibold">{t("Dar de alta un lector o lectora")}</h3>
         <div className="mt-4">
           <ReaderForm mode="create" values={EMPTY_READER} />
         </div>
@@ -83,10 +89,10 @@ export default async function ReadersPage({
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="font-display text-[20px] font-semibold">Listado</h3>
+          <h3 className="font-display text-[20px] font-semibold">{t("Listado")}</h3>
           <p className="mt-1 text-[14px] text-ink-soft tabular-nums">
-            {total === 1 ? "1 persona" : `${total} personas`}
-            {query ? ` para “${query}”` : ""}
+            {total === 1 ? t("1 persona") : t("{n} personas", { n: total })}
+            {query ? t(" para “{query}”", { query }) : ""}
           </p>
         </div>
       </div>
@@ -94,59 +100,61 @@ export default async function ReadersPage({
       <form action="/panel/lectores" method="get" className="flex flex-wrap items-end gap-3 border-2 border-line bg-surface p-4">
         <div className="min-w-56 flex-1">
           <label htmlFor="q" className="label">
-            Buscar
+            {t("Buscar")}
           </label>
           <input
             id="q"
             name="q"
             defaultValue={query}
             className="input"
-            placeholder="Nombre, carné o grupo…"
+            placeholder={t("Nombre, carné o grupo…")}
             autoComplete="off"
           />
         </div>
         <button type="submit" className="btn-primary">
-          Buscar
+          {t("Buscar")}
         </button>
         {query ? (
           <Link href="/panel/lectores" className="btn-ghost">
-            Limpiar
+            {t("Limpiar")}
           </Link>
         ) : null}
       </form>
 
       {readers.length === 0 ? (
         <EmptyState
-          title={query ? "Sin resultados" : "Aún no hay lectores"}
+          title={query ? t("Sin resultados") : t("Aún no hay lectores")}
           description={
             query
-              ? "No hay personas que coincidan con esa búsqueda."
-              : "Da de alta al primer lector o lectora para empezar a registrar préstamos."
+              ? t("No hay personas que coincidan con esa búsqueda.")
+              : t(
+                  "Da de alta al primer lector o lectora para empezar a registrar préstamos.",
+                )
           }
         />
       ) : (
         <div className="overflow-x-auto border-2 border-line bg-surface">
           <table className="w-full min-w-[720px] border-collapse text-left">
-            <caption className="sr-only">Listado de lectores</caption>
+            <caption className="sr-only">{t("Listado de lectores")}</caption>
             <thead>
               <tr className="border-b-2 border-line bg-paper">
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Persona
+                  {t("Persona")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Carné
+                  {t("Carné")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Grupo
+                  {t("Grupo")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  En préstamo
+                  {t("En préstamo")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Estado
+                  {t("Estado")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  Acciones
+                  {t("Acciones")}
                 </th>
               </tr>
             </thead>
@@ -170,13 +178,13 @@ export default async function ReadersPage({
                   </td>
                   <td className="px-4 py-3">
                     <span className={reader.active ? "tag-muted" : "tag-accent"}>
-                      {reader.active ? "Activo" : "Baja"}
+                      {reader.active ? t("Activo") : t("Baja")}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center justify-end gap-1.5">
                       <Link href={`/panel/lectores/${reader.id}`} className="btn-outline btn-sm">
-                        Ver ficha
+                        {t("Ver ficha")}
                       </Link>
                       <ReaderStatusButton readerId={reader.id} active={reader.active} />
                     </div>

@@ -1,10 +1,16 @@
+"use client";
+
 import Link from "next/link";
 
 import { classNames } from "@/lib/format";
 
+import { useT } from "../i18n/LocaleProvider";
 import { isActive, type PanelNavItem } from "./nav-items";
 
-/** Navegación del panel. Sin estado: puede renderizarse en servidor o cliente. */
+/**
+ * Navegación del panel. Traduce las etiquetas y conserva el marcado de la
+ * sección activa; funciona igual en servidor que en cliente.
+ */
 export function PanelNavList({
   items,
   pathname,
@@ -12,8 +18,10 @@ export function PanelNavList({
   items: PanelNavItem[];
   pathname?: string;
 }) {
+  const t = useT();
+
   return (
-    <nav aria-label="Secciones del panel" className="-mb-2 flex flex-wrap gap-1">
+    <nav aria-label={t("Secciones del panel")} className="-mb-2 flex flex-wrap gap-1">
       {items.map((item) => {
         const active = pathname ? isActive(item.href, pathname) : false;
         return (
@@ -28,7 +36,7 @@ export function PanelNavList({
                 : "border-transparent text-ink-faint hover:border-line hover:text-ink",
             )}
           >
-            {item.label}
+            {t(item.label)}
           </Link>
         );
       })}

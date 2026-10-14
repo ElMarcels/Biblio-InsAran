@@ -7,18 +7,20 @@ import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
+import { useT } from "../i18n/LocaleProvider";
 import { Field, inputClass } from "./Field";
 
 export function LoginForm({ next }: { next?: string }) {
   const [state, formAction] = useActionState(loginAction, initialActionState);
   const errors = state.fieldErrors ?? {};
+  const t = useT();
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{state.message}</Notice>
+        <Notice tone="danger">{t(state.message)}</Notice>
       ) : null}
 
       <Field label="Nombre de usuario" htmlFor="username" error={errors.username} required>
@@ -47,7 +49,7 @@ export function LoginForm({ next }: { next?: string }) {
       </Field>
 
       <SubmitButton className="btn-primary w-full" pendingLabel="Entrando…">
-        Entrar
+        {t("Entrar")}
       </SubmitButton>
     </form>
   );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BookCard } from "@/components/BookCard";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 type Params = Promise<{ tag: string }>;
@@ -31,24 +32,26 @@ export default async function TagPage({ params }: { params: Params }) {
 
   if (books.length === 0) notFound();
 
+  const t = await getT();
+
   return (
     <div className="shell flex flex-1 flex-col py-10">
       <nav aria-label="Migas de pan" className="mb-7 text-[13px] text-ink-faint">
         <Link href="/etiquetas" className="font-semibold text-ink underline underline-offset-2">
-          Materias
+          {t("Materias")}
         </Link>
         <span className="px-2">/</span>
         <span>{label}</span>
       </nav>
 
       <header className="mb-8">
-        <p className="micro mb-3">Materia</p>
+        <p className="micro mb-3">{t("Materia")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
             {label}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
-            {books.length === 1 ? "1 título" : `${books.length} títulos`}
+            {books.length === 1 ? t("1 título") : t("{n} títulos", { n: books.length })}
           </p>
         </div>
       </header>

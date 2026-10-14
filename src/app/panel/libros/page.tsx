@@ -8,9 +8,13 @@ import { Pagination } from "@/components/Pagination";
 import { requireUser } from "@/lib/auth";
 import { PANEL_PAGE_SIZE } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = { title: "Libros" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("Libros") };
+}
 
 const FLASH: Record<string, { tone: "success"; text: string }> = {
   creado: { tone: "success", text: "El libro se ha añadido al catálogo." },
@@ -28,6 +32,7 @@ export default async function PanelBooksPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireUser();
+  const t = await getT();
   const params = await searchParams;
   const query = one(params.q).trim();
   const aviso = one(params.aviso);
@@ -68,59 +73,59 @@ export default async function PanelBooksPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="font-display text-[26px] font-bold">Libros del catálogo</h2>
+          <h2 className="font-display text-[26px] font-bold">{t("Libros del catálogo")}</h2>
           <p className="mt-1 text-[14px] text-ink-soft tabular-nums">
-            {total === 1 ? "1 título" : `${total} títulos`}
-            {query ? ` para “${query}”` : ""}
+            {total === 1 ? t("1 título") : t("{n} títulos", { n: total })}
+            {query ? t(" para “{query}”", { query }) : ""}
           </p>
         </div>
         <Link href="/panel/libros/nuevo" className="btn-primary">
-          Añadir libro
+          {t("Añadir libro")}
         </Link>
       </div>
 
-      {flash ? <Notice tone={flash.tone}>{flash.text}</Notice> : null}
+      {flash ? <Notice tone={flash.tone}>{t(flash.text)}</Notice> : null}
 
       <form action="/panel/libros" method="get" className="flex flex-wrap items-end gap-3 border-2 border-line bg-surface p-4">
         <div className="min-w-56 flex-1">
           <label htmlFor="q" className="label">
-            Buscar en el fondo
+            {t("Buscar en el fondo")}
           </label>
           <input
             id="q"
             name="q"
             defaultValue={query}
             className="input"
-            placeholder="Título, autoría o ISBN…"
+            placeholder={t("Título, autoría o ISBN…")}
             autoComplete="off"
           />
         </div>
         <button type="submit" className="btn-primary">
-          Buscar
+          {t("Buscar")}
         </button>
         {query ? (
           <Link href="/panel/libros" className="btn-ghost">
-            Limpiar
+            {t("Limpiar")}
           </Link>
         ) : null}
       </form>
 
       {books.length === 0 ? (
         <EmptyState
-          title={query ? "Sin resultados" : "Aún no hay libros"}
+          title={query ? t("Sin resultados") : t("Aún no hay libros")}
           description={
             query
-              ? "No hay títulos que coincidan con esa búsqueda."
-              : "Añade el primer libro para empezar a construir el catálogo."
+              ? t("No hay títulos que coincidan con esa búsqueda.")
+              : t("Añade el primer libro para empezar a construir el catálogo.")
           }
           action={
             query ? (
               <Link href="/panel/libros" className="btn-outline">
-                Ver todos
+                {t("Ver todos")}
               </Link>
             ) : (
               <Link href="/panel/libros/nuevo" className="btn-primary">
-                Añadir libro
+                {t("Añadir libro")}
               </Link>
             )
           }
@@ -128,29 +133,29 @@ export default async function PanelBooksPage({
       ) : (
         <div className="overflow-x-auto border-2 border-line bg-surface">
           <table className="w-full min-w-[760px] border-collapse text-left">
-            <caption className="sr-only">Listado de libros del catálogo</caption>
+            <caption className="sr-only">{t("Listado de libros del catálogo")}</caption>
             <thead>
               <tr className="border-b-2 border-line bg-paper">
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Título
+                  {t("Título")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Categoría
+                  {t("Categoría")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Año
+                  {t("Año")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  Ej.
+                  {t("Ej.")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Ubic.
+                  {t("Ubic.")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  Actualizado
+                  {t("Actualizado")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  Acciones
+                  {t("Acciones")}
                 </th>
               </tr>
             </thead>
@@ -175,7 +180,7 @@ export default async function PanelBooksPage({
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center justify-end gap-1.5">
                       <Link href={`/panel/libros/${book.id}/editar`} className="btn-outline btn-sm">
-                        Editar
+                        {t("Editar")}
                       </Link>
                       {user.role === "OWNER" ? (
                         <DeleteBookButton bookId={book.id} title={book.title} compact />

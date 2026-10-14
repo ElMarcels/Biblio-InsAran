@@ -9,10 +9,18 @@ import {
 } from "@/lib/actions/users";
 import { initialActionState } from "@/lib/validation";
 
-function Feedback({ state }: { state: { status: string; message?: string } }) {
+import { useT } from "./i18n/LocaleProvider";
+
+function Feedback({
+  state,
+  t,
+}: {
+  state: { status: string; message?: string };
+  t: (source: string) => string;
+}) {
   if (!state.message) return null;
   const tone = state.status === "success" ? "text-ok" : "text-danger";
-  return <p className={`text-[12px] font-medium ${tone}`}>{state.message}</p>;
+  return <p className={`text-[12px] font-medium ${tone}`}>{t(state.message)}</p>;
 }
 
 export function UserActions({
@@ -28,6 +36,7 @@ export function UserActions({
   isSelf: boolean;
   isOwnerAccount: boolean;
 }) {
+  const t = useT();
   const [toggleState, toggleAction, togglePending] = useActionState(
     setUserActiveAction,
     initialActionState,
@@ -53,9 +62,13 @@ export function UserActions({
             type="submit"
             disabled={togglePending || (isSelf && active)}
             className="btn-outline btn-sm"
-            title={isSelf && active ? "No puedes desactivar tu propia cuenta" : undefined}
+            title={
+              isSelf && active
+                ? t("No puedes desactivar tu propia cuenta")
+                : undefined
+            }
           >
-            {active ? "Desactivar" : "Activar"}
+            {active ? t("Desactivar") : t("Activar")}
           </button>
         </form>
 
@@ -65,23 +78,25 @@ export function UserActions({
           className="btn-outline btn-sm"
           aria-expanded={showReset}
         >
-          {showReset ? "Cerrar" : "Contraseña"}
+          {showReset ? t("Cerrar") : t("Contraseña")}
         </button>
 
         {!isOwnerAccount && !isSelf ? (
           confirmDelete ? (
             <form action={deleteAction} className="inline-flex items-center gap-1.5">
               <input type="hidden" name="userId" value={userId} />
-              <span className="text-[12px] font-semibold text-danger">¿Eliminar?</span>
+              <span className="text-[12px] font-semibold text-danger">
+                {t("¿Eliminar?")}
+              </span>
               <button type="submit" disabled={deletePending} className="btn-danger btn-sm">
-                {deletePending ? "…" : "Sí"}
+                {deletePending ? "…" : t("Sí")}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
                 className="btn-ghost btn-sm"
               >
-                No
+                {t("No")}
               </button>
             </form>
           ) : (
@@ -89,9 +104,9 @@ export function UserActions({
               type="button"
               onClick={() => setConfirmDelete(true)}
               className="btn-outline btn-sm text-danger"
-              aria-label={`Eliminar la cuenta ${username}`}
+              aria-label={t("Eliminar la cuenta {user}", { user: username })}
             >
-              Eliminar
+              {t("Eliminar")}
             </button>
           )
         ) : null}
@@ -101,27 +116,27 @@ export function UserActions({
         <form action={resetAction} className="flex flex-wrap items-center gap-1.5 border-2 border-line bg-paper p-2">
           <input type="hidden" name="userId" value={userId} />
           <label className="sr-only" htmlFor={`pwd-${userId}`}>
-            Nueva contraseña para {username}
+            {t("Nueva contraseña para {user}", { user: username })}
           </label>
           <input
             id={`pwd-${userId}`}
             name="newPassword"
             type="password"
-            placeholder="Nueva contraseña"
+            placeholder={t("Nueva contraseña")}
             minLength={8}
             required
             className="input w-44 py-1.5 text-[13px]"
             autoComplete="new-password"
           />
           <button type="submit" disabled={resetPending} className="btn-primary btn-sm">
-            {resetPending ? "…" : "Asignar"}
+            {resetPending ? "…" : t("Asignar")}
           </button>
         </form>
       ) : null}
 
-      <Feedback state={toggleState} />
-      <Feedback state={resetState} />
-      <Feedback state={deleteState} />
+      <Feedback state={toggleState} t={t} />
+      <Feedback state={resetState} t={t} />
+      <Feedback state={deleteState} t={t} />
     </div>
   );
 }

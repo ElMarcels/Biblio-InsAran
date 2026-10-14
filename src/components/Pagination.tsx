@@ -1,12 +1,13 @@
 import Link from "next/link";
 
 import { classNames } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 
 /**
  * Paginación con enlaces reales (funciona sin JavaScript).
  * `hrefFor` construye la URL de cada página conservando los filtros activos.
  */
-export function Pagination({
+export async function Pagination({
   page,
   totalPages,
   hrefFor,
@@ -16,6 +17,8 @@ export function Pagination({
   hrefFor: (page: number) => string;
 }) {
   if (totalPages <= 1) return null;
+
+  const t = await getT();
 
   const pages: Array<number | "gap"> = [];
   const push = (value: number | "gap") => {
@@ -41,11 +44,11 @@ export function Pagination({
     <nav aria-label="Paginación" className="flex flex-wrap items-center gap-1.5">
       {page > 1 ? (
         <Link href={hrefFor(page - 1)} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
-          ← Anterior
+          ← {t("Anterior")}
         </Link>
       ) : (
         <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint")}>
-          ← Anterior
+          ← {t("Anterior")}
         </span>
       )}
 
@@ -73,11 +76,11 @@ export function Pagination({
 
       {page < totalPages ? (
         <Link href={hrefFor(page + 1)} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
-          Siguiente →
+          {t("Siguiente")} →
         </Link>
       ) : (
         <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint")}>
-          Siguiente →
+          {t("Siguiente")} →
         </span>
       )}
     </nav>

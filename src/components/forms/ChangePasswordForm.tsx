@@ -7,19 +7,21 @@ import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
+import { useT } from "../i18n/LocaleProvider";
 import { Field, inputClass } from "./Field";
 
 export function ChangePasswordForm() {
+  const t = useT();
   const [state, formAction] = useActionState(changeOwnPasswordAction, initialActionState);
   const errors = state.fieldErrors ?? {};
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{state.message}</Notice>
+        <Notice tone="danger">{t(state.message)}</Notice>
       ) : null}
       {state.status === "success" && state.message ? (
-        <Notice tone="success">{state.message}</Notice>
+        <Notice tone="success">{t(state.message)}</Notice>
       ) : null}
 
       <Field
@@ -77,7 +79,9 @@ export function ChangePasswordForm() {
       </div>
 
       <div>
-        <SubmitButton pendingLabel="Actualizando…">Actualizar contraseña</SubmitButton>
+        <SubmitButton pendingLabel="Actualizando…">
+          {t("Actualizar contraseña")}
+        </SubmitButton>
       </div>
     </form>
   );

@@ -4,6 +4,8 @@ import { useFormStatus } from "react-dom";
 
 import { classNames } from "@/lib/format";
 
+import { useT } from "./i18n/LocaleProvider";
+
 /**
  * Botón de envío que se desactiva y cambia de texto mientras el formulario
  * está en curso. Debe usarse dentro de un <form>.
@@ -18,6 +20,7 @@ export function SubmitButton({
   className?: string;
 }) {
   const { pending } = useFormStatus();
+  const t = useT();
 
   return (
     <button
@@ -26,7 +29,7 @@ export function SubmitButton({
       aria-busy={pending}
       className={classNames(className)}
     >
-      {pending ? pendingLabel : children}
+      {pending ? t(pendingLabel) : children}
     </button>
   );
 }

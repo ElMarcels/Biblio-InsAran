@@ -10,11 +10,15 @@ import {
 } from "@/components/panel/ReservationRowActions";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 import { isOverdue } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 import { reservationStatusLabel } from "@/lib/labels";
 
-export const metadata = { title: "Ficha del lector" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("Ficha del lector") };
+}
 
 type Params = Promise<{ id: string }>;
 
@@ -26,6 +30,7 @@ export default async function ReaderDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireUser();
+  const t = await getT();
   const { id } = await params;
   const sp = await searchParams;
   const aviso = Array.isArray(sp.aviso) ? sp.aviso[0] : sp.aviso;
@@ -56,16 +61,16 @@ export default async function ReaderDetailPage({
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8">
-      <nav aria-label="Migas de pan" className="text-[13px] text-ink-faint">
+      <nav aria-label={t("Migas de pan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/lectores" className="font-semibold text-ink underline underline-offset-2">
-          Lectores
+          {t("Lectores")}
         </Link>
         <span className="px-2">/</span>
         <span>{reader.fullName}</span>
       </nav>
 
       {aviso === "editado" ? (
-        <Notice tone="success">Los cambios se han guardado.</Notice>
+        <Notice tone="success">{t("Los cambios se han guardado.")}</Notice>
       ) : null}
 
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -73,22 +78,22 @@ export default async function ReaderDetailPage({
           <h2 className="font-display text-[28px] font-bold">{reader.fullName}</h2>
           <p className="mt-1.5 text-[14px] text-ink-soft">
             {[
-              reader.cardNumber ? `Carné ${reader.cardNumber}` : null,
+              reader.cardNumber ? t("Carné {card}", { card: reader.cardNumber }) : null,
               reader.groupName,
               reader.email,
               reader.phone,
             ]
               .filter(Boolean)
-              .join(" · ") || "Sin datos de contacto"}
+              .join(" · ") || t("Sin datos de contacto")}
           </p>
         </div>
         <span className={reader.active ? "tag-muted" : "tag-accent"}>
-          {reader.active ? "Activo" : "Dado de baja"}
+          {reader.active ? t("Activo") : t("Dado de baja")}
         </span>
       </header>
 
       <section className="border-2 border-line bg-surface p-6">
-        <h3 className="font-display text-[18px] font-semibold">Datos de la persona</h3>
+        <h3 className="font-display text-[18px] font-semibold">{t("Datos de la persona")}</h3>
         <div className="mt-4">
           <ReaderForm
             mode="edit"
@@ -108,26 +113,26 @@ export default async function ReaderDetailPage({
       <section className="flex flex-col gap-4">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="font-display text-[20px] font-semibold">
-            Préstamos en curso ({activeLoans.length})
+            {t("Préstamos en curso ({n})", { n: activeLoans.length })}
           </h3>
           <Link href="/panel/prestamos/nuevo" className="btn-outline btn-sm">
-            Registrar préstamo
+            {t("Registrar préstamo")}
           </Link>
         </div>
 
         {activeLoans.length === 0 ? (
           <p className="border-2 border-dashed border-hairline bg-surface p-6 text-center text-[14px] text-ink-soft">
-            Esta persona no tiene préstamos activos.
+            {t("Esta persona no tiene préstamos activos.")}
           </p>
         ) : (
           <div className="overflow-x-auto border-2 border-line bg-surface">
             <table className="w-full min-w-[640px] border-collapse text-left">
               <thead>
                 <tr className="border-b-2 border-line bg-paper">
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">Libro</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">Prestado</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">Devolver antes de</th>
-                  <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">Acción</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Libro")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Prestado")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Devolver antes de")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">{t("Acción")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,7 +152,7 @@ export default async function ReaderDetailPage({
                       <td className="px-4 py-3 text-[13px] tabular-nums">
                         <span className={overdue ? "font-semibold text-danger" : undefined}>
                           {formatDate(loan.dueAt)}
-                          {overdue ? " (vencido)" : ""}
+                          {overdue ? t(" (vencido)") : ""}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
@@ -166,11 +171,11 @@ export default async function ReaderDetailPage({
 
       <section className="flex flex-col gap-4">
         <h3 className="font-display text-[20px] font-semibold">
-          Reservas pendientes ({activeReservations.length})
+          {t("Reservas pendientes ({n})", { n: activeReservations.length })}
         </h3>
         {activeReservations.length === 0 ? (
           <p className="border-2 border-dashed border-hairline bg-surface p-6 text-center text-[14px] text-ink-soft">
-            Sin reservas pendientes.
+            {t("Sin reservas pendientes.")}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -184,7 +189,7 @@ export default async function ReaderDetailPage({
                     {reservation.book.title}
                   </Link>
                   <p className="text-[13px] text-ink-faint">
-                    Reservado el {formatDate(reservation.createdAt)}
+                    {t("Reservado el {date}", { date: formatDate(reservation.createdAt) })}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -199,7 +204,7 @@ export default async function ReaderDetailPage({
 
       {returnedLoans.length > 0 || pastReservations.length > 0 ? (
         <section className="flex flex-col gap-3">
-          <h3 className="font-display text-[20px] font-semibold">Historial</h3>
+          <h3 className="font-display text-[20px] font-semibold">{t("Historial")}</h3>
           <ul className="flex flex-col gap-1.5 text-[14px]">
             {returnedLoans.map((loan) => (
               <li
@@ -210,7 +215,7 @@ export default async function ReaderDetailPage({
                   <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
                     {loan.book.title}
                   </Link>{" "}
-                  <span className="text-ink-faint">· devuelto</span>
+                  <span className="text-ink-faint">{t("· devuelto")}</span>
                 </span>
                 <span className="text-[13px] tabular-nums text-ink-faint">
                   {formatDate(loan.returnedAt)}
@@ -227,7 +232,9 @@ export default async function ReaderDetailPage({
                     {reservation.book.title}
                   </Link>{" "}
                   <span className="text-ink-faint">
-                    · reserva {reservationStatusLabel(reservation.status).toLowerCase()}
+                    {t("· reserva {status}", {
+                      status: t(reservationStatusLabel(reservation.status)).toLowerCase(),
+                    })}
                   </span>
                 </span>
                 <span className="text-[13px] tabular-nums text-ink-faint">

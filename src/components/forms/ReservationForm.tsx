@@ -7,6 +7,7 @@ import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
+import { useT } from "../i18n/LocaleProvider";
 import { Field, inputClass } from "./Field";
 import type { BookOption, ReaderOption } from "./LoanForm";
 
@@ -19,6 +20,7 @@ export function ReservationForm({
   readers: ReaderOption[];
   defaultBookId?: string;
 }) {
+  const t = useT();
   const [state, formAction] = useActionState(
     createReservationAction,
     initialActionState,
@@ -28,7 +30,7 @@ export function ReservationForm({
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{state.message}</Notice>
+        <Notice tone="danger">{t(state.message)}</Notice>
       ) : null}
 
       <Field label="Libro" htmlFor="bookId" error={errors.bookId} required>
@@ -39,7 +41,7 @@ export function ReservationForm({
           className={inputClass(Boolean(errors.bookId))}
           required
         >
-          <option value="">Selecciona un libro…</option>
+          <option value="">{t("Selecciona un libro…")}</option>
           {books.map((book) => (
             <option key={book.id} value={book.id}>
               {book.title} — {book.author}
@@ -56,7 +58,7 @@ export function ReservationForm({
           className={inputClass(Boolean(errors.readerId))}
           required
         >
-          <option value="">Selecciona una persona…</option>
+          <option value="">{t("Selecciona una persona…")}</option>
           {readers.map((reader) => (
             <option key={reader.id} value={reader.id}>
               {reader.fullName}
@@ -76,7 +78,7 @@ export function ReservationForm({
       </Field>
 
       <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-line pt-4">
-        <SubmitButton pendingLabel="Guardando…">Crear reserva</SubmitButton>
+        <SubmitButton pendingLabel="Guardando…">{t("Crear reserva")}</SubmitButton>
       </div>
     </form>
   );

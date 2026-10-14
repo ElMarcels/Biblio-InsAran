@@ -4,9 +4,13 @@ import { notFound } from "next/navigation";
 import { DeleteBookButton } from "@/components/DeleteBookButton";
 import { BookForm } from "@/components/forms/BookForm";
 import { requireUser } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = { title: "Editar libro" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("Editar libro") };
+}
 
 export default async function EditBookPage({
   params,
@@ -15,34 +19,35 @@ export default async function EditBookPage({
 }) {
   const user = await requireUser();
   const { id } = await params;
+  const t = await getT();
 
   const book = await prisma.book.findUnique({ where: { id } });
   if (!book) notFound();
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <nav aria-label="Migas de pan" className="text-[13px] text-ink-faint">
+      <nav aria-label={t("Migas de pan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/libros" className="font-semibold text-ink underline underline-offset-2">
-          Libros
+          {t("Libros")}
         </Link>
         <span className="px-2">/</span>
         <Link href={`/libro/${book.id}`} className="hover:text-ink">
           {book.title}
         </Link>
         <span className="px-2">/</span>
-        <span>Editar</span>
+        <span>{t("Editar")}</span>
       </nav>
 
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-display text-[28px] font-bold">Editar la ficha</h2>
+          <h2 className="font-display text-[28px] font-bold">{t("Editar la ficha")}</h2>
           <p className="mt-1.5 text-[14px] text-ink-soft">
-            Modifica los datos y guarda los cambios.
+            {t("Modifica los datos y guarda los cambios.")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link href={`/libro/${book.id}`} className="btn-ghost btn-sm">
-            Ver en el catálogo
+            {t("Ver en el catálogo")}
           </Link>
           {user.role === "OWNER" ? (
             <DeleteBookButton bookId={book.id} title={book.title} compact />

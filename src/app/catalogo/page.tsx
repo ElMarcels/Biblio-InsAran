@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Pagination } from "@/components/Pagination";
 import { CATEGORIES, LANGUAGES } from "@/lib/catalog";
 import { CATALOG_PAGE_SIZE } from "@/lib/constants";
+import { getT } from "@/lib/i18n/server";
 import { onLoanCounts } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
@@ -33,6 +34,7 @@ export default async function CatalogPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
+  const t = await getT();
 
   const query = one(params.q).trim();
   const category = one(params.categoria);
@@ -93,20 +95,22 @@ export default async function CatalogPage({
   return (
     <div className="shell flex flex-1 flex-col py-10">
       <header className="mb-8">
-        <p className="micro mb-3">Catálogo</p>
+        <p className="micro mb-3">{t("Catálogo")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
             {category
               ? category
               : tag
-                ? `Materia: ${tag}`
+                ? t("Materia: {tag}", { tag })
                 : query
-                  ? `Resultados de “${query}”`
-                  : "Todo el fondo"}
+                  ? t("Resultados de “{query}”", { query })
+                  : t("Todo el fondo")}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
-            {total === 1 ? "1 título" : `${total} títulos`}
-            {hasFilters ? " con los filtros aplicados" : " en la colección"}
+            {total === 1 ? t("1 título") : t("{n} títulos", { n: total })}
+            {hasFilters
+              ? t(" con los filtros aplicados")
+              : t(" en la colección")}
           </p>
         </div>
       </header>
@@ -118,24 +122,24 @@ export default async function CatalogPage({
       >
         <div className="sm:col-span-2 lg:col-span-1">
           <label htmlFor="q" className="label">
-            Búsqueda
+            {t("Búsqueda")}
           </label>
           <input
             id="q"
             name="q"
             defaultValue={query}
             className="input"
-            placeholder="Título, autoría, ISBN…"
+            placeholder={t("Título, autoría, ISBN…")}
             autoComplete="off"
           />
         </div>
 
         <div>
           <label htmlFor="categoria" className="label">
-            Categoría
+            {t("Categoría")}
           </label>
           <select id="categoria" name="categoria" defaultValue={category} className="input">
-            <option value="">Todas</option>
+            <option value="">{t("Todas")}</option>
             {CATEGORIES.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -146,10 +150,10 @@ export default async function CatalogPage({
 
         <div>
           <label htmlFor="idioma" className="label">
-            Idioma
+            {t("Idioma")}
           </label>
           <select id="idioma" name="idioma" defaultValue={language} className="input">
-            <option value="">Todos</option>
+            <option value="">{t("Todos")}</option>
             {LANGUAGES.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -160,26 +164,26 @@ export default async function CatalogPage({
 
         <div>
           <label htmlFor="etiqueta" className="label">
-            Materia
+            {t("Materia")}
           </label>
           <input
             id="etiqueta"
             name="etiqueta"
             defaultValue={tag}
             className="input"
-            placeholder="Novela negra…"
+            placeholder={t("Novela negra…")}
             autoComplete="off"
           />
         </div>
 
         <div>
           <label htmlFor="orden" className="label">
-            Ordenar por
+            {t("Ordenar por")}
           </label>
           <select id="orden" name="orden" defaultValue={sortKey} className="input">
             {Object.entries(SORTS).map(([key, value]) => (
               <option key={key} value={key}>
-                {value.label}
+                {t(value.label)}
               </option>
             ))}
           </select>
@@ -187,11 +191,11 @@ export default async function CatalogPage({
 
         <div className="flex items-end gap-2">
           <button type="submit" className="btn-primary">
-            Filtrar
+            {t("Filtrar")}
           </button>
           {hasFilters || sortKey !== "recientes" ? (
             <Link href={clearHref} className="btn-ghost">
-              Limpiar
+              {t("Limpiar")}
             </Link>
           ) : null}
         </div>
@@ -199,16 +203,18 @@ export default async function CatalogPage({
 
       {books.length === 0 ? (
         <EmptyState
-          title={hasFilters ? "Sin resultados" : "Aún no hay libros"}
+          title={hasFilters ? t("Sin resultados") : t("Aún no hay libros")}
           description={
             hasFilters
-              ? "No se ha encontrado ningún título con esos criterios. Prueba a quitar algún filtro o a buscar de otra forma."
-              : "El catálogo todavía no tiene títulos registrados."
+              ? t(
+                  "No se ha encontrado ningún título con esos criterios. Prueba a quitar algún filtro o a buscar de otra forma.",
+                )
+              : t("El catálogo todavía no tiene títulos registrados.")
           }
           action={
             hasFilters ? (
               <Link href={clearHref} className="btn-outline">
-                Quitar filtros
+                {t("Quitar filtros")}
               </Link>
             ) : undefined
           }

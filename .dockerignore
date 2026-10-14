@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+
+# Copias de seguridad y ficheros locales
+backups
+npm-debug.log*
+*.tsbuildinfo
+
+# Documentación y despliegue que no hacen falta dentro de la imagen
+README.md
+deploy
+AGENTS.md

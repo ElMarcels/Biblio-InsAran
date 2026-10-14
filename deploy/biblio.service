@@ -1,0 +1,28 @@
+[Unit]
+Description=Biblioteca del Instituto (Next.js)
+Documentation=https://github.com/
+After=network.target
+
+[Service]
+Type=simple
+# Ajusta el usuario y la ruta a tu instalación
+User=biblio
+Group=biblio
+WorkingDirectory=/opt/biblio
+Environment=NODE_ENV=production
+Environment=PORT=3000
+# Las variables sensibles se leen del archivo .env del directorio de trabajo
+# (DATABASE_URL, DIRECT_URL, SESSION_SECRET).
+
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+
+# Endurecimiento básico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

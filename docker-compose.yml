@@ -1,0 +1,71 @@
+# Docker Compose para la Biblioteca del Instituto.
+#
+# Uso habitual (base de datos gestionada, p. ej. Neon):
+#   docker compose up -d --build
+#   docker compose run --rm migrate          # aplica las migraciones
+#
+# Con PostgreSQL autogestionado en el propio servidor:
+#   docker compose --profile selfhost-db up -d --build
+#
+# Variables: se leen del archivo `.env` de este directorio.
+
+services:
+  # -------------------------------------------------------------------------
+  # Aplicación Next.js
+  # -------------------------------------------------------------------------
+  app:
+    build:
+      context: .
+      target: runner
+    image: biblio-insti:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+    # Escucha solo en localhost: Nginx (en el host) hace de proxy inverso.
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  # -------------------------------------------------------------------------
+  # Migraciones de Prisma (se ejecutan a demanda, no forman parte del arranque)
+  #   docker compose run --rm migrate
+  # -------------------------------------------------------------------------
+  migrate:
+    build:
+      context: .
+      target: builder
+    image: biblio-insti:builder
+    env_file:
+      - .env
+    command: npx prisma migrate deploy
+    profiles:
+      - tools
+
+  # -------------------------------------------------------------------------
+  # PostgreSQL autogestionado (opcional).
+  # Actívalo con: docker compose --profile selfhost-db up -d
+  # En ese caso, en tu .env:
+  #   DATABASE_URL="postgresql://biblio:biblio@db:5432/biblio_instituto?schema=public"
+  #   DIRECT_URL="postgresql://biblio:biblio@db:5432/biblio_instituto?schema=public"
+  # -------------------------------------------------------------------------
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-biblio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-biblio}
+      POSTGRES_DB: ${POSTGRES_DB:-biblio_instituto}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-biblio} -d ${POSTGRES_DB:-biblio_instituto}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - selfhost-db
+
+volumes:
+  db-data:

@@ -1,26 +1,196 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* =========================================================================
+   Sistema de diseño — Biblioteca del Instituto
+   Estética editorial moderna: alto contraste, esquinas rectas, tipografía
+   grande y bordes marcados. Todos los colores y fuentes viven aquí como
+   tokens; el resto de la interfaz solo usa las utilidades derivadas.
+   ========================================================================= */
+
+@theme {
+  /* Superficies */
+  --color-paper: #f1eee7;
+  --color-surface: #ffffff;
+  --color-ink: #0e0e11;
+  --color-ink-soft: #45454e;
+  --color-ink-faint: #74747d;
+
+  /* Líneas */
+  --color-line: #0e0e11;
+  --color-hairline: #cdc7b9;
+
+  /* Acento */
+  --color-accent: #e0401d;
+  --color-accent-ink: #ffffff;
+  --color-accent-soft: #f9e2da;
+
+  /* Estados */
+  --color-ok: #14603c;
+  --color-ok-soft: #dcece1;
+  --color-warn: #8a5300;
+  --color-warn-soft: #f9ecd0;
+  --color-danger: #ae2418;
+  --color-danger-soft: #f7dfdb;
+
+  /* Tipografía */
+  --font-display: var(--font-display-family), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-family), ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+  }
+
+  ::selection {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  table,
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---- Utilidades base reutilizables entre variantes --------------------- */
+
+@utility btn {
+  @apply inline-flex select-none items-center justify-center gap-2 border-2 px-4 py-2.5
+    text-[14px] font-semibold leading-none transition duration-100
+    disabled:cursor-not-allowed disabled:opacity-55;
+
+  &:not(:disabled):active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+}
+
+@utility tag {
+  @apply inline-flex items-center border border-line bg-surface px-2 py-0.5
+    text-[11px] font-semibold uppercase tracking-[0.12em] text-ink;
+}
+
+/* ---- Componentes ------------------------------------------------------- */
+
+@layer components {
+  .shell {
+    @apply mx-auto w-full max-w-[1180px] px-5 sm:px-8;
+  }
+
+  .card {
+    @apply border-2 border-line bg-surface;
+  }
+
+  .rule {
+    @apply border-t border-hairline;
+  }
+
+  .micro {
+    @apply text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint;
+  }
+
+  /* Formularios */
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink;
+  }
+
+  .hint {
+    @apply mt-1 text-[12px] text-ink-faint;
+  }
+
+  .input {
+    @apply block w-full border-2 border-line bg-surface px-3 py-2.5 text-[15px] text-ink
+      placeholder:text-ink-faint/70 focus:border-accent focus:outline-none
+      focus:ring-2 focus:ring-accent/35 disabled:cursor-not-allowed disabled:bg-paper
+      disabled:text-ink-faint;
+  }
+
+  .input-error {
+    @apply border-danger focus:border-danger focus:ring-danger/30;
+  }
+
+  .error-text {
+    @apply mt-1 text-[12px] font-medium text-danger;
+  }
+
+  /* Botones */
+  .btn-sm {
+    @apply px-3 py-1.5 text-[13px];
+  }
+
+  .btn-primary {
+    @apply btn border-line bg-ink text-paper shadow-[3px_3px_0_0_var(--color-line)]
+      hover:bg-ink-soft hover:shadow-[4px_4px_0_0_var(--color-line)];
+  }
+
+  .btn-accent {
+    @apply btn border-line bg-accent text-accent-ink shadow-[3px_3px_0_0_var(--color-line)]
+      hover:shadow-[4px_4px_0_0_var(--color-line)];
+  }
+
+  .btn-outline {
+    @apply btn border-line bg-surface text-ink shadow-[3px_3px_0_0_var(--color-line)]
+      hover:bg-paper hover:shadow-[4px_4px_0_0_var(--color-line)];
+  }
+
+  .btn-ghost {
+    @apply btn border-transparent bg-transparent text-ink hover:border-line hover:bg-surface;
+  }
+
+  .btn-danger {
+    @apply btn border-line bg-danger text-white shadow-[3px_3px_0_0_var(--color-line)]
+      hover:shadow-[4px_4px_0_0_var(--color-line)];
+  }
+
+  /* Etiquetas */
+  .tag-accent {
+    @apply tag border-accent bg-accent-soft text-accent;
+  }
+
+  .tag-ok {
+    @apply tag border-ok bg-ok-soft text-ok;
+  }
+
+  .tag-warn {
+    @apply tag border-warn bg-warn-soft text-warn;
+  }
+
+  .tag-muted {
+    @apply tag border-hairline bg-paper text-ink-faint;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

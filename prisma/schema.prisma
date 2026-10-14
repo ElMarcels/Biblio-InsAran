@@ -1,0 +1,109 @@
+// Esquema de datos de la Biblioteca del Instituto.
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+
+  // En proveedores con "pooling" (p. ej. Neon) la URL de conexión agrupada no
+  // admite los bloqueos que necesitan las migraciones. `DIRECT_URL` apunta a la
+  // conexión directa y la usa el CLI al migrar. En instalaciones locales puede
+  // ser igual que DATABASE_URL.
+  directUrl = env("DIRECT_URL")
+}
+
+/// Rol dentro de la plataforma.
+/// OWNER  -> dueño de la plataforma: gestiona usuarios y puede borrar libros.
+/// EDITOR -> usuario creado por el dueño: puede añadir y editar libros.
+enum Role {
+  OWNER
+  EDITOR
+}
+
+/// Cuenta de la plataforma.
+model User {
+  id                 String    @id @default(cuid())
+  username           String    @unique
+  displayName        String
+  passwordHash       String
+  role               Role      @default(EDITOR)
+  active             Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+
+  createdById String?
+  createdBy   User?   @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers User[] @relation("UserCreatedBy")
+
+  sessions     Session[]
+  booksCreated Book[]     @relation("BookCreatedBy")
+  booksUpdated Book[]     @relation("BookUpdatedBy")
+  auditLogs    AuditLog[]
+
+  @@index([role])
+  @@index([active])
+}
+
+/// Sesión iniciada. El token se guarda hasheado (nunca en claro).
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+  ip        String?
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Libro del catálogo.
+model Book {
+  id          String   @id @default(cuid())
+  title       String
+  author      String
+  isbn        String?
+  publisher   String?
+  year        Int?
+  category    String
+  language    String   @default("Español")
+  pages       Int?
+  copies      Int      @default(1)
+  location    String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdById String?
+  createdBy   User?   @relation("BookCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedById String?
+  updatedBy   User?   @relation("BookUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([title])
+  @@index([author])
+  @@index([category])
+  @@index([createdAt])
+}
+
+/// Registro de actividad (auditoría) para dar trazabilidad a la plataforma.
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([entityType])
+}

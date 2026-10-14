@@ -29,13 +29,17 @@ export default async function PanelHomePage() {
   const user = await requireUser();
   const isOwner = user.role === "OWNER";
 
-  const [totalBooks, copies, categories, editors, recentBooks] = await Promise.all([
-    prisma.book.count(),
-    prisma.book.aggregate({ _sum: { copies: true } }),
-    prisma.book.findMany({ distinct: ["category"], select: { category: true } }),
-    prisma.user.count({ where: { role: "EDITOR" } }),
-    prisma.book.findMany({ orderBy: { updatedAt: "desc" }, take: 6 }),
-  ]);
+  const [totalBooks, copies, editors, recentBooks, activeLoans, overdueLoans, activeReservations, readers] =
+    await Promise.all([
+      prisma.book.count(),
+      prisma.book.aggregate({ _sum: { copies: true } }),
+      prisma.user.count({ where: { role: "EDITOR" } }),
+      prisma.book.findMany({ orderBy: { updatedAt: "desc" }, take: 6 }),
+      prisma.loan.count({ where: { returnedAt: null } }),
+      prisma.loan.count({ where: { returnedAt: null, dueAt: { lt: new Date() } } }),
+      prisma.reservation.count({ where: { status: "ACTIVE" } }),
+      prisma.reader.count({ where: { active: true } }),
+    ]);
 
   const activity = isOwner
     ? await prisma.auditLog.findMany({
@@ -47,29 +51,51 @@ export default async function PanelHomePage() {
 
   return (
     <div className="flex flex-col gap-9">
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile label="Títulos" value={totalBooks} hint="Libros distintos en el fondo" />
         <StatTile
           label="Ejemplares"
           value={copies._sum.copies ?? 0}
           hint="Suma de copias físicas"
         />
-        <StatTile label="Categorías" value={categories.length} hint="Áreas temáticas" />
+        <StatTile
+          label="En préstamo"
+          value={activeLoans}
+          hint={`${overdueLoans} ${overdueLoans === 1 ? "vencido" : "vencidos"}`}
+        />
+        <StatTile
+          label="Reservas pendientes"
+          value={activeReservations}
+          hint="Libros esperando estar libres"
+        />
+        <StatTile
+          label="Lectores activos"
+          value={readers}
+          hint="Personas con carné en vigor"
+        />
         <StatTile
           label={isOwner ? "Usuarios editores" : "Tu rol"}
           value={isOwner ? editors : "Editor"}
-          hint={isOwner ? "Cuentas además de la tuya" : "Puedes añadir y editar libros"}
+          hint={isOwner ? "Cuentas además de la tuya" : "Puedes gestionar préstamos y libros"}
         />
       </section>
 
       <section className="flex flex-wrap items-center gap-2.5 border-2 border-line bg-surface p-4">
         <span className="micro mr-1">Acciones rápidas</span>
-        <Link href="/panel/libros/nuevo" className="btn-primary btn-sm">
+        <Link href="/panel/prestamos/nuevo" className="btn-primary btn-sm">
+          Registrar préstamo
+        </Link>
+        <Link href="/panel/libros/nuevo" className="btn-outline btn-sm">
           Añadir libro
         </Link>
-        <Link href="/panel/libros" className="btn-outline btn-sm">
-          Gestionar libros
+        <Link href="/panel/lectores" className="btn-outline btn-sm">
+          Lectores
         </Link>
+        {overdueLoans > 0 ? (
+          <Link href="/panel/prestamos?estado=vencidos" className="btn-outline btn-sm text-danger">
+            Ver vencidos ({overdueLoans})
+          </Link>
+        ) : null}
         {isOwner ? (
           <Link href="/panel/usuarios" className="btn-outline btn-sm">
             Gestionar usuarios

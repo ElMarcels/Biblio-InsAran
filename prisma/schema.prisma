@@ -45,6 +45,9 @@ model User {
   booksUpdated Book[]     @relation("BookUpdatedBy")
   auditLogs    AuditLog[]
 
+  loansCreated        Loan[]        @relation("LoanCreatedBy")
+  reservationsCreated Reservation[] @relation("ReservationCreatedBy")
+
   @@index([role])
   @@index([active])
 }
@@ -78,6 +81,7 @@ model Book {
   copies      Int      @default(1)
   location    String?
   description String?
+  tags        String[] @default([])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -86,10 +90,90 @@ model Book {
   updatedById String?
   updatedBy   User?   @relation("BookUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
+  loans        Loan[]
+  reservations Reservation[]
+
   @@index([title])
   @@index([author])
   @@index([category])
   @@index([createdAt])
+}
+
+/// Lector/a de la biblioteca (alumnado, profesorado, familias…).
+/// No dispone de cuenta en la plataforma: es el personal quien gestiona sus
+/// préstamos y reservas.
+model Reader {
+  id         String   @id @default(cuid())
+  cardNumber String?  @unique
+  fullName   String
+  groupName  String?
+  email      String?
+  phone      String?
+  active     Boolean  @default(true)
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  loans        Loan[]
+  reservations Reservation[]
+
+  @@index([fullName])
+  @@index([active])
+}
+
+/// Préstamo de un ejemplar a un lector/a.
+/// `returnedAt` nulo significa que sigue en préstamo; si además `dueAt` ya ha
+/// pasado, el préstamo está vencido (se calcula, no se almacena).
+model Loan {
+  id         String    @id @default(cuid())
+  bookId     String
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  readerId   String
+  reader     Reader    @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  loanedAt   DateTime  @default(now())
+  dueAt      DateTime
+  returnedAt DateTime?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  createdById String?
+  createdBy   User?   @relation("LoanCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([bookId])
+  @@index([readerId])
+  @@index([returnedAt])
+  @@index([dueAt])
+}
+
+/// Estado de una reserva.
+/// ACTIVE    -> pendiente de servir (el lector/a espera el libro).
+/// FULFILLED -> ya se ha entregado (normalmente convertida en préstamo).
+/// CANCELLED -> anulada por el personal.
+enum ReservationStatus {
+  ACTIVE
+  FULFILLED
+  CANCELLED
+}
+
+/// Reserva de un libro por parte de un lector/a.
+model Reservation {
+  id         String            @id @default(cuid())
+  bookId     String
+  book       Book              @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  readerId   String
+  reader     Reader            @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  status     ReservationStatus @default(ACTIVE)
+  notes      String?
+  createdAt  DateTime          @default(now())
+  resolvedAt DateTime?
+
+  createdById String?
+  createdBy   User?   @relation("ReservationCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([bookId])
+  @@index([readerId])
+  @@index([status])
 }
 
 /// Registro de actividad (auditoría) para dar trazabilidad a la plataforma.

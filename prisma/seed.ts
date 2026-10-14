@@ -33,6 +33,29 @@ type SeedBook = {
   description?: string;
 };
 
+/** Materias libres de cada libro de ejemplo (clave: título). */
+const BOOK_TAGS: Record<string, string[]> = {
+  "Cien años de soledad": ["Realismo mágico", "Clásicos", "Novela"],
+  "El Quijote de la Mancha": ["Clásicos", "Aventuras", "Novela"],
+  "La casa de Bernarda Alba": ["Teatro", "Clásicos", "Lectura obligatoria"],
+  "Veinte poemas de amor y una canción desesperada": ["Poesía", "Amor"],
+  "Breve historia del tiempo": ["Divulgación científica", "Física"],
+  "El mundo de Sofía": ["Filosofía", "Novela", "Lectura obligatoria"],
+  "Sapiens: de animales a dioses": ["Historia", "Divulgación científica"],
+  "Martín Fierro": ["Poesía", "Clásicos"],
+  "Álgebra de Baldor": ["Matemáticas", "Manuales"],
+  "El principito": ["Infantil", "Clásicos"],
+  "Ciencia de datos desde cero": ["Tecnología", "Programación"],
+  "Diccionario de la lengua española": ["Referencia", "Diccionarios"],
+};
+
+/** Lectores de ejemplo para poder probar los préstamos. */
+const READERS = [
+  { cardNumber: "ALU-001", fullName: "Marta Solé", groupName: "2n ESO A" },
+  { cardNumber: "ALU-002", fullName: "Joan Peret", groupName: "3r ESO B" },
+  { cardNumber: "PROF-01", fullName: "Miquel Aunós", groupName: "Departament de Ciències" },
+];
+
 const BOOKS: SeedBook[] = [
   {
     title: "Cien años de soledad",
@@ -244,6 +267,7 @@ async function main() {
       copies: book.copies ?? 1,
       location: book.location ?? null,
       description: book.description ?? null,
+      tags: BOOK_TAGS[book.title] ?? [],
       createdById: owner.id,
       updatedById: owner.id,
     }));
@@ -260,6 +284,73 @@ async function main() {
     console.log(`  ✓ ${books.length} libros de ejemplo añadidos`);
   } else {
     console.log(`  · Ya había ${existingBooks} libros; no se añade ninguno`);
+  }
+
+  const existingReaders = await prisma.reader.count();
+  if (existingReaders === 0) {
+    for (const reader of READERS) {
+      await prisma.reader.create({ data: reader });
+    }
+
+    const people = await prisma.reader.findMany({ orderBy: { fullName: "asc" } });
+    const titles = [
+      "Cien años de soledad",
+      "El mundo de Sofía",
+      "Breve historia del tiempo",
+    ];
+    const loaned = await prisma.book.findMany({
+      where: { title: { in: titles } },
+      orderBy: { title: "asc" },
+    });
+
+    const day = 1000 * 60 * 60 * 24;
+    const plans: Array<{ readerIndex: number; bookIndex: number; offset: number }> = [
+      { readerIndex: 0, bookIndex: 0, offset: 10 },
+      { readerIndex: 1, bookIndex: 1, offset: -4 },
+    ];
+
+    let created = 0;
+    for (const plan of plans) {
+      const person = people[plan.readerIndex];
+      const book = loaned[plan.bookIndex];
+      if (!person || !book) continue;
+      const loan = await prisma.loan.create({
+        data: {
+          bookId: book.id,
+          readerId: person.id,
+          dueAt: new Date(Date.now() + plan.offset * day),
+          createdById: owner.id,
+        },
+      });
+      await prisma.auditLog.create({
+        data: {
+          action: "LOAN_CREATE",
+          entityType: "Loan",
+          entityId: loan.id,
+          summary: `Prestado «${book.title}» a ${person.fullName}`,
+          userId: owner.id,
+        },
+      });
+      created += 1;
+    }
+
+    const reservationBook = loaned[2];
+    const reservationPerson = people[2];
+    if (reservationBook && reservationPerson) {
+      await prisma.reservation.create({
+        data: {
+          bookId: reservationBook.id,
+          readerId: reservationPerson.id,
+          createdById: owner.id,
+        },
+      });
+    }
+
+    console.log(
+      `  ✓ ${READERS.length} lectores y ${created} préstamos de ejemplo añadidos`,
+    );
+  } else {
+    console.log(`  · Ya había ${existingReaders} lectores; no se añade ninguno`);
   }
 
   console.log("Listo.");

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Pagination } from "@/components/Pagination";
 import { CATEGORIES, LANGUAGES } from "@/lib/catalog";
 import { CATALOG_PAGE_SIZE } from "@/lib/constants";
+import { onLoanCounts } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Catálogo" };
@@ -36,6 +37,7 @@ export default async function CatalogPage({
   const query = one(params.q).trim();
   const category = one(params.categoria);
   const language = one(params.idioma);
+  const tag = one(params.etiqueta).trim();
   const sortKey = (one(params.orden) || "recientes") as SortKey;
   const sort = SORTS[sortKey] ?? SORTS.recientes;
   const requestedPage = Math.max(1, Number.parseInt(one(params.pagina) || "1", 10) || 1);
@@ -55,6 +57,9 @@ export default async function CatalogPage({
   if (language && (LANGUAGES as readonly string[]).includes(language)) {
     where.language = language;
   }
+  if (tag) {
+    where.tags = { has: tag };
+  }
 
   const total = await prisma.book.count({ where });
   const totalPages = Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE));
@@ -67,13 +72,16 @@ export default async function CatalogPage({
     take: CATALOG_PAGE_SIZE,
   });
 
-  const hasFilters = Boolean(query || category || language);
+  const onLoan = await onLoanCounts(books.map((book) => book.id));
+
+  const hasFilters = Boolean(query || category || language || tag);
 
   const hrefFor = (targetPage: number) => {
     const search = new URLSearchParams();
     if (query) search.set("q", query);
     if (category) search.set("categoria", category);
     if (language) search.set("idioma", language);
+    if (tag) search.set("etiqueta", tag);
     if (sortKey !== "recientes") search.set("orden", sortKey);
     if (targetPage > 1) search.set("pagina", String(targetPage));
     const suffix = search.toString();
@@ -88,7 +96,13 @@ export default async function CatalogPage({
         <p className="micro mb-3">Catálogo</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
-            {category ? category : query ? `Resultados de “${query}”` : "Todo el fondo"}
+            {category
+              ? category
+              : tag
+                ? `Materia: ${tag}`
+                : query
+                  ? `Resultados de “${query}”`
+                  : "Todo el fondo"}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
             {total === 1 ? "1 título" : `${total} títulos`}
@@ -100,7 +114,7 @@ export default async function CatalogPage({
       <form
         action="/catalogo"
         method="get"
-        className="mb-8 grid gap-3 border-2 border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_auto]"
+        className="mb-8 grid gap-3 border-2 border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
       >
         <div className="sm:col-span-2 lg:col-span-1">
           <label htmlFor="q" className="label">
@@ -142,6 +156,20 @@ export default async function CatalogPage({
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label htmlFor="etiqueta" className="label">
+            Materia
+          </label>
+          <input
+            id="etiqueta"
+            name="etiqueta"
+            defaultValue={tag}
+            className="input"
+            placeholder="Novela negra…"
+            autoComplete="off"
+          />
         </div>
 
         <div>
@@ -189,7 +217,15 @@ export default async function CatalogPage({
         <ul className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
           {books.map((book) => (
             <li key={book.id}>
-              <BookCard book={book} />
+              <BookCard
+                book={{
+                  ...book,
+                  available: Math.max(
+                    0,
+                    book.copies - (onLoan.get(book.id) ?? 0),
+                  ),
+                }}
+              />
             </li>
           ))}
         </ul>

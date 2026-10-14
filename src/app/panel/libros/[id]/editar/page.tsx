@@ -66,6 +66,7 @@ export default async function EditBookPage({
             copies: String(book.copies),
             location: book.location ?? "",
             description: book.description ?? "",
+            tags: book.tags.join(", "),
           }}
         />
       </div>

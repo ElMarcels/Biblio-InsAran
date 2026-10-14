@@ -17,3 +17,9 @@ export const CATALOG_PAGE_SIZE = 12;
 
 /** Libros por página en el panel de gestión. */
 export const PANEL_PAGE_SIZE = 15;
+
+/** Préstamos y reservas por página en el panel. */
+export const CIRCULATION_PAGE_SIZE = 20;
+
+/** Días de préstamo por defecto. */
+export const DEFAULT_LOAN_DAYS = 15;

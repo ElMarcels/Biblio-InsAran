@@ -13,6 +13,7 @@ export type BookFormValues = {
   copies: string;
   location: string;
   description: string;
+  tags: string;
 };
 
 export const EMPTY_BOOK: BookFormValues = {
@@ -27,4 +28,5 @@ export const EMPTY_BOOK: BookFormValues = {
   copies: "1",
   location: "",
   description: "",
+  tags: "",
 };

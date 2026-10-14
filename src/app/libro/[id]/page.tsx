@@ -6,6 +6,12 @@ import { BookCover } from "@/components/BookCover";
 import { DeleteBookButton } from "@/components/DeleteBookButton";
 import { getCurrentUser } from "@/lib/auth";
 import { formatDate, pluralize } from "@/lib/format";
+import {
+  activeReservationCounts,
+  authorHref,
+  onLoanCounts,
+  tagHref,
+} from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
 type Params = Promise<{ id: string }>;
@@ -41,6 +47,14 @@ export default async function BookPage({ params }: { params: Params }) {
     orderBy: { title: "asc" },
     take: 4,
   });
+
+  const [onLoan, reserved] = await Promise.all([
+    onLoanCounts([book.id]),
+    activeReservationCounts([book.id]),
+  ]);
+  const loaned = onLoan.get(book.id) ?? 0;
+  const available = Math.max(0, book.copies - loaned);
+  const reservedCount = reserved.get(book.id) ?? 0;
 
   const details: Array<{ label: string; value: string }> = [
     { label: "Categoría", value: book.category },
@@ -78,7 +92,15 @@ export default async function BookPage({ params }: { params: Params }) {
           <div className="mt-4 border-2 border-line bg-surface p-4">
             <p className="micro">Disponibilidad</p>
             <p className="mt-1 font-display text-[26px] font-bold leading-none">
-              {pluralize(book.copies, "ejemplar", "ejemplares")}
+              {available} de {pluralize(book.copies, "ejemplar", "ejemplares")}
+            </p>
+            <p className="mt-2 text-[13px] text-ink-soft">
+              {available > 0
+                ? `${available} ${available === 1 ? "disponible" : "disponibles"} para préstamo`
+                : "Todos los ejemplares están prestados"}
+              {reservedCount > 0
+                ? ` · ${pluralize(reservedCount, "reserva pendiente", "reservas pendientes")}`
+                : ""}
             </p>
             {book.location ? (
               <p className="mt-2 text-[13px] text-ink-soft">
@@ -103,14 +125,37 @@ export default async function BookPage({ params }: { params: Params }) {
             {book.title}
           </h1>
           <p className="mt-2 text-[19px] text-ink-soft">
-            {book.author}
+            <Link
+              href={authorHref(book.author)}
+              className="font-semibold text-ink underline decoration-line decoration-2 underline-offset-4 hover:text-accent"
+            >
+              {book.author}
+            </Link>
             {book.publisher ? ` · ${book.publisher}` : ""}
           </p>
+
+          {book.tags.length > 0 ? (
+            <ul className="mt-4 flex flex-wrap items-center gap-2">
+              {book.tags.map((tag) => (
+                <li key={tag}>
+                  <Link href={tagHref(tag)} className="tag-muted hover:border-accent hover:text-accent">
+                    {tag}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           {user ? (
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Link href={`/panel/libros/${book.id}/editar`} className="btn-outline btn-sm">
                 Editar ficha
+              </Link>
+              <Link
+                href={`/panel/prestamos/nuevo?libro=${book.id}`}
+                className="btn-outline btn-sm"
+              >
+                Prestar
               </Link>
               {user.role === "OWNER" ? (
                 <DeleteBookButton bookId={book.id} title={book.title} compact />

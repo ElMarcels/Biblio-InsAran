@@ -24,13 +24,31 @@ export function BookForm({
     initialActionState,
   );
   const errors = state.fieldErrors ?? {};
+  const duplicate = state.status === "warning" ? state.duplicate : null;
 
   return (
     <form action={formAction} className="flex flex-col gap-6" noValidate>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
+      {/* Segunda vuelta: el usuario confirma que quiere guardar un duplicado. */}
+      {duplicate ? <input type="hidden" name="confirm" value="1" /> : null}
 
       {state.status === "error" && state.message ? (
         <Notice tone="danger">{state.message}</Notice>
+      ) : null}
+
+      {duplicate ? (
+        <Notice tone="warning">
+          <span>
+            {state.message}{" "}
+            <Link
+              href={`/libro/${duplicate.id}`}
+              className="font-semibold underline underline-offset-2"
+            >
+              Ver la ficha existente
+            </Link>
+            . Si aun así quieres registrarlo, vuelve a guardar.
+          </span>
+        </Notice>
       ) : null}
 
       <fieldset className="flex flex-col gap-4">
@@ -91,6 +109,22 @@ export function BookForm({
             </select>
           </Field>
         </div>
+
+        <Field
+          label="Etiquetas / materias"
+          htmlFor="tags"
+          error={errors.tags}
+          hint="Sepáralas con comas. Por ejemplo: Novela negra, Lectura recomendada, Val d'Aran"
+        >
+          <input
+            id="tags"
+            name="tags"
+            defaultValue={values.tags}
+            className={inputClass(Boolean(errors.tags))}
+            maxLength={1000}
+            placeholder="Aventuras, Clásicos…"
+          />
+        </Field>
       </fieldset>
 
       <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
@@ -186,7 +220,11 @@ export function BookForm({
 
       <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-line pt-5">
         <SubmitButton pendingLabel="Guardando…">
-          {mode === "create" ? "Añadir libro" : "Guardar cambios"}
+          {duplicate
+            ? "Guardar de todas formas"
+            : mode === "create"
+              ? "Añadir libro"
+              : "Guardar cambios"}
         </SubmitButton>
         <Link href="/panel/libros" className="btn-ghost">
           Cancelar

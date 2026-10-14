@@ -29,6 +29,18 @@ export async function SiteHeader() {
           >
             Catálogo
           </Link>
+          <Link
+            href="/autores"
+            className="hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
+          >
+            Autorías
+          </Link>
+          <Link
+            href="/etiquetas"
+            className="hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
+          >
+            Materias
+          </Link>
 
           {user ? (
             <>

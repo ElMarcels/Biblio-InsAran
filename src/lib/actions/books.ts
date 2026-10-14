@@ -1,12 +1,19 @@
 "use server";
 
+import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { assertOwner, assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { prisma } from "../prisma";
-import { bookSchema, fieldErrors, type ActionState } from "../validation";
+import {
+  bookSchema,
+  duplicateMessage,
+  fieldErrors,
+  type ActionState,
+  type DuplicateMatch,
+} from "../validation";
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
@@ -31,7 +38,51 @@ function readBook(formData: FormData) {
     copies: text(formData, "copies"),
     location: text(formData, "location"),
     description: text(formData, "description"),
+    tags: text(formData, "tags"),
   });
+}
+
+/**
+ * Busca un libro que probablemente sea el mismo que se está guardando:
+ * por ISBN exacto o por título y autoría idénticos (sin distinguir mayúsculas).
+ */
+async function findDuplicate(input: {
+  title: string;
+  author: string;
+  isbn?: string;
+  excludeId?: string;
+}): Promise<DuplicateMatch | null> {
+  const or: Prisma.BookWhereInput[] = [];
+  if (input.isbn) {
+    or.push({ isbn: { equals: input.isbn, mode: "insensitive" } });
+  }
+  or.push({
+    AND: [
+      { title: { equals: input.title, mode: "insensitive" } },
+      { author: { equals: input.author, mode: "insensitive" } },
+    ],
+  });
+
+  const where: Prisma.BookWhereInput = { OR: or };
+  if (input.excludeId) where.id = { not: input.excludeId };
+
+  const match = await prisma.book.findFirst({
+    where,
+    select: { id: true, title: true, author: true, isbn: true },
+  });
+  if (!match) return null;
+
+  const sameIsbn =
+    Boolean(input.isbn) &&
+    Boolean(match.isbn) &&
+    match.isbn!.toLowerCase() === input.isbn!.toLowerCase();
+
+  return {
+    id: match.id,
+    title: match.title,
+    author: match.author,
+    reason: sameIsbn ? "isbn" : "title",
+  };
 }
 
 /** Revalida las vistas afectadas por un cambio en el catálogo. */
@@ -40,6 +91,8 @@ function revalidateCatalog(bookId?: string) {
   revalidatePath("/catalogo");
   revalidatePath("/panel");
   revalidatePath("/panel/libros");
+  revalidatePath("/autores");
+  revalidatePath("/etiquetas");
   if (bookId) revalidatePath(`/libro/${bookId}`);
 }
 
@@ -62,6 +115,23 @@ export async function createBookAction(
       message: "Revisa los campos marcados antes de guardar.",
       fieldErrors: fieldErrors(parsed.error),
     };
+  }
+
+  // Aviso de duplicado: se pide confirmación antes de crear un libro que
+  // probablemente ya está en el catálogo.
+  if (text(formData, "confirm") !== "1") {
+    const duplicate = await findDuplicate({
+      title: parsed.data.title,
+      author: parsed.data.author,
+      isbn: parsed.data.isbn,
+    });
+    if (duplicate) {
+      return {
+        status: "warning",
+        message: duplicateMessage(duplicate),
+        duplicate,
+      };
+    }
   }
 
   const book = await prisma.book.create({
@@ -114,6 +184,22 @@ export async function updateBookAction(
       message: "Revisa los campos marcados antes de guardar.",
       fieldErrors: fieldErrors(parsed.error),
     };
+  }
+
+  if (text(formData, "confirm") !== "1") {
+    const duplicate = await findDuplicate({
+      title: parsed.data.title,
+      author: parsed.data.author,
+      isbn: parsed.data.isbn,
+      excludeId: bookId,
+    });
+    if (duplicate) {
+      return {
+        status: "warning",
+        message: duplicateMessage(duplicate),
+        duplicate,
+      };
+    }
   }
 
   await prisma.book.update({

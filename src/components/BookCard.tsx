@@ -9,9 +9,13 @@ export type BookSummary = {
   category: string;
   year: number | null;
   copies: number;
+  /** Ejemplares disponibles ahora mismo (si se conoce). */
+  available?: number;
 };
 
 export function BookCard({ book }: { book: BookSummary }) {
+  const available = book.available;
+  const allGone = typeof available === "number" && available <= 0;
   return (
     <Link
       href={`/libro/${book.id}`}
@@ -34,7 +38,15 @@ export function BookCard({ book }: { book: BookSummary }) {
             <span className="text-[12px] tabular-nums text-ink-faint">{book.year}</span>
           ) : null}
           <span className="ml-auto text-[12px] tabular-nums text-ink-faint">
-            {book.copies} ej.
+            {typeof available === "number" ? (
+              <span className={allGone ? "font-semibold text-danger" : undefined}>
+                {allGone
+                  ? "Sin ejemplares"
+                  : `${available} de ${book.copies} disp.`}
+              </span>
+            ) : (
+              `${book.copies} ej.`
+            )}
           </span>
         </div>
       </div>

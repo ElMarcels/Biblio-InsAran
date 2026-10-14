@@ -47,6 +47,7 @@ model User {
 
   loansCreated        Loan[]        @relation("LoanCreatedBy")
   reservationsCreated Reservation[] @relation("ReservationCreatedBy")
+  collectionsCreated  Collection[]  @relation("CollectionCreatedBy")
 
   @@index([role])
   @@index([active])
@@ -82,6 +83,13 @@ model Book {
   location    String?
   description String?
   tags        String[] @default([])
+  /// Número de registro de inventario. Se usa en las cuentas anuales.
+  recordNumber String?
+  /// Clasificación Decimal Universal (p. ej. 821.134.2-3).
+  cdu          String?
+  /// URL de la portada (Open Library u otra fuente permitida). Si falta,
+  /// se dibuja la portada tipográfica generada a partir del título.
+  coverUrl     String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -92,11 +100,48 @@ model Book {
 
   loans        Loan[]
   reservations Reservation[]
+  collections  BookCollection[]
 
   @@index([title])
   @@index([author])
   @@index([category])
+  @@index([recordNumber])
   @@index([createdAt])
+}
+
+/// Lista curada de libros ("Novedades", "Recomendados", "Club de lectura"…).
+/// El orden dentro de la lista lo decide el personal a mano.
+model Collection {
+  id          String   @id @default(cuid())
+  /// Identificador para la URL pública (`/colecciones/<slug>`).
+  slug        String   @unique
+  name        String
+  description String?
+  /// Orden de la lista entre las demás colecciones.
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdById String?
+  createdBy   User?   @relation("CollectionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  books BookCollection[]
+
+  @@index([position])
+}
+
+/// Pertenencia de un libro a una colección, con su posición manual.
+model BookCollection {
+  bookId       String
+  book         Book       @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  /// Orden manual dentro de la colección (menor = antes).
+  position     Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  @@id([bookId, collectionId])
+  @@index([collectionId, position])
 }
 
 /// Lector/a de la biblioteca (alumnado, profesorado, familias…).

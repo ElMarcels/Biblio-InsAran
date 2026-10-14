@@ -70,6 +70,12 @@ export default async function BookPage({ params }: { params: Params }) {
     { label: t("ISBN"), value: book.isbn ?? "—" },
     { label: t("Ubicación"), value: book.location ?? "—" },
   ];
+  if (book.recordNumber) {
+    details.push({ label: t("N.º de registro"), value: book.recordNumber });
+  }
+  if (book.cdu) {
+    details.push({ label: t("CDU"), value: book.cdu });
+  }
 
   return (
     <div className="shell flex flex-1 flex-col py-10">
@@ -92,6 +98,7 @@ export default async function BookPage({ params }: { params: Params }) {
             title={book.title}
             author={book.author}
             category={book.category}
+            src={book.coverUrl}
             size="lg"
           />
           <div className="mt-4 border-2 border-line bg-surface p-4">

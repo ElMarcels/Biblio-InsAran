@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { assertOwner, assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
+import { findCoverUrl } from "../covers";
 import { prisma } from "../prisma";
 import {
   bookSchema,
@@ -37,9 +38,26 @@ function readBook(formData: FormData) {
     pages: text(formData, "pages"),
     copies: text(formData, "copies"),
     location: text(formData, "location"),
+    recordNumber: text(formData, "recordNumber"),
+    cdu: text(formData, "cdu"),
+    coverUrl: text(formData, "coverUrl"),
     description: text(formData, "description"),
     tags: text(formData, "tags"),
   });
+}
+
+/**
+ * Decide qué portada guardar: la que ha escrito el personal o, si lo ha
+ * pedido, la que encuentra Open Library por ISBN o por título y autoría.
+ * Si no hay ninguna, devuelve `null` (portada tipográfica).
+ */
+async function resolveCover(
+  formData: FormData,
+  data: { isbn?: string; title: string; author: string; coverUrl?: string },
+): Promise<string | null> {
+  if (data.coverUrl) return data.coverUrl;
+  if (text(formData, "searchCover") !== "1") return null;
+  return findCoverUrl({ isbn: data.isbn, title: data.title, author: data.author });
 }
 
 /**
@@ -91,6 +109,8 @@ function revalidateCatalog(bookId?: string) {
   revalidatePath("/catalogo");
   revalidatePath("/panel");
   revalidatePath("/panel/libros");
+  revalidatePath("/panel/colecciones");
+  revalidatePath("/colecciones");
   revalidatePath("/autores");
   revalidatePath("/etiquetas");
   if (bookId) revalidatePath(`/libro/${bookId}`);
@@ -137,6 +157,7 @@ export async function createBookAction(
   const book = await prisma.book.create({
     data: {
       ...parsed.data,
+      coverUrl: await resolveCover(formData, parsed.data),
       language: parsed.data.language ?? "Español",
       createdById: user.id,
       updatedById: user.id,
@@ -206,6 +227,7 @@ export async function updateBookAction(
     where: { id: bookId },
     data: {
       ...parsed.data,
+      coverUrl: await resolveCover(formData, parsed.data),
       language: parsed.data.language ?? "Español",
       updatedById: user.id,
     },

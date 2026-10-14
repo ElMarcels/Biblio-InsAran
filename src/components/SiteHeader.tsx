@@ -47,6 +47,12 @@ export async function SiteHeader() {
           >
             {t("Materias")}
           </Link>
+          <Link
+            href="/colecciones"
+            className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
+          >
+            {t("Colecciones")}
+          </Link>
 
           {user ? (
             <>

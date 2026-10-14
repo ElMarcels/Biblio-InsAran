@@ -132,7 +132,7 @@ export default async function PanelBooksPage({
         />
       ) : (
         <div className="overflow-x-auto border-2 border-line bg-surface">
-          <table className="w-full min-w-[760px] border-collapse text-left">
+          <table className="w-full min-w-[900px] border-collapse text-left">
             <caption className="sr-only">{t("Listado de libros del catálogo")}</caption>
             <thead>
               <tr className="border-b-2 border-line bg-paper">
@@ -150,6 +150,12 @@ export default async function PanelBooksPage({
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
                   {t("Ubic.")}
+                </th>
+                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
+                  {t("Registro")}
+                </th>
+                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
+                  {t("CDU")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
                   {t("Actualizado")}
@@ -174,6 +180,8 @@ export default async function PanelBooksPage({
                   <td className="px-4 py-3 text-[14px] tabular-nums">{book.year ?? "—"}</td>
                   <td className="px-4 py-3 text-right text-[14px] tabular-nums">{book.copies}</td>
                   <td className="px-4 py-3 font-mono text-[13px]">{book.location ?? "—"}</td>
+                  <td className="px-4 py-3 font-mono text-[13px]">{book.recordNumber ?? "—"}</td>
+                  <td className="px-4 py-3 font-mono text-[13px]">{book.cdu ?? "—"}</td>
                   <td className="px-4 py-3 text-[13px] text-ink-faint tabular-nums">
                     {formatDate(book.updatedAt)}
                   </td>

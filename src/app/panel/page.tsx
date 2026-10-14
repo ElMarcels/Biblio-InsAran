@@ -102,6 +102,12 @@ export default async function PanelHomePage() {
         <Link href="/panel/lectores" className="btn-outline btn-sm">
           {t("Lectores")}
         </Link>
+        <Link href="/panel/tareas" className="btn-outline btn-sm">
+          {t("Bandeja de tareas")}
+        </Link>
+        <Link href="/panel/colecciones" className="btn-outline btn-sm">
+          {t("Listas curadas")}
+        </Link>
         {overdueLoans > 0 ? (
           <Link href="/panel/prestamos?estado=vencidos" className="btn-outline btn-sm text-danger">
             {t("Ver vencidos ({n})", { n: overdueLoans })}

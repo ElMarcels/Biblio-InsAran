@@ -70,6 +70,9 @@ export default async function EditBookPage({
             pages: book.pages ? String(book.pages) : "",
             copies: String(book.copies),
             location: book.location ?? "",
+            recordNumber: book.recordNumber ?? "",
+            cdu: book.cdu ?? "",
+            coverUrl: book.coverUrl ?? "",
             description: book.description ?? "",
             tags: book.tags.join(", "),
           }}

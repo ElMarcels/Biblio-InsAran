@@ -12,6 +12,12 @@ export type BookFormValues = {
   pages: string;
   copies: string;
   location: string;
+  /** Número de registro de inventario (cuentas anuales). */
+  recordNumber: string;
+  /** Clasificación Decimal Universal. */
+  cdu: string;
+  /** URL de la portada, si ya se conoce. */
+  coverUrl: string;
   description: string;
   tags: string;
 };
@@ -27,6 +33,9 @@ export const EMPTY_BOOK: BookFormValues = {
   pages: "",
   copies: "1",
   location: "",
+  recordNumber: "",
+  cdu: "",
+  coverUrl: "",
   description: "",
   tags: "",
 };

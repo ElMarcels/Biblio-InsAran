@@ -14,6 +14,18 @@ const nextConfig: NextConfig = {
   // en `turbopack.rules`: con el patrón "*.css" también procesaba el CSS
   // virtual de `next/font/google` y rompía su resolución en `next dev`
   // ("Can't resolve '@vercel/turbopack-next/internal/font/google/font'").
+  //
+  // Las portadas de los libros se enlazan desde Open Library, así que hay que
+  // autorizar ese host para el optimizador de imágenes (ver `src/lib/covers.ts`).
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "covers.openlibrary.org",
+        pathname: "/b/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

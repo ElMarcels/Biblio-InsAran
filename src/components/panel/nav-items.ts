@@ -6,8 +6,10 @@ export type PanelNavItem = {
 
 export const PANEL_NAV: PanelNavItem[] = [
   { href: "/panel", label: "Resumen" },
+  { href: "/panel/tareas", label: "Tareas" },
   { href: "/panel/libros", label: "Libros" },
   { href: "/panel/libros/nuevo", label: "Añadir libro" },
+  { href: "/panel/colecciones", label: "Listas curadas" },
   { href: "/panel/lectores", label: "Lectores" },
   { href: "/panel/prestamos", label: "Préstamos" },
   { href: "/panel/reservas", label: "Reservas" },

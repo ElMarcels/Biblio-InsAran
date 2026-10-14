@@ -534,6 +534,106 @@ const ca: Messages = {
   "En curso": "En curs",
   "cuenta editora": "compte editor",
   "cuentas editoras": "comptes editors",
+
+  // Colecciones
+  "Colecciones": "Col·leccions",
+  "Colección": "Col·lecció",
+  "Listas curadas": "Llistes curades",
+  "Lista no encontrada": "Llista no trobada",
+  "1 libro": "1 llibre",
+  "{n} libros": "{n} llibres",
+  "Esta lista todavía no tiene libros.": "Aquesta llista encara no té llibres.",
+  "Ver todo el catálogo": "Veure tot el catàleg",
+  "Listas preparadas por la biblioteca": "Llistes preparades per la biblioteca",
+  "Selecciones que cambian con el curso: novedades, recomendados, el club de lectura y más.":
+    "Seleccions que canvien amb el curs: novetats, recomanats, el club de lectura i més.",
+  "Todavía no hay listas publicadas.": "Encara no hi ha llistes publicades.",
+  "Ver la lista": "Veure la llista",
+  "Ver todas las listas": "Veure totes les llistes",
+  "Todavía no hay listas": "Encara no hi ha llistes",
+  "Crea la primera lista con el formulario de abajo.":
+    "Crea la primera llista amb el formulari de sota.",
+  "Gestionar": "Gestionar",
+  "Nueva lista": "Llista nova",
+  "Le daremos automáticamente un enlace con el nombre de la lista.":
+    "Li donarem automàticament un enllaç amb el nom de la llista.",
+  "Agrupa los libros a mano para destacarlos: novedades, recomendados, club de lectura…":
+    "Agrupa els llibres a mà per destacar-los: novetats, recomanats, club de lectura…",
+  "1 libro en la lista": "1 llibre a la llista",
+  "{n} libros en la lista": "{n} llibres a la llista",
+  "Datos de la lista": "Dades de la llista",
+  "Buscar libros para añadir": "Buscar llibres per afegir",
+  "Título o autoría": "Títol o autoria",
+  "Buscar en el catálogo…": "Buscar al catàleg…",
+  "No hay más libros que coincidan con esa búsqueda.":
+    "No hi ha més llibres que coincideixin amb aquesta cerca.",
+  "Añadir a la lista": "Afegir a la llista",
+  "Escribe un título o una autoría para buscar en el catálogo.":
+    "Escriu un títol o una autoria per buscar al catàleg.",
+  "La lista está vacía": "La llista és buida",
+  "Busca libros arriba para ir añadiéndolos a la lista.":
+    "Busca llibres a dalt per anar-los afegint a la llista.",
+  "Subir «{title}»": "Pujar «{title}»",
+  "Bajar «{title}»": "Baixar «{title}»",
+  "Quitar": "Treure",
+  "Registro": "Registre",
+  "Nombre de la lista": "Nom de la llista",
+  "Opcional. Aparece bajo el título en la página pública.":
+    "Opcional. Apareix sota el títol a la pàgina pública.",
+  "Lista creada": "Llista creada",
+  "Lista editada": "Llista editada",
+  "Lista eliminada": "Llista eliminada",
+  "No se ha indicado qué lista editar.": "No s'ha indicat quina llista editar.",
+  "La lista ya no existe.": "La llista ja no existeix.",
+  "Solo el dueño de la plataforma puede borrar listas.":
+    "Només el propietari de la plataforma pot esborrar llistes.",
+  "No se ha indicado qué lista borrar.": "No s'ha indicat quina llista esborrar.",
+  "Borrar lista": "Esborrar llista",
+  "Crear lista": "Crear llista",
+  "Novedades, Club de lectura…": "Novetats, Club de lectura…",
+
+  // Bandeja de tareas
+  "Tareas": "Tasques",
+  "Bandeja de tareas": "Safata de tasques",
+  "Todo lo que requiere tu atención hoy, en una sola página.":
+    "Tot el que requereix la teva atenció avui, en una sola pàgina.",
+  "No hay nada pendiente. ¡Buen trabajo!": "No hi ha res pendent. Bona feina!",
+  "Préstamos vencidos": "Préstecs vençuts",
+  "Devoluciones que ya deberían haber llegado.":
+    "Devolucions que ja haurien d'haver arribat.",
+  "No hay préstamos vencidos.": "No hi ha préstecs vençuts.",
+  "1 día": "1 dia",
+  "{n} días": "{n} dies",
+  "Vencen hoy": "Venç avui",
+  "Toca devolverlas hoy mismo.": "Cal tornar-les avui mateix.",
+  "Hoy no vence ningún préstamo.": "Avui no venç cap préstec.",
+  "Reservas por servir": "Reserves per servir",
+  "Libros reservados por lectores y lectoras.": "Llibres reservats per lectors i lectores.",
+  "No hay reservas pendientes.": "No hi ha reserves pendents.",
+  "Sin ejemplares disponibles": "Sense exemplars disponibles",
+  "Todos sus ejemplares están prestados.": "Tots els seus exemplars estan prestats.",
+  "Todos los libros tienen algún ejemplar libre.":
+    "Tots els llibres tenen algun exemplar lliure.",
+  "{n} prestados de {total}": "{n} prestats de {total}",
+  "Ver la ficha": "Veure la fitxa",
+
+  // Portadas, registro y CDU
+  "Portada": "Portada",
+  "Dirección de la portada": "Adreça de la portada",
+  "Déjala vacía para usar la portada tipográfica generada con el título.":
+    "Deixa-la buida per fer servir la portada tipogràfica generada amb el títol.",
+  "Buscar la portada automáticamente": "Buscar la portada automàticament",
+  "Se busca por ISBN o por título y autoría al guardar.":
+    "Es busca per ISBN o per títol i autoria en guardar.",
+  "La portada debe venir de covers.openlibrary.org.":
+    "La portada ha de venir de covers.openlibrary.org.",
+  "N.º de registro": "N.º de registre",
+  "CDU": "CDU",
+  "Número de registro": "Número de registre",
+  "El número de inventario. Se usa en las cuentas anuales.":
+    "El número d'inventari. Es fa servir als comptes anuals.",
+  "Clasificación Decimal Universal. Por ejemplo: 821.134.2-3":
+    "Classificació Decimal Universal. Per exemple: 821.134.2-3",
 };
 
 /** Aranés. */
@@ -1032,6 +1132,106 @@ const ar: Messages = {
   "cuenta editora": "compde editor",
   "cuentas editoras": "compdes editors",
   "No puedes desactivar tu propia cuenta.": "Non pòdes desactivar eth teu pròpri compde.",
+
+  // Colleccions
+  "Colecciones": "Colleccions",
+  "Colección": "Colleccion",
+  "Listas curadas": "Listes curades",
+  "Lista no encontrada": "Lista pas trobada",
+  "1 libro": "1 libre",
+  "{n} libros": "{n} libres",
+  "Esta lista todavía no tiene libros.": "Agera lista enqüèra non a libres.",
+  "Ver todo el catálogo": "Veir tot eth catalòg",
+  "Listas preparadas por la biblioteca": "Listes preparades pera bibliotèca",
+  "Selecciones que cambian con el curso: novedades, recomendados, el club de lectura y más.":
+    "Seleccions que cambien damb eth cors: novetats, recomanadi, eth club de lectura e mès.",
+  "Todavía no hay listas publicadas.": "Enqüèra non i a listes publicades.",
+  "Ver la lista": "Veir era lista",
+  "Ver todas las listas": "Veir totes es listes",
+  "Todavía no hay listas": "Enqüèra non i a listes",
+  "Crea la primera lista con el formulario de abajo.":
+    "Crea era prumèra lista damb eth formulari de baish.",
+  "Gestionar": "Gestionar",
+  "Nueva lista": "Lista nòua",
+  "Le daremos automáticamente un enlace con el nombre de la lista.":
+    "Li darem automaticament un ligam damb eth nom dera lista.",
+  "Agrupa los libros a mano para destacarlos: novedades, recomendados, club de lectura…":
+    "Agropa es libres a man entà destacar-les: novetats, recomanadi, club de lectura…",
+  "1 libro en la lista": "1 libre ena lista",
+  "{n} libros en la lista": "{n} libres ena lista",
+  "Datos de la lista": "Dades dera lista",
+  "Buscar libros para añadir": "Cercar libres entà apondre",
+  "Título o autoría": "Títol o autoria",
+  "Buscar en el catálogo…": "Cercar en eth catalòg…",
+  "No hay más libros que coincidan con esa búsqueda.":
+    "Non i a mès libres que coincidiscan damb aguesta cerca.",
+  "Añadir a la lista": "Apondre ara lista",
+  "Escribe un título o una autoría para buscar en el catálogo.":
+    "Escriu un títol o ua autoria entà cercar en eth catalòg.",
+  "La lista está vacía": "Era lista ei vueja",
+  "Busca libros arriba para ir añadiéndolos a la lista.":
+    "Cèrca libres ací dalt entà anar-les apondent ara lista.",
+  "Subir «{title}»": "Pujar «{title}»",
+  "Bajar «{title}»": "Baishar «{title}»",
+  "Quitar": "Levar",
+  "Registro": "Registre",
+  "Nombre de la lista": "Nom dera lista",
+  "Opcional. Aparece bajo el título en la página pública.":
+    "Opcionau. Apareish baish eth títol ena pàgina publica.",
+  "Lista creada": "Lista creada",
+  "Lista editada": "Lista editada",
+  "Lista eliminada": "Lista eliminada",
+  "No se ha indicado qué lista editar.": "Non s'a indicat quina lista editar.",
+  "La lista ya no existe.": "Era lista ja non existís.",
+  "Solo el dueño de la plataforma puede borrar listas.":
+    "Sonque eth proprietari dera plataforma pòt suprimir listes.",
+  "No se ha indicado qué lista borrar.": "Non s'a indicat quina lista suprimir.",
+  "Borrar lista": "Suprimir lista",
+  "Crear lista": "Crear lista",
+  "Novedades, Club de lectura…": "Novetats, Club de lectura…",
+
+  // Safata de tàches
+  "Tareas": "Tàches",
+  "Bandeja de tareas": "Safata de tàches",
+  "Todo lo que requiere tu atención hoy, en una sola página.":
+    "Tot çò que requerís era tua atencion uei, en ua sola pàgina.",
+  "No hay nada pendiente. ¡Buen trabajo!": "Non i a arren pendent. Bona hèita!",
+  "Préstamos vencidos": "Prèstecs vençuts",
+  "Devoluciones que ya deberían haber llegado.":
+    "Devolucions que ja aurien d'aver arribat.",
+  "No hay préstamos vencidos.": "Non i a prèstecs vençuts.",
+  "1 día": "1 dia",
+  "{n} días": "{n} dies",
+  "Vencen hoy": "Vencen uei",
+  "Toca devolverlas hoy mismo.": "Cau tornar-les uei madeish.",
+  "Hoy no vence ningún préstamo.": "Uei non venc cap prèstec.",
+  "Reservas por servir": "Reserves entà servir",
+  "Libros reservados por lectores y lectoras.": "Libres reserves per lectors e lectores.",
+  "No hay reservas pendientes.": "Non i a reserves pendentes.",
+  "Sin ejemplares disponibles": "Sense exemplars disponibles",
+  "Todos sus ejemplares están prestados.": "Toti es sons exemplars son prestats.",
+  "Todos los libros tienen algún ejemplar libre.":
+    "Toti es libres an quauque exemplar liure.",
+  "{n} prestados de {total}": "{n} prestats de {total}",
+  "Ver la ficha": "Veir era fitxa",
+
+  // Portades, registre e CDU
+  "Portada": "Portada",
+  "Dirección de la portada": "Adreça dera portada",
+  "Déjala vacía para usar la portada tipográfica generada con el título.":
+    "Deisha-la vueja entà servir era portada tipografica generada damb eth títol.",
+  "Buscar la portada automáticamente": "Cercar era portada automaticament",
+  "Se busca por ISBN o por título y autoría al guardar.":
+    "Se cèrca per ISBN o per títol e autoria en guardar.",
+  "La portada debe venir de covers.openlibrary.org.":
+    "Era portada a de víder de covers.openlibrary.org.",
+  "N.º de registro": "N.° de registre",
+  "CDU": "CDU",
+  "Número de registro": "Numèro de registre",
+  "El número de inventario. Se usa en las cuentas anuales.":
+    "Eth numèro d'inventari. Se hè servir as compdes anuaus.",
+  "Clasificación Decimal Universal. Por ejemplo: 821.134.2-3":
+    "Classificacion Decimau Universau. Per exemple: 821.134.2-3",
 };
 
 export const MESSAGES: Record<Locale, Messages> = { es: {}, ca, ar };
@@ -1108,6 +1308,10 @@ export const DYNAMIC: Record<Locale, DynamicMessages> = {
       source: "{label} no puede superar los {max} caracteres.",
       target: "{label} no pot superar els {max} caràcters.",
     },
+    {
+      source: "Se ha guardado «{name}».",
+      target: "S'ha desat «{name}».",
+    },
   ],
   ar: [
     {
@@ -1173,6 +1377,10 @@ export const DYNAMIC: Record<Locale, DynamicMessages> = {
     {
       source: "{label} no puede superar los {max} caracteres.",
       target: "{label} non pòt superar es {max} caràcters.",
+    },
+    {
+      source: "Se ha guardado «{name}».",
+      target: "S'a desat «{name}».",
     },
   ],
 };

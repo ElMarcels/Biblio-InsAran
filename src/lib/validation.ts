@@ -105,6 +105,29 @@ export const loginSchema = z.object({
 // Libros
 // ---------------------------------------------------------------------------
 
+/** Host del que servimos las portadas (ver `src/lib/covers.ts`). */
+const COVER_HOST = "covers.openlibrary.org";
+
+/** ¿Es una URL de portada de Open Library? */
+export function isAllowedCoverUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === COVER_HOST;
+  } catch {
+    return false;
+  }
+}
+
+const coverUrlSchema = z
+  .string()
+  .trim()
+  .max(500, "La dirección de la portada es demasiado larga.")
+  .optional()
+  .transform((value) => (value ? value : undefined))
+  .refine((value) => value === undefined || isAllowedCoverUrl(value), {
+    message: "La portada debe venir de covers.openlibrary.org.",
+  });
+
 export const bookSchema = z.object({
   title: z
     .string()
@@ -140,6 +163,9 @@ export const bookSchema = z.object({
     .min(1, "Debe haber al menos un ejemplar.")
     .max(9999, "Demasiados ejemplares."),
   location: optionalText(60, "La ubicación"),
+  recordNumber: optionalText(40, "El número de registro"),
+  cdu: optionalText(40, "La CDU"),
+  coverUrl: coverUrlSchema,
   description: optionalText(2000, "La descripción"),
   tags: tagsSchema,
 });
@@ -267,3 +293,32 @@ export const reservationSchema = z.object({
   readerId: z.string().min(1, "Selecciona un lector o lectora."),
   notes: optionalText(500, "Las notas"),
 });
+
+// ---------------------------------------------------------------------------
+// Listas curadas (colecciones)
+// ---------------------------------------------------------------------------
+
+export const collectionSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Escribe un nombre para la lista.")
+    .max(80, "El nombre no puede superar los 80 caracteres."),
+  description: optionalText(300, "La descripción"),
+});
+
+export type CollectionInput = z.infer<typeof collectionSchema>;
+
+/**
+ * Convierte un nombre en un identificador de URL: "Club de lectura" ->
+ * "club-de-lectura". Sin acentos ni signos, para que el enlace sea legible.
+ */
+export function slugify(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}

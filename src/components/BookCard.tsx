@@ -12,6 +12,8 @@ export type BookSummary = {
   category: string;
   year: number | null;
   copies: number;
+  /** URL de la portada, si se conoce. */
+  coverUrl?: string | null;
   /** Ejemplares disponibles ahora mismo (si se conoce). */
   available?: number;
 };
@@ -29,6 +31,7 @@ export function BookCard({ book }: { book: BookSummary }) {
         title={book.title}
         author={book.author}
         category={book.category}
+        src={book.coverUrl}
         size="md"
       />
       <div className="flex flex-1 flex-col gap-1 border-t-2 border-line p-3.5">

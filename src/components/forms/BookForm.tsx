@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { createBookAction, updateBookAction } from "@/lib/actions/books";
 import { CATEGORIES, LANGUAGES } from "@/lib/catalog";
 import { initialActionState } from "@/lib/validation";
 
+import { BookCover } from "../BookCover";
 import { Notice } from "../Notice";
 import { SubmitButton } from "../SubmitButton";
 import { useT } from "../i18n/LocaleProvider";
@@ -25,6 +26,7 @@ export function BookForm({
     mode === "create" ? createBookAction : updateBookAction,
     initialActionState,
   );
+  const [coverUrl, setCoverUrl] = useState(values.coverUrl);
   const errors = state.fieldErrors ?? {};
   const duplicate = state.status === "warning" ? state.duplicate : null;
 
@@ -204,6 +206,95 @@ export function BookForm({
               maxLength={60}
             />
           </Field>
+
+          <Field
+            label="Número de registro"
+            htmlFor="recordNumber"
+            error={errors.recordNumber}
+            hint="El número de inventario. Se usa en las cuentas anuales."
+          >
+            <input
+              id="recordNumber"
+              name="recordNumber"
+              defaultValue={values.recordNumber}
+              className={inputClass(Boolean(errors.recordNumber))}
+              maxLength={40}
+              placeholder="2026/0143"
+            />
+          </Field>
+
+          <Field
+            label="CDU"
+            htmlFor="cdu"
+            error={errors.cdu}
+            hint="Clasificación Decimal Universal. Por ejemplo: 821.134.2-3"
+          >
+            <input
+              id="cdu"
+              name="cdu"
+              defaultValue={values.cdu}
+              className={inputClass(Boolean(errors.cdu))}
+              maxLength={40}
+              placeholder="821.134.2-3"
+            />
+          </Field>
+        </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
+        <legend className="micro mb-1">{t("Portada")}</legend>
+
+        <div className="flex flex-col gap-5 sm:flex-row">
+          <div className="w-[124px] shrink-0">
+            <BookCover
+              title={values.title}
+              author={values.author}
+              category={values.category}
+              src={coverUrl || null}
+              size="sm"
+            />
+          </div>
+
+          <div className="flex flex-1 flex-col gap-3.5">
+            <div>
+              <label htmlFor="coverUrl" className="mb-1.5 block text-[13px] font-semibold">
+                {t("Dirección de la portada")}
+              </label>
+              <input
+                id="coverUrl"
+                name="coverUrl"
+                value={coverUrl}
+                onChange={(event) => setCoverUrl(event.target.value)}
+                className={inputClass(Boolean(errors.coverUrl))}
+                maxLength={500}
+                aria-invalid={Boolean(errors.coverUrl)}
+                placeholder="https://covers.openlibrary.org/b/id/…"
+              />
+              {errors.coverUrl ? (
+                <p className="mt-1.5 text-[12px] font-semibold text-danger">{t(errors.coverUrl)}</p>
+              ) : (
+                <p className="mt-1.5 text-[12px] text-ink-faint">
+                  {t("Déjala vacía para usar la portada tipográfica generada con el título.")}
+                </p>
+              )}
+            </div>
+
+            <label className="flex items-start gap-2.5 text-[13px]">
+              <input
+                type="checkbox"
+                name="searchCover"
+                value="1"
+                defaultChecked={!values.coverUrl}
+                className="mt-0.5 h-4 w-4 shrink-0"
+              />
+              <span>
+                <span className="font-semibold">{t("Buscar la portada automáticamente")}</span>
+                <span className="block text-[12px] text-ink-faint">
+                  {t("Se busca por ISBN o por título y autoría al guardar.")}
+                </span>
+              </span>
+            </label>
+          </div>
         </div>
       </fieldset>
 

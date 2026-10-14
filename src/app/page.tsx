@@ -7,13 +7,20 @@ import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
 export default async function HomePage() {
-  const [totalBooks, copies, categoryGroups, latest, t] = await Promise.all([
-    prisma.book.count(),
-    prisma.book.aggregate({ _sum: { copies: true } }),
-    prisma.book.groupBy({ by: ["category"], _count: { _all: true } }),
-    prisma.book.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
-    getT(),
-  ]);
+  const [totalBooks, copies, categoryGroups, latest, collections, t] =
+    await Promise.all([
+      prisma.book.count(),
+      prisma.book.aggregate({ _sum: { copies: true } }),
+      prisma.book.groupBy({ by: ["category"], _count: { _all: true } }),
+      prisma.book.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
+      prisma.collection.findMany({
+        where: { books: { some: {} } },
+        orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+        take: 3,
+        include: { _count: { select: { books: true } } },
+      }),
+      getT(),
+    ]);
 
   const totalCopies = copies._sum.copies ?? 0;
   const categories = [...categoryGroups].sort(
@@ -131,6 +138,49 @@ export default async function HomePage() {
           </ul>
         )}
       </section>
+
+      {collections.length > 0 ? (
+        <section className="border-t-2 border-line bg-surface">
+          <div className="shell py-14">
+            <div className="mb-7 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="micro mb-2">{t("Colecciones")}</p>
+                <h2 className="font-display text-[30px] font-bold">
+                  {t("Listas preparadas por la biblioteca")}
+                </h2>
+              </div>
+              <Link href="/colecciones" className="btn-outline btn-sm">
+                {t("Ver todas las listas")}
+              </Link>
+            </div>
+
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {collections.map((collection) => (
+                <li key={collection.id}>
+                  <Link
+                    href={`/colecciones/${collection.slug}`}
+                    className="flex h-full flex-col border-2 border-line bg-paper p-5 transition-colors hover:bg-ink hover:text-paper"
+                  >
+                    <h3 className="font-display text-[20px] font-bold">
+                      {collection.name}
+                    </h3>
+                    {collection.description ? (
+                      <p className="mt-1.5 text-[13px] leading-relaxed opacity-80">
+                        {collection.description}
+                      </p>
+                    ) : null}
+                    <p className="mt-3.5 font-mono text-[12px] tabular-nums opacity-70">
+                      {collection._count.books === 1
+                        ? t("1 libro")
+                        : t("{n} libros", { n: collection._count.books })}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       {categories.length > 0 ? (
         <section className="border-t-2 border-line bg-surface">

@@ -27,7 +27,8 @@ export default async function HomePage() {
               Fondo bibliográfico · {SITE_INSTITUTION}
             </p>
             <h1 className="max-w-[16ch] text-[46px] font-bold sm:text-[68px]">
-              La biblioteca, <span className="text-accent">ordenada.</span>
+              Biblioteca{" "}
+              <span className="text-accent">Institut d&apos;Aran</span>
             </h1>
             <p className="mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
               Consulta el catálogo completo del centro, filtra por categoría o

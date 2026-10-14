@@ -1,7 +1,10 @@
 // Constantes compartidas de la plataforma.
 
-export const SITE_NAME = "Biblioteca del Instituto";
+export const SITE_NAME = "Biblioteca Institut d'Aran";
 export const SITE_SHORT = "Biblioteca";
+
+/** Institución a la que pertenece la biblioteca (aparece junto al logotipo). */
+export const SITE_INSTITUTION = "Institut d'Aran";
 
 /** Nombre de la cookie que guarda el token de sesión. */
 export const SESSION_COOKIE = "biblio_session";

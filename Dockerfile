@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Imagen de la Biblioteca del Instituto.
+# Imagen de la Biblioteca Institut d'Aran.
 # Compilación en varias etapas: base -> dependencias -> compilación -> ejecución.
 # La etapa `builder` también sirve para ejecutar migraciones (Prisma), ya que
 # conserva el cliente, el esquema y la CLI.

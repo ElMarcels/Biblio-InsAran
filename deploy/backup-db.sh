@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copia de seguridad de la base de datos de la Biblioteca del Instituto.
+# Copia de seguridad de la base de datos de la Biblioteca Institut d'Aran.
 #
 #   ./deploy/backup-db.sh                    # usa DATABASE_URL del entorno
 #   DATABASE_URL=... ./deploy/backup-db.sh   # o pásala explícitamente

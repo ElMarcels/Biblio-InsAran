@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { BookCard } from "@/components/BookCard";
 import { EmptyState } from "@/components/EmptyState";
+import { SITE_INSTITUTION } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 
 export default async function HomePage() {
@@ -22,7 +23,9 @@ export default async function HomePage() {
       <section className="border-b-2 border-line bg-surface">
         <div className="shell grid gap-10 py-14 lg:grid-cols-[1.5fr_1fr] lg:py-20">
           <div>
-            <p className="micro mb-5">Fondo bibliográfico · Instituto</p>
+            <p className="micro mb-5">
+              Fondo bibliográfico · {SITE_INSTITUTION}
+            </p>
             <h1 className="max-w-[16ch] text-[46px] font-bold sm:text-[68px]">
               La biblioteca, <span className="text-accent">ordenada.</span>
             </h1>

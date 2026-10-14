@@ -1,5 +1,5 @@
 [Unit]
-Description=Biblioteca del Instituto (Next.js)
+Description=Biblioteca Institut d'Aran (Next.js)
 Documentation=https://github.com/
 After=network.target
 

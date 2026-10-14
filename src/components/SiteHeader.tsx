@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { logoutAction } from "@/lib/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
-import { SITE_SHORT } from "@/lib/constants";
+import { SITE_INSTITUTION, SITE_SHORT } from "@/lib/constants";
 
 export async function SiteHeader() {
   const user = await getCurrentUser();
@@ -18,7 +18,7 @@ export async function SiteHeader() {
             {SITE_SHORT}
           </span>
           <span className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint sm:inline">
-            Instituto
+            {SITE_INSTITUTION}
           </span>
         </Link>
 

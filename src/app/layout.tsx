@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import { SiteFooter } from "@/components/SiteFooter";
@@ -27,13 +27,26 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
+const DESCRIPTION =
+  "Catálogo y gestión del fondo bibliográfico de la Biblioteca Institut d'Aran: consulta los libros disponibles y administra la colección.";
+
 export const metadata: Metadata = {
   title: {
     default: SITE_NAME,
     template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Catálogo y gestión del fondo bibliográfico del instituto: consulta los libros disponibles y administra la colección.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: DESCRIPTION,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0e0e11",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

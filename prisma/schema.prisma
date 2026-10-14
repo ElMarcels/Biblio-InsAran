@@ -1,4 +1,4 @@
-// Esquema de datos de la Biblioteca del Instituto.
+// Esquema de datos de la Biblioteca Institut d'Aran.
 // Docs: https://pris.ly/d/prisma-schema
 
 generator client {

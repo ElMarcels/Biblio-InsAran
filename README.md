@@ -1,8 +1,8 @@
-# Biblioteca del Instituto
+# Biblioteca Institut d'Aran
 
-Aplicación web para el catálogo y la gestión del fondo bibliográfico de un
-instituto. El catálogo es de consulta pública; la gestión del fondo está
-restringida a las cuentas de la plataforma.
+Aplicación web para el catálogo y la gestión del fondo bibliográfico de la
+Biblioteca Institut d'Aran. El catálogo es de consulta pública; la gestión del
+fondo está restringida a las cuentas de la plataforma.
 
 - **Visitante** (sin cuenta): consulta el catálogo, busca y filtra por
   categoría, idioma o año, y ve la ficha de cada libro.

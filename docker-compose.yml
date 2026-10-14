@@ -1,4 +1,4 @@
-# Docker Compose para la Biblioteca del Instituto.
+# Docker Compose para la Biblioteca Institut d'Aran.
 #
 # Uso habitual (base de datos gestionada, p. ej. Neon):
 #   docker compose up -d --build

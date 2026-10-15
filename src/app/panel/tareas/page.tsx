@@ -14,7 +14,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Bandeja de tareas") };
+  return { title: t("panel.tasks.bandejaDeTareas") };
 }
 
 /** Cuántas filas mostramos como mucho en cada bloque. */
@@ -110,25 +110,25 @@ export default async function TasksPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="font-display text-[26px] font-bold">{t("Bandeja de tareas")}</h2>
+        <h2 className="font-display text-[26px] font-bold">{t("panel.tasks.bandejaDeTareas")}</h2>
         <p className="mt-1 text-[14px] text-ink-soft">
-          {t("Todo lo que requiere tu atención hoy, en una sola página.")}
+          {t("panel.tasks.todoLoQueRequiereTuAtencionHoyEnUnaSolaPagina")}
         </p>
       </div>
 
       {total === 0 ? (
         <p className="border-2 border-dashed border-hairline bg-surface px-6 py-14 text-center text-[15px] text-ink-soft">
-          {t("No hay nada pendiente. ¡Buen trabajo!")}
+          {t("panel.tasks.noHayNadaPendienteBuenTrabajo")}
         </p>
       ) : null}
 
       <Block
-        title={t("Préstamos vencidos")}
+        title={t("panel.tasks.prestamosVencidos")}
         count={overdue.length}
-        description={t("Devoluciones que ya deberían haber llegado.")}
+        description={t("panel.tasks.devolucionesQueYaDeberianHaberLlegado")}
       >
         {overdue.length === 0 ? (
-          <EmptyBlock text={t("No hay préstamos vencidos.")} />
+          <EmptyBlock text={t("panel.tasks.noHayPrestamosVencidos")} />
         ) : (
           <ul className="divide-y divide-hairline">
             {overdue.map((loan) => {
@@ -162,7 +162,7 @@ export default async function TasksPage() {
                     {formatDate(loan.dueAt)}
                   </span>
                   <span className="border-2 border-danger px-2 py-0.5 text-[12px] font-bold text-danger">
-                    {late === 1 ? t("1 día") : t("{n} días", { n: late })}
+                    {late === 1 ? t("panel.tasks.oneDay") : t("panel.tasks.nDays", { n: late })}
                   </span>
                   <ReturnLoanButton loanId={loan.id} />
                 </li>
@@ -173,12 +173,12 @@ export default async function TasksPage() {
       </Block>
 
       <Block
-        title={t("Vencen hoy")}
+        title={t("panel.tasks.vencenHoy")}
         count={dueToday.length}
-        description={t("Toca devolverlas hoy mismo.")}
+        description={t("panel.tasks.tocaDevolverlasHoyMismo")}
       >
         {dueToday.length === 0 ? (
-          <EmptyBlock text={t("Hoy no vence ningún préstamo.")} />
+          <EmptyBlock text={t("panel.tasks.hoyNoVenceNingunPrestamo")} />
         ) : (
           <ul className="divide-y divide-hairline">
             {dueToday.map((loan) => (
@@ -214,12 +214,12 @@ export default async function TasksPage() {
       </Block>
 
       <Block
-        title={t("Reservas por servir")}
+        title={t("panel.tasks.reservasPorServir")}
         count={reservations.length}
-        description={t("Libros reservados por lectores y lectoras.")}
+        description={t("panel.tasks.librosReservadosPorLectoresYLectoras")}
       >
         {reservations.length === 0 ? (
-          <EmptyBlock text={t("No hay reservas pendientes.")} />
+          <EmptyBlock text={t("panel.tasks.noHayReservasPendientes")} />
         ) : (
           <ul className="divide-y divide-hairline">
             {reservations.map((reservation) => (
@@ -261,12 +261,12 @@ export default async function TasksPage() {
       </Block>
 
       <Block
-        title={t("Sin ejemplares disponibles")}
+        title={t("panel.tasks.sinEjemplaresDisponibles")}
         count={noCopies.length}
-        description={t("Todos sus ejemplares están prestados.")}
+        description={t("panel.tasks.todosSusEjemplaresEstanPrestados")}
       >
         {noCopies.length === 0 ? (
-          <EmptyBlock text={t("Todos los libros tienen algún ejemplar libre.")} />
+          <EmptyBlock text={t("panel.tasks.todosLosLibrosTienenAlgunEjemplarLibre")} />
         ) : (
           <ul className="divide-y divide-hairline">
             {noCopies.map((book) => (
@@ -290,13 +290,13 @@ export default async function TasksPage() {
                   <p className="text-[13px] text-ink-faint">{book.author}</p>
                 </div>
                 <span className="text-[13px] tabular-nums text-ink-soft">
-                  {t("{n} prestados de {total}", {
+                  {t("panel.tasks.nPrestadosDeTotal", {
                     n: onLoan.get(book.id) ?? book.copies,
                     total: book.copies,
                   })}
                 </span>
                 <Link href={`/libro/${book.id}`} className="btn-outline btn-sm">
-                  {t("Ver la ficha")}
+                  {t("panel.tasks.verLaFicha")}
                 </Link>
               </li>
             ))}

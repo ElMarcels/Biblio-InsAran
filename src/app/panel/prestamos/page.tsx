@@ -9,23 +9,24 @@ import { requireUser } from "@/lib/auth";
 import { CIRCULATION_PAGE_SIZE, DEFAULT_LOAN_DAYS } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
+import type { TranslationKey } from "@/lib/i18n/translate";
 import { isOverdue } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Préstamos") };
+  return { title: t("panel.loans.prestamos") };
 }
 
-const FLASH: Record<string, string> = {
-  creado: "El préstamo se ha registrado.",
+const FLASH: Record<string, TranslationKey> = {
+  creado: "panel.loans.flashCreated",
 };
 
 const STATES = {
-  activos: "En curso",
-  vencidos: "Vencidos",
-  devueltos: "Devueltos",
-  todos: "Todos",
+  activos: "panel.loans.stateActive",
+  vencidos: "panel.loans.stateOverdue",
+  devueltos: "panel.loans.stateReturned",
+  todos: "panel.loans.stateAll",
 } as const;
 
 type StateKey = keyof typeof STATES;
@@ -103,20 +104,20 @@ export default async function LoansPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="font-display text-[26px] font-bold">{t("Préstamos")}</h2>
+          <h2 className="font-display text-[26px] font-bold">{t("panel.loans.prestamos")}</h2>
           <p className="mt-1 text-[14px] text-ink-soft tabular-nums">
-            {activeCount === 1 ? t("1 préstamo en curso") : t("{n} préstamos en curso", { n: activeCount })}
-            {overdueCount > 0 ? t(" · {n} vencidos", { n: overdueCount }) : ""}
+            {activeCount === 1 ? t("panel.loans.oneActiveLoan") : t("panel.loans.nActiveLoans", { n: activeCount })}
+            {overdueCount > 0 ? t("panel.loans.nVencidos", { n: overdueCount }) : ""}
           </p>
         </div>
         <Link href="/panel/prestamos/nuevo" className="btn-primary">
-          {t("Registrar préstamo")}
+          {t("panel.loans.registrarPrestamo")}
         </Link>
       </div>
 
       {FLASH[aviso] ? <Notice tone="success">{t(FLASH[aviso])}</Notice> : null}
 
-      <nav aria-label={t("Filtros de préstamos")} className="flex flex-wrap gap-1.5">
+      <nav aria-label={t("panel.loans.filtrosDePrestamos")} className="flex flex-wrap gap-1.5">
         {tabs.map((tab) => (
           <Link
             key={tab.key}
@@ -134,34 +135,34 @@ export default async function LoansPage({
 
       {loans.length === 0 ? (
         <EmptyState
-          title={t("Sin préstamos")}
+          title={t("panel.loans.sinPrestamos")}
           description={
             estado === "vencidos"
-              ? t("Ahora mismo no hay ningún préstamo vencido. ¡Buen trabajo!")
+              ? t("panel.loans.ahoraMismoNoHayNingunPrestamoVencidoBuenTrabajo")
               : estado === "devueltos"
-                ? t("Todavía no se ha registrado ninguna devolución.")
-                : t("No hay préstamos en este momento. Registra uno para empezar.")
+                ? t("panel.loans.todaviaNoSeHaRegistradoNingunaDevolucion")
+                : t("panel.loans.noHayPrestamosEnEsteMomentoRegistraUnoParaEmpezar")
           }
           action={
             <Link href="/panel/prestamos/nuevo" className="btn-primary">
-              {t("Registrar préstamo")}
+              {t("panel.loans.registrarPrestamo")}
             </Link>
           }
         />
       ) : (
         <div className="overflow-x-auto border-2 border-line bg-surface">
           <table className="w-full min-w-[820px] border-collapse text-left">
-            <caption className="sr-only">{t("Listado de préstamos")}</caption>
+            <caption className="sr-only">{t("panel.loans.listadoDePrestamos")}</caption>
             <thead>
               <tr className="border-b-2 border-line bg-paper">
-                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Libro")}</th>
-                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Lector/a")}</th>
-                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Prestado")}</th>
+                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.loans.libro")}</th>
+                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.loans.lectorA")}</th>
+                <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.loans.prestado")}</th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  {estado === "devueltos" ? t("Devuelto") : t("Devolver antes de")}
+                  {estado === "devueltos" ? t("panel.loans.devuelto") : t("panel.loans.devolverAntesDe")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  {estado === "devueltos" ? t("Estado") : t("Acciones")}
+                  {estado === "devueltos" ? t("panel.loans.estado") : t("panel.loans.acciones")}
                 </th>
               </tr>
             </thead>
@@ -193,14 +194,14 @@ export default async function LoansPage({
                       ) : (
                         <span className={overdue ? "font-semibold text-danger" : undefined}>
                           {formatDate(loan.dueAt)}
-                          {overdue ? t(" (vencido)") : ""}
+                          {overdue ? t("panel.loans.vencido") : ""}
                         </span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       {loan.returnedAt ? (
                         <div className="flex justify-end">
-                          <span className="tag-muted">{t("Devuelto")}</span>
+                          <span className="tag-muted">{t("panel.loans.devuelto")}</span>
                         </div>
                       ) : (
                         <div className="flex flex-wrap items-start justify-end gap-1.5">

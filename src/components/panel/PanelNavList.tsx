@@ -21,7 +21,7 @@ export function PanelNavList({
   const t = useT();
 
   return (
-    <nav aria-label={t("Secciones del panel")} className="-mb-2 flex flex-wrap gap-1">
+    <nav aria-label={t("panel.seccionesDelPanel")} className="-mb-2 flex flex-wrap gap-1">
       {items.map((item) => {
         const active = pathname ? isActive(item.href, pathname) : false;
         return (

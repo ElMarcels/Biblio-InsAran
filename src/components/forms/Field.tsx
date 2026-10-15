@@ -1,6 +1,7 @@
 "use client";
 
 import { classNames } from "@/lib/format";
+import type { TranslationKey } from "@/lib/i18n/translate";
 
 import { useT } from "../i18n/LocaleProvider";
 
@@ -10,7 +11,7 @@ export function inputClass(hasError?: boolean): string {
 
 /**
  * Campo de formulario: traduce de forma automática su etiqueta, su ayuda y su
- * mensaje de error (el texto en castellano funciona como clave de traducción).
+ * mensaje de error (las claves vienen del diccionario de traducciones).
  */
 export function Field({
   label,
@@ -21,10 +22,10 @@ export function Field({
   children,
   className,
 }: {
-  label: string;
+  label: TranslationKey;
   htmlFor: string;
-  error?: string;
-  hint?: string;
+  error?: TranslationKey;
+  hint?: TranslationKey;
   required?: boolean;
   children: React.ReactNode;
   className?: string;

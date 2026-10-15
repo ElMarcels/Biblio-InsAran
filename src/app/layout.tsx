@@ -3,7 +3,11 @@ import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { SITE_NAME } from "@/lib/constants";
+import { LOCALE_TAGS, OG_LOCALES } from "@/lib/i18n/config";
+import { getLocale, getTranslations } from "@/lib/i18n/server";
+import { createTranslator } from "@/lib/i18n/translate";
 
 import "./globals.css";
 
@@ -27,46 +31,57 @@ const mono = JetBrains_Mono({
   display: "swap",
 });
 
-const DESCRIPTION =
-  "Catálogo y gestión del fondo bibliográfico de la Biblioteca Institut d'Aran: consulta los libros disponibles y administra la colección.";
+export async function generateMetadata(): Promise<Metadata> {
+  const [locale, { messages, fallback }] = await Promise.all([
+    getLocale(),
+    getTranslations(),
+  ]);
+  const t = createTranslator(messages, fallback);
+  const description = t("meta.description");
 
-export const metadata: Metadata = {
-  title: {
-    default: SITE_NAME,
-    template: `%s · ${SITE_NAME}`,
-  },
-  description: DESCRIPTION,
-  openGraph: {
-    type: "website",
-    locale: "es_ES",
-    siteName: SITE_NAME,
-    title: SITE_NAME,
-    description: DESCRIPTION,
-  },
-};
+  return {
+    title: {
+      default: SITE_NAME,
+      template: `%s · ${SITE_NAME}`,
+    },
+    description,
+    openGraph: {
+      type: "website",
+      locale: OG_LOCALES[locale],
+      siteName: SITE_NAME,
+      title: SITE_NAME,
+      description,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#0e0e11",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const { locale, messages, fallback } = await getTranslations();
+  const t = createTranslator(messages, fallback);
+
   return (
     <html
-      lang="es-ES"
+      lang={LOCALE_TAGS[locale]}
       className={`${display.variable} ${body.variable} ${mono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
-        <a
-          href="#contenido"
-          className="absolute left-3 top-3 z-50 -translate-y-24 border-2 border-line bg-ink px-3 py-2 text-[13px] font-semibold text-paper transition-transform focus:translate-y-0"
-        >
-          Saltar al contenido
-        </a>
-        <SiteHeader />
-        <main id="contenido" className="flex flex-1 flex-col">
-          {children}
-        </main>
-        <SiteFooter />
+        <LocaleProvider locale={locale} messages={messages} fallback={fallback}>
+          <a
+            href="#contenido"
+            className="absolute left-3 top-3 z-50 -translate-y-24 border-2 border-line bg-ink px-3 py-2 text-[13px] font-semibold text-paper transition-transform focus:translate-y-0"
+          >
+            {t("common.skipToContent")}
+          </a>
+          <SiteHeader />
+          <main id="contenido" className="flex min-h-full flex-1 flex-col">
+            {children}
+          </main>
+          <SiteFooter />
+        </LocaleProvider>
       </body>
     </html>
   );

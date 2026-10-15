@@ -42,10 +42,10 @@ export function LoanForm({
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
-      <Field label="Libro" htmlFor="bookId" error={errors.bookId} required>
+      <Field label="forms.loans.libro" htmlFor="bookId" error={errors.bookId} required>
         <select
           id="bookId"
           name="bookId"
@@ -53,7 +53,7 @@ export function LoanForm({
           className={inputClass(Boolean(errors.bookId))}
           required
         >
-          <option value="">{t("Selecciona un libro…")}</option>
+          <option value="">{t("forms.loans.seleccionaUnLibro")}</option>
           {books.map((book) => (
             <option key={book.id} value={book.id}>
               {book.title} — {book.author}
@@ -62,7 +62,7 @@ export function LoanForm({
         </select>
       </Field>
 
-      <Field label="Lector o lectora" htmlFor="readerId" error={errors.readerId} required>
+      <Field label="forms.loans.lectorOLectora" htmlFor="readerId" error={errors.readerId} required>
         <select
           id="readerId"
           name="readerId"
@@ -70,7 +70,7 @@ export function LoanForm({
           className={inputClass(Boolean(errors.readerId))}
           required
         >
-          <option value="">{t("Selecciona una persona…")}</option>
+          <option value="">{t("forms.loans.seleccionaUnaPersona")}</option>
           {readers.map((reader) => (
             <option key={reader.id} value={reader.id}>
               {reader.fullName}
@@ -81,10 +81,10 @@ export function LoanForm({
       </Field>
 
       <Field
-        label="Fecha de devolución"
+        label="forms.loans.fechaDeDevolucion"
         htmlFor="dueAt"
         error={errors.dueAt}
-        hint="Día en que debe volver el ejemplar."
+        hint="forms.loans.diaEnQueDebeVolverElEjemplar"
         required
       >
         <input
@@ -97,18 +97,18 @@ export function LoanForm({
         />
       </Field>
 
-      <Field label="Notas" htmlFor="notes" error={errors.notes}>
+      <Field label="forms.loans.notas" htmlFor="notes" error={errors.notes}>
         <textarea
           id="notes"
           name="notes"
           className={`${inputClass(Boolean(errors.notes))} min-h-20 resize-y`}
           maxLength={500}
-          placeholder={t("Estado del ejemplar, incidencias…")}
+          placeholder={t("forms.loans.estadoDelEjemplarIncidencias")}
         />
       </Field>
 
       <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-line pt-4">
-        <SubmitButton pendingLabel="Registrando…">{t("Registrar préstamo")}</SubmitButton>
+        <SubmitButton pendingLabel="forms.loans.registrando">{t("forms.loans.registrarPrestamo")}</SubmitButton>
       </div>
     </form>
   );

@@ -48,14 +48,14 @@ export function BookCard({ book }: { book: BookSummary }) {
             {typeof available === "number" ? (
               <span className={allGone ? "font-semibold text-danger" : undefined}>
                 {allGone
-                  ? t("Sin ejemplares")
-                  : t("{available} de {copies} disp.", {
+                  ? t("book.sinEjemplares")
+                  : t("book.availableDeCopiesDisp", {
                       available,
                       copies: book.copies,
                     })}
               </span>
             ) : (
-              t("{copies} ej.", { copies: book.copies })
+              t("book.copiesEj", { copies: book.copies })
             )}
           </span>
         </div>

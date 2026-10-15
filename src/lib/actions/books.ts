@@ -18,7 +18,7 @@ import {
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
-  message: "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+  message: "actions.sessionExpired",
 };
 
 function text(formData: FormData, key: string): string {
@@ -132,7 +132,7 @@ export async function createBookAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -146,9 +146,11 @@ export async function createBookAction(
       isbn: parsed.data.isbn,
     });
     if (duplicate) {
+      const duplicateInfo = duplicateMessage(duplicate);
       return {
         status: "warning",
-        message: duplicateMessage(duplicate),
+        message: duplicateInfo.key,
+        messageParams: duplicateInfo.params,
         duplicate,
       };
     }
@@ -190,19 +192,19 @@ export async function updateBookAction(
 
   const bookId = text(formData, "id");
   if (!bookId) {
-    return { status: "error", message: "No se ha indicado qué libro editar." };
+    return { status: "error", message: "actions.bookNoIdEdit" };
   }
 
   const existing = await prisma.book.findUnique({ where: { id: bookId } });
   if (!existing) {
-    return { status: "error", message: "El libro ya no existe." };
+    return { status: "error", message: "actions.bookNotFound" };
   }
 
   const parsed = readBook(formData);
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -215,9 +217,11 @@ export async function updateBookAction(
       excludeId: bookId,
     });
     if (duplicate) {
+      const duplicateInfo = duplicateMessage(duplicate);
       return {
         status: "warning",
-        message: duplicateMessage(duplicate),
+        message: duplicateInfo.key,
+        messageParams: duplicateInfo.params,
         duplicate,
       };
     }
@@ -255,19 +259,19 @@ export async function deleteBookAction(
     user = await assertUser();
   } catch (error) {
     if (error instanceof AuthError) {
-      return { status: "error", message: "Tu sesión ha caducado. Vuelve a iniciar sesión." };
+      return { status: "error", message: "actions.sessionExpired" };
     }
     throw error;
   }
 
   const bookId = text(formData, "id");
   if (!bookId) {
-    return { status: "error", message: "No se ha indicado qué libro borrar." };
+    return { status: "error", message: "actions.bookNoIdDelete" };
   }
 
   const book = await prisma.book.findUnique({ where: { id: bookId } });
   if (!book) {
-    return { status: "error", message: "El libro ya no existe." };
+    return { status: "error", message: "actions.bookNotFound" };
   }
 
   await prisma.book.delete({ where: { id: bookId } });
@@ -280,5 +284,9 @@ export async function deleteBookAction(
   });
 
   revalidateCatalog(bookId);
-  return { status: "success", message: `Se ha borrado «${book.title}».` };
+  return {
+    status: "success",
+    message: "actions.bookDeleted",
+    messageParams: { title: book.title },
+  };
 }

@@ -4,7 +4,10 @@ import { getT } from "@/lib/i18n/server";
 import { authorHref, authorKey } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = { title: "Autorías" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("authors.autorias") };
+}
 
 export default async function AuthorsPage() {
   const [groups, t] = await Promise.all([
@@ -35,25 +38,25 @@ export default async function AuthorsPage() {
   return (
     <div className="shell flex flex-1 flex-col py-10">
       <header className="mb-8">
-        <p className="micro mb-3">{t("Autorías")}</p>
+        <p className="micro mb-3">{t("authors.autorias")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
-            {t("Quién escribe en la biblioteca")}
+            {t("authors.quienEscribeEnLaBiblioteca")}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
-            {authors.length === 1 ? t("1 autoría") : t("{n} autorías", { n: authors.length })}
+            {authors.length === 1 ? t("authors.oneAuthor") : t("authors.nAuthors", { n: authors.length })}
           </p>
         </div>
         <p className="mt-3 max-w-2xl text-[14px] text-ink-soft">
           {t(
-            "Las autorías se crean solas a partir de los libros del catálogo: al registrar un libro nuevo, su autoría aparece aquí automáticamente.",
+            "authors.lasAutoriasSeCreanSolasAPartirDeLosLibrosDelCatalogoAlRegistrarU",
           )}
         </p>
       </header>
 
       {authors.length === 0 ? (
         <p className="border-2 border-dashed border-hairline bg-surface p-10 text-center text-[14px] text-ink-soft">
-          {t("Todavía no hay autorías registradas.")}
+          {t("authors.todaviaNoHayAutoriasRegistradas")}
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -68,8 +71,8 @@ export default async function AuthorsPage() {
                 </span>
                 <span className="text-[13px] tabular-nums text-ink-faint">
                   {author.count === 1
-                    ? t("1 título")
-                    : t("{n} títulos", { n: author.count })}
+                    ? t("authors.oneTitle")
+                    : t("authors.nTitles", { n: author.count })}
                 </span>
               </Link>
             </li>

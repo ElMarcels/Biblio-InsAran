@@ -22,13 +22,13 @@ export function FulfillReservationButton({ reservationId }: { reservationId: str
     <form action={formAction} className="inline-flex flex-col items-end gap-1">
       <input type="hidden" name="id" value={reservationId} />
       <button type="submit" disabled={pending} className="btn-primary btn-sm">
-        {pending ? "…" : t("Servir")}
+        {pending ? "…" : t("panel.reservations.servir")}
       </button>
       {state.status === "success" && state.message ? (
-        <span className="text-[12px] font-semibold text-ok">{t(state.message)}</span>
+        <span className="text-[12px] font-semibold text-ok">{t(state.message, state.messageParams)}</span>
       ) : null}
       {state.status === "error" && state.message ? (
-        <span className="error-text">{t(state.message)}</span>
+        <span className="error-text">{t(state.message, state.messageParams)}</span>
       ) : null}
     </form>
   );
@@ -44,7 +44,7 @@ export function CancelReservationButton({ reservationId }: { reservationId: stri
 
   if (state.status === "success") {
     return (
-      <span className="text-[12px] font-semibold text-ink-faint">{t("Anulada")}</span>
+      <span className="text-[12px] font-semibold text-ink-faint">{t("panel.reservations.anulada")}</span>
     );
   }
 
@@ -52,10 +52,10 @@ export function CancelReservationButton({ reservationId }: { reservationId: stri
     <form action={formAction} className="inline-flex flex-col items-end gap-1">
       <input type="hidden" name="id" value={reservationId} />
       <button type="submit" disabled={pending} className="btn-ghost btn-sm text-danger">
-        {pending ? "…" : t("Anular")}
+        {pending ? "…" : t("panel.reservations.anular")}
       </button>
       {state.status === "error" && state.message ? (
-        <span className="error-text">{t(state.message)}</span>
+        <span className="error-text">{t(state.message, state.messageParams)}</span>
       ) : null}
     </form>
   );

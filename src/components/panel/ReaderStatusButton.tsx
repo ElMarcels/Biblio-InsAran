@@ -34,10 +34,10 @@ export function ReaderStatusButton({
           nextActive ? "btn-outline btn-sm" : "btn-ghost btn-sm text-danger"
         }
       >
-        {pending ? "…" : nextActive ? t("Activar") : t("Desactivar")}
+        {pending ? "…" : nextActive ? t("panel.readers.activar") : t("panel.readers.desactivar")}
       </button>
       {state.status === "error" && state.message ? (
-        <span className="error-text">{t(state.message)}</span>
+        <span className="error-text">{t(state.message, state.messageParams)}</span>
       ) : null}
     </form>
   );

@@ -17,7 +17,7 @@ import {
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
-  message: "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+  message: "actions.sessionExpired",
 };
 
 function text(formData: FormData, key: string): string {
@@ -67,31 +67,30 @@ export async function createLoanAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
 
   const dueAt = parseDateInput(parsed.data.dueAt);
   if (!dueAt) {
-    return { status: "error", message: "La fecha de devolución no es válida." };
+    return { status: "error", message: "actions.loanInvalidDate" };
   }
 
   const [book, reader] = await Promise.all([
     prisma.book.findUnique({ where: { id: parsed.data.bookId } }),
     prisma.reader.findUnique({ where: { id: parsed.data.readerId } }),
   ]);
-  if (!book) return { status: "error", message: "Ese libro ya no existe." };
-  if (!reader) return { status: "error", message: "Ese lector ya no existe." };
+  if (!book) return { status: "error", message: "actions.bookGone" };
+  if (!reader) return { status: "error", message: "actions.readerGone" };
   if (!reader.active) {
-    return { status: "error", message: "Ese lector está dado de baja." };
+    return { status: "error", message: "actions.readerInactive" };
   }
   if (reader.suspendedUntil && reader.suspendedUntil.getTime() > Date.now()) {
     return {
       status: "error",
-      message: `Este lector tiene el préstamo suspendido hasta el ${reader.suspendedUntil
-        .toISOString()
-        .slice(0, 10)}.`,
+      message: "actions.readerSuspendedUntil",
+      messageParams: { date: reader.suspendedUntil.toISOString().slice(0, 10) },
     };
   }
 
@@ -99,7 +98,8 @@ export async function createLoanAction(
   if (available <= 0) {
     return {
       status: "error",
-      message: `No quedan ejemplares disponibles de «${book.title}».`,
+      message: "actions.noCopiesLeft",
+      messageParams: { title: book.title },
     };
   }
 
@@ -149,15 +149,15 @@ export async function returnLoanAction(
   }
 
   const loanId = text(formData, "id");
-  if (!loanId) return { status: "error", message: "No se ha indicado el préstamo." };
+  if (!loanId) return { status: "error", message: "actions.loanNoId" };
 
   const loan = await prisma.loan.findUnique({
     where: { id: loanId },
     include: { book: true, reader: true },
   });
-  if (!loan) return { status: "error", message: "Ese préstamo ya no existe." };
+  if (!loan) return { status: "error", message: "actions.loanGone" };
   if (loan.returnedAt) {
-    return { status: "success", message: "Este préstamo ya estaba devuelto." };
+    return { status: "success", message: "actions.loanAlreadyReturned" };
   }
 
   await prisma.loan.update({
@@ -175,7 +175,8 @@ export async function returnLoanAction(
   revalidateLoans(loan.bookId);
   return {
     status: "success",
-    message: `«${loan.book.title}» marcado como devuelto.`,
+    message: "actions.loanReturned",
+    messageParams: { title: loan.book.title },
   };
 }
 
@@ -194,15 +195,15 @@ export async function renewLoanAction(
 
   const loanId = text(formData, "id");
   const days = Number.parseInt(text(formData, "days") || String(DEFAULT_LOAN_DAYS), 10);
-  if (!loanId) return { status: "error", message: "No se ha indicado el préstamo." };
+  if (!loanId) return { status: "error", message: "actions.loanNoId" };
 
   const loan = await prisma.loan.findUnique({
     where: { id: loanId },
     include: { book: true },
   });
-  if (!loan) return { status: "error", message: "Ese préstamo ya no existe." };
+  if (!loan) return { status: "error", message: "actions.loanGone" };
   if (loan.returnedAt) {
-    return { status: "error", message: "No se puede prorrogar un préstamo ya devuelto." };
+    return { status: "error", message: "actions.loanCannotRenew" };
   }
 
   const base = loan.dueAt.getTime() > Date.now() ? loan.dueAt : new Date();
@@ -218,7 +219,7 @@ export async function renewLoanAction(
   });
 
   revalidateLoans(loan.bookId);
-  return { status: "success", message: "Préstamo prorrogado." };
+  return { status: "success", message: "actions.loanRenewed" };
 }
 
 // ---------------------------------------------------------------------------
@@ -245,7 +246,7 @@ export async function createReservationAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -254,8 +255,8 @@ export async function createReservationAction(
     prisma.book.findUnique({ where: { id: parsed.data.bookId } }),
     prisma.reader.findUnique({ where: { id: parsed.data.readerId } }),
   ]);
-  if (!book) return { status: "error", message: "Ese libro ya no existe." };
-  if (!reader) return { status: "error", message: "Ese lector ya no existe." };
+  if (!book) return { status: "error", message: "actions.bookGone" };
+  if (!reader) return { status: "error", message: "actions.readerGone" };
 
   const already = await prisma.reservation.findFirst({
     where: { bookId: book.id, readerId: reader.id, status: "ACTIVE" },
@@ -263,7 +264,7 @@ export async function createReservationAction(
   if (already) {
     return {
       status: "error",
-      message: "Ese lector ya tiene una reserva pendiente de este libro.",
+      message: "actions.reservationDuplicate",
     };
   }
 
@@ -301,15 +302,15 @@ export async function cancelReservationAction(
   }
 
   const id = text(formData, "id");
-  if (!id) return { status: "error", message: "No se ha indicado la reserva." };
+  if (!id) return { status: "error", message: "actions.reservationNoId" };
 
   const reservation = await prisma.reservation.findUnique({
     where: { id },
     include: { book: true, reader: true },
   });
-  if (!reservation) return { status: "error", message: "Esa reserva ya no existe." };
+  if (!reservation) return { status: "error", message: "actions.reservationGone" };
   if (reservation.status !== "ACTIVE") {
-    return { status: "error", message: "Esa reserva ya está resuelta." };
+    return { status: "error", message: "actions.reservationResolved" };
   }
 
   await prisma.reservation.update({
@@ -325,7 +326,7 @@ export async function cancelReservationAction(
   });
 
   revalidateLoans(reservation.bookId);
-  return { status: "success", message: "Reserva anulada." };
+  return { status: "success", message: "actions.reservationCancelled" };
 }
 
 /** Sirve una reserva: crea el préstamo y la marca como atendida. */
@@ -342,15 +343,15 @@ export async function fulfillReservationAction(
   }
 
   const id = text(formData, "id");
-  if (!id) return { status: "error", message: "No se ha indicado la reserva." };
+  if (!id) return { status: "error", message: "actions.reservationNoId" };
 
   const reservation = await prisma.reservation.findUnique({
     where: { id },
     include: { book: true, reader: true },
   });
-  if (!reservation) return { status: "error", message: "Esa reserva ya no existe." };
+  if (!reservation) return { status: "error", message: "actions.reservationGone" };
   if (reservation.status !== "ACTIVE") {
-    return { status: "error", message: "Esa reserva ya está resuelta." };
+    return { status: "error", message: "actions.reservationResolved" };
   }
 
   if (
@@ -359,7 +360,8 @@ export async function fulfillReservationAction(
   ) {
     return {
       status: "error",
-      message: `${reservation.reader.fullName} tiene el préstamo suspendido. Levanta la sanción antes de servir la reserva.`,
+      message: "actions.reservationReaderSuspended",
+      messageParams: { reader: reservation.reader.fullName },
     };
   }
 
@@ -370,7 +372,8 @@ export async function fulfillReservationAction(
   if (available <= 0) {
     return {
       status: "error",
-      message: `No hay ejemplares disponibles de «${reservation.book.title}» todavía.`,
+      message: "actions.noCopiesYet",
+      messageParams: { title: reservation.book.title },
     };
   }
 
@@ -401,6 +404,7 @@ export async function fulfillReservationAction(
   revalidateLoans(reservation.bookId);
   return {
     status: "success",
-    message: `Préstamo registrado para ${reservation.reader.fullName}.`,
+    message: "actions.loanCreatedFor",
+    messageParams: { reader: reservation.reader.fullName },
   };
 }

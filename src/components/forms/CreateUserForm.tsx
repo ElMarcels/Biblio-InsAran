@@ -23,14 +23,14 @@ export function CreateUserForm() {
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
       {state.status === "success" && state.message ? (
-        <Notice tone="success">{t(state.message)}</Notice>
+        <Notice tone="success">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nombre y apellidos" htmlFor="displayName" error={errors.displayName} required>
+        <Field label="panel.users.nombreYApellidos" htmlFor="displayName" error={errors.displayName} required>
           <input
             id="displayName"
             name="displayName"
@@ -42,10 +42,10 @@ export function CreateUserForm() {
         </Field>
 
         <Field
-          label="Nombre de usuario"
+          label="panel.users.nombreDeUsuario"
           htmlFor="username"
           error={errors.username}
-          hint="Letras, números, punto, guion y guion bajo."
+          hint="panel.users.letrasNumerosPuntoGuionYGuionBajo"
           required
         >
           <input
@@ -62,10 +62,10 @@ export function CreateUserForm() {
       </div>
 
       <Field
-        label="Contraseña provisional"
+        label="panel.users.contrasenaProvisional"
         htmlFor="password"
         error={errors.password}
-        hint="Mínimo 8 caracteres. La persona deberá cambiarla al entrar."
+        hint="panel.users.minimo8CaracteresLaPersonaDeberaCambiarlaAlEntrar"
         required
       >
         <input
@@ -79,8 +79,20 @@ export function CreateUserForm() {
         />
       </Field>
 
+      <Field
+        label="panel.users.rol"
+        htmlFor="role"
+        error={errors.role}
+        hint="panel.users.permisosDelRol"
+      >
+        <select id="role" name="role" className="input" defaultValue="EDITOR">
+          <option value="EDITOR">{t("panel.users.editor")}</option>
+          <option value="ADMIN">{t("panel.users.administrador")}</option>
+        </select>
+      </Field>
+
       <div>
-        <SubmitButton pendingLabel="Creando…">{t("Crear cuenta")}</SubmitButton>
+        <SubmitButton pendingLabel="panel.users.creando">{t("panel.users.crearCuenta")}</SubmitButton>
       </div>
     </form>
   );

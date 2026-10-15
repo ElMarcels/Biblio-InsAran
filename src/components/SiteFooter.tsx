@@ -11,10 +11,10 @@ export async function SiteFooter() {
     <footer className="mt-auto border-t-2 border-line bg-surface">
       <div className="shell flex flex-col gap-2 py-8 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[13px] font-medium">
-          {SITE_NAME} · {t("Gestión del fondo bibliográfico")}
+          {SITE_NAME} · {t("footer.gestionDelFondoBibliografico")}
         </p>
         <p className="text-[12px] text-ink-faint">
-          {t("Plataforma interna · {year}", { year: YEAR })}
+          {t("footer.plataformaInternaYear", { year: YEAR })}
         </p>
       </div>
     </footer>

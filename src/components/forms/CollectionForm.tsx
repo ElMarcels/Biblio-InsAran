@@ -42,13 +42,13 @@ export function CollectionForm({
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
       {state.status === "success" && state.message ? (
-        <Notice tone="success">{t(state.message)}</Notice>
+        <Notice tone="success">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
-      <Field label="Nombre de la lista" htmlFor="name" error={errors.name} required>
+      <Field label="forms.collections.nombreDeLaLista" htmlFor="name" error={errors.name} required>
         <input
           id="name"
           name="name"
@@ -56,16 +56,16 @@ export function CollectionForm({
           className={inputClass(Boolean(errors.name))}
           maxLength={80}
           aria-invalid={Boolean(errors.name)}
-          placeholder={t("Novedades, Club de lectura…")}
+          placeholder={t("forms.collections.novedadesClubDeLectura")}
           required
         />
       </Field>
 
       <Field
-        label="Descripción"
+        label="forms.collections.descripcion"
         htmlFor="description"
         error={errors.description}
-        hint="Opcional. Aparece bajo el título en la página pública."
+        hint="forms.collections.opcionalApareceBajoElTituloEnLaPaginaPublica"
       >
         <textarea
           id="description"
@@ -77,11 +77,11 @@ export function CollectionForm({
       </Field>
 
       <div className="flex flex-wrap items-center gap-2.5">
-        <SubmitButton pendingLabel="Guardando…">
-          {mode === "create" ? t("Crear lista") : t("Guardar cambios")}
+        <SubmitButton pendingLabel="forms.collections.guardando">
+          {mode === "create" ? t("forms.collections.crearLista") : t("forms.collections.guardarCambios")}
         </SubmitButton>
         <Link href={backHref ?? "/panel/colecciones"} className="btn-ghost">
-          {t("Cancelar")}
+          {t("forms.collections.cancelar")}
         </Link>
       </div>
     </form>

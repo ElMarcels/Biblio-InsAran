@@ -38,24 +38,24 @@ export default async function AuthorPage({ params }: { params: Params }) {
 
   return (
     <div className="shell flex flex-1 flex-col py-10">
-      <nav aria-label="Migas de pan" className="mb-7 text-[13px] text-ink-faint">
+      <nav aria-label={t("authors.migasDePan")} className="mb-7 text-[13px] text-ink-faint">
         <Link href="/autores" className="font-semibold text-ink underline underline-offset-2">
-          {t("Autorías")}
+          {t("authors.autorias")}
         </Link>
         <span className="px-2">/</span>
         <span>{displayName}</span>
       </nav>
 
       <header className="mb-8">
-        <p className="micro mb-3">{t("Autoría")}</p>
+        <p className="micro mb-3">{t("authors.autoria")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
             {displayName}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
             {books.length === 1
-              ? t("1 título en el catálogo")
-              : t("{n} títulos en el catálogo", { n: books.length })}
+              ? t("authors.oneInCatalog")
+              : t("authors.nInCatalog", { n: books.length })}
           </p>
         </div>
       </header>

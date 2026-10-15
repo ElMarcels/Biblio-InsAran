@@ -11,7 +11,7 @@ import { fieldErrors, parseDateInput, readerSchema, suspensionSchema, type Actio
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
-  message: "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+  message: "actions.sessionExpired",
 };
 
 function text(formData: FormData, key: string): string {
@@ -60,7 +60,7 @@ export async function createReaderAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -77,8 +77,8 @@ export async function createReaderAction(
     if (isUniqueError(error)) {
       return {
         status: "error",
-        message: "Ya hay un lector o lectora con ese número de carné.",
-        fieldErrors: { cardNumber: "Este carné ya está en uso." },
+        message: "actions.readerCardTaken",
+        fieldErrors: { cardNumber: "actions.readerCardInUse" },
       };
     }
     throw error;
@@ -101,14 +101,14 @@ export async function updateReaderAction(
 
   const readerId = text(formData, "id");
   if (!readerId) {
-    return { status: "error", message: "No se ha indicado qué lector editar." };
+    return { status: "error", message: "actions.readerNoIdEdit" };
   }
 
   const parsed = readReader(formData);
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -125,8 +125,8 @@ export async function updateReaderAction(
     if (isUniqueError(error)) {
       return {
         status: "error",
-        message: "Ya hay un lector o lectora con ese número de carné.",
-        fieldErrors: { cardNumber: "Este carné ya está en uso." },
+        message: "actions.readerCardTaken",
+        fieldErrors: { cardNumber: "actions.readerCardInUse" },
       };
     }
     throw error;
@@ -151,11 +151,11 @@ export async function setReaderActiveAction(
   const readerId = text(formData, "id");
   const active = text(formData, "active") === "1";
   if (!readerId) {
-    return { status: "error", message: "No se ha indicado qué lector." };
+    return { status: "error", message: "actions.readerNoId" };
   }
 
   const reader = await prisma.reader.findUnique({ where: { id: readerId } });
-  if (!reader) return { status: "error", message: "Ese lector ya no existe." };
+  if (!reader) return { status: "error", message: "actions.readerGone" };
 
   await prisma.reader.update({ where: { id: readerId }, data: { active } });
   await recordAudit({
@@ -168,7 +168,7 @@ export async function setReaderActiveAction(
   revalidateReaders(readerId);
   return {
     status: "success",
-    message: active ? "Lector activado." : "Lector desactivado.",
+    message: active ? "actions.readerActivated" : "actions.readerDeactivated",
   };
 }
 
@@ -197,7 +197,7 @@ export async function setReaderSuspensionAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los datos de la suspensión.",
+      message: "actions.suspensionReview",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -205,7 +205,7 @@ export async function setReaderSuspensionAction(
   const reader = await prisma.reader.findUnique({
     where: { id: parsed.data.readerId },
   });
-  if (!reader) return { status: "error", message: "Ese lector ya no existe." };
+  if (!reader) return { status: "error", message: "actions.readerGone" };
 
   let suspendedUntil: Date | null = null;
   if (parsed.data.until) {
@@ -213,15 +213,15 @@ export async function setReaderSuspensionAction(
     if (!suspendedUntil) {
       return {
         status: "error",
-        message: "La fecha de suspensión no es válida.",
-        fieldErrors: { until: "La fecha no es válida." },
+        message: "actions.suspensionInvalidDate",
+        fieldErrors: { until: "actions.suspensionDateFieldInvalid" },
       };
     }
     if (suspendedUntil.getTime() <= Date.now()) {
       return {
         status: "error",
-        message: "La fecha de suspensión debe ser futura.",
-        fieldErrors: { until: "Elige una fecha futura." },
+        message: "actions.suspensionFutureDate",
+        fieldErrors: { until: "actions.suspensionFutureFieldInvalid" },
       };
     }
   }
@@ -250,7 +250,7 @@ export async function setReaderSuspensionAction(
   return {
     status: "success",
     message: suspendedUntil
-      ? "Préstamo suspendido."
-      : "Suspensión levantada.",
+      ? "actions.suspensionSaved"
+      : "actions.suspensionLifted",
   };
 }

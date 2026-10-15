@@ -37,28 +37,28 @@ export function BookForm({
       {duplicate ? <input type="hidden" name="confirm" value="1" /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
       {duplicate ? (
         <Notice tone="warning">
           <span>
-            {t(state.message ?? "")}{" "}
+            {t(state.message, state.messageParams)}{" "}
             <Link
               href={`/libro/${duplicate.id}`}
               className="font-semibold underline underline-offset-2"
             >
-              {t("Ver la ficha existente")}
+              {t("forms.book.verLaFichaExistente")}
             </Link>
-            {t(". Si aun así quieres registrarlo, vuelve a guardar.")}
+            {t("forms.book.siAunAsiQuieresRegistrarloVuelveAGuardar")}
           </span>
         </Notice>
       ) : null}
 
       <fieldset className="flex flex-col gap-4">
-        <legend className="micro mb-1">{t("Datos principales")}</legend>
+        <legend className="micro mb-1">{t("forms.book.datosPrincipales")}</legend>
 
-        <Field label="Título" htmlFor="title" error={errors.title} required>
+        <Field label="forms.book.titulo" htmlFor="title" error={errors.title} required>
           <input
             id="title"
             name="title"
@@ -70,7 +70,7 @@ export function BookForm({
           />
         </Field>
 
-        <Field label="Autoría" htmlFor="author" error={errors.author} required>
+        <Field label="forms.book.autoria" htmlFor="author" error={errors.author} required>
           <input
             id="author"
             name="author"
@@ -83,7 +83,7 @@ export function BookForm({
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Categoría" htmlFor="category" error={errors.category} required>
+          <Field label="forms.book.categoria" htmlFor="category" error={errors.category} required>
             <select
               id="category"
               name="category"
@@ -98,7 +98,7 @@ export function BookForm({
             </select>
           </Field>
 
-          <Field label="Idioma" htmlFor="language" error={errors.language} required>
+          <Field label="forms.book.idioma" htmlFor="language" error={errors.language} required>
             <select
               id="language"
               name="language"
@@ -115,10 +115,10 @@ export function BookForm({
         </div>
 
         <Field
-          label="Etiquetas / materias"
+          label="forms.book.etiquetasMaterias"
           htmlFor="tags"
           error={errors.tags}
-          hint="Sepáralas con comas. Por ejemplo: Novela negra, Lectura recomendada, Val d'Aran"
+          hint="forms.book.separalasConComasPorEjemploNovelaNegraLecturaRecomendadaValDAran"
         >
           <input
             id="tags"
@@ -126,16 +126,16 @@ export function BookForm({
             defaultValue={values.tags}
             className={inputClass(Boolean(errors.tags))}
             maxLength={1000}
-            placeholder={t("Aventuras, Clásicos…")}
+            placeholder={t("forms.book.aventurasClasicos")}
           />
         </Field>
       </fieldset>
 
       <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
-        <legend className="micro mb-1">{t("Edición y ejemplares")}</legend>
+        <legend className="micro mb-1">{t("forms.book.edicionYEjemplares")}</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Editorial" htmlFor="publisher" error={errors.publisher}>
+          <Field label="forms.book.editorial" htmlFor="publisher" error={errors.publisher}>
             <input
               id="publisher"
               name="publisher"
@@ -145,7 +145,7 @@ export function BookForm({
             />
           </Field>
 
-          <Field label="Año de publicación" htmlFor="year" error={errors.year}>
+          <Field label="forms.book.anoDePublicacion" htmlFor="year" error={errors.year}>
             <input
               id="year"
               name="year"
@@ -156,7 +156,7 @@ export function BookForm({
             />
           </Field>
 
-          <Field label="ISBN" htmlFor="isbn" error={errors.isbn}>
+          <Field label="forms.book.iSBN" htmlFor="isbn" error={errors.isbn}>
             <input
               id="isbn"
               name="isbn"
@@ -167,7 +167,7 @@ export function BookForm({
             />
           </Field>
 
-          <Field label="Número de páginas" htmlFor="pages" error={errors.pages}>
+          <Field label="forms.book.numeroDePaginas" htmlFor="pages" error={errors.pages}>
             <input
               id="pages"
               name="pages"
@@ -177,7 +177,7 @@ export function BookForm({
             />
           </Field>
 
-          <Field label="Ejemplares" htmlFor="copies" error={errors.copies} required>
+          <Field label="forms.book.ejemplares" htmlFor="copies" error={errors.copies} required>
             <input
               id="copies"
               name="copies"
@@ -193,10 +193,10 @@ export function BookForm({
           </Field>
 
           <Field
-            label="Ubicación en la estantería"
+            label="forms.book.ubicacionEnLaEstanteria"
             htmlFor="location"
             error={errors.location}
-            hint="Por ejemplo: N-01, REF-03…"
+            hint="forms.book.porEjemploN01REF03"
           >
             <input
               id="location"
@@ -208,10 +208,10 @@ export function BookForm({
           </Field>
 
           <Field
-            label="Número de registro"
+            label="forms.book.numeroDeRegistro"
             htmlFor="recordNumber"
             error={errors.recordNumber}
-            hint="El número de inventario. Se usa en las cuentas anuales."
+            hint="forms.book.elNumeroDeInventarioSeUsaEnLasCuentasAnuales"
           >
             <input
               id="recordNumber"
@@ -224,10 +224,10 @@ export function BookForm({
           </Field>
 
           <Field
-            label="CDU"
+            label="forms.book.cDU"
             htmlFor="cdu"
             error={errors.cdu}
-            hint="Clasificación Decimal Universal. Por ejemplo: 821.134.2-3"
+            hint="forms.book.clasificacionDecimalUniversalPorEjemplo82113423"
           >
             <input
               id="cdu"
@@ -242,7 +242,7 @@ export function BookForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
-        <legend className="micro mb-1">{t("Portada")}</legend>
+        <legend className="micro mb-1">{t("forms.book.portada")}</legend>
 
         <div className="flex flex-col gap-5 sm:flex-row">
           <div className="w-[124px] shrink-0">
@@ -258,7 +258,7 @@ export function BookForm({
           <div className="flex flex-1 flex-col gap-3.5">
             <div>
               <label htmlFor="coverUrl" className="mb-1.5 block text-[13px] font-semibold">
-                {t("Dirección de la portada")}
+                {t("forms.book.direccionDeLaPortada")}
               </label>
               <input
                 id="coverUrl"
@@ -274,7 +274,7 @@ export function BookForm({
                 <p className="mt-1.5 text-[12px] font-semibold text-danger">{t(errors.coverUrl)}</p>
               ) : (
                 <p className="mt-1.5 text-[12px] text-ink-faint">
-                  {t("Déjala vacía para usar la portada tipográfica generada con el título.")}
+                  {t("forms.book.dejalaVaciaParaUsarLaPortadaTipograficaGeneradaConElTitulo")}
                 </p>
               )}
             </div>
@@ -288,9 +288,9 @@ export function BookForm({
                 className="mt-0.5 h-4 w-4 shrink-0"
               />
               <span>
-                <span className="font-semibold">{t("Buscar la portada automáticamente")}</span>
+                <span className="font-semibold">{t("forms.book.buscarLaPortadaAutomaticamente")}</span>
                 <span className="block text-[12px] text-ink-faint">
-                  {t("Se busca por ISBN o por título y autoría al guardar.")}
+                  {t("forms.book.seBuscaPorISBNOPorTituloYAutoriaAlGuardar")}
                 </span>
               </span>
             </label>
@@ -299,8 +299,8 @@ export function BookForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-4 border-t border-hairline pt-5">
-        <legend className="micro mb-1">{t("Reseña")}</legend>
-        <Field label="Descripción" htmlFor="description" error={errors.description}>
+        <legend className="micro mb-1">{t("forms.book.resena")}</legend>
+        <Field label="forms.book.descripcion" htmlFor="description" error={errors.description}>
           <textarea
             id="description"
             name="description"
@@ -312,15 +312,15 @@ export function BookForm({
       </fieldset>
 
       <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-line pt-5">
-        <SubmitButton pendingLabel="Guardando…">
+        <SubmitButton pendingLabel="forms.book.guardando">
           {duplicate
-            ? t("Guardar de todas formas")
+            ? t("forms.book.guardarDeTodasFormas")
             : mode === "create"
-              ? t("Añadir libro")
-              : t("Guardar cambios")}
+              ? t("forms.book.anadirLibro")
+              : t("forms.book.guardarCambios")}
         </SubmitButton>
         <Link href="/panel/libros" className="btn-ghost">
-          {t("Cancelar")}
+          {t("forms.book.cancelar")}
         </Link>
       </div>
     </form>

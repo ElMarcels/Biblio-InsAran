@@ -8,7 +8,7 @@ import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Panel") };
+  return { title: t("panel.panel") };
 }
 
 export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
@@ -20,13 +20,17 @@ export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
         <div className="shell flex flex-col gap-5 py-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="micro mb-1.5">{t("Panel de gestión")}</p>
+              <p className="micro mb-1.5">{t("panel.panelDeGestion")}</p>
               <h1 className="font-display text-[26px] font-bold">
                 {user.displayName}
               </h1>
             </div>
             <span className="tag-muted">
-              {user.role === "OWNER" ? t("Dueño de la plataforma") : t("Editor")}
+              {user.role === "OWNER"
+                ? t("panel.duenoDeLaPlataforma")
+                : user.role === "ADMIN"
+                  ? t("panel.adminDeLaPlataforma")
+                  : t("panel.editor")}
             </span>
           </div>
 

@@ -39,18 +39,18 @@ export function ReaderSuspensionForm({
       <input type="hidden" name="readerId" value={readerId} />
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
       {state.status === "success" && state.message ? (
-        <Notice tone="success">{t(state.message)}</Notice>
+        <Notice tone="success">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Suspendido hasta"
+          label="forms.readers.suspendidoHasta"
           htmlFor="until"
           error={errors.until}
-          hint="Deja la fecha vacía y guarda para levantar la suspensión."
+          hint="forms.readers.dejaLaFechaVaciaYGuardaParaLevantarLaSuspension"
         >
           <input
             id="until"
@@ -63,21 +63,21 @@ export function ReaderSuspensionForm({
           />
         </Field>
 
-        <Field label="Motivo" htmlFor="reason" error={errors.reason}>
+        <Field label="forms.readers.motivo" htmlFor="reason" error={errors.reason}>
           <input
             id="reason"
             name="reason"
             defaultValue={reason ?? ""}
             maxLength={200}
             className={inputClass(Boolean(errors.reason))}
-            placeholder={t("Retraso en la devolución…")}
+            placeholder={t("forms.readers.retrasoEnLaDevolucion")}
           />
         </Field>
       </div>
 
       <div>
-        <SubmitButton pendingLabel="Guardando…">
-          {suspendedUntil ? t("Actualizar suspensión") : t("Suspender préstamo")}
+        <SubmitButton pendingLabel="forms.readers.guardando">
+          {suspendedUntil ? t("forms.readers.actualizarSuspension") : t("forms.readers.suspenderPrestamo")}
         </SubmitButton>
       </div>
     </form>

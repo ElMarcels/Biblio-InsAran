@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { assertOwner, assertUser, AuthError } from "../auth";
+import { assertManager, assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { prisma } from "../prisma";
 import {
@@ -15,7 +15,7 @@ import {
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
-  message: "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+  message: "actions.sessionExpired",
 };
 
 function text(formData: FormData, key: string): string {
@@ -77,7 +77,7 @@ export async function createCollectionAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -117,19 +117,19 @@ export async function updateCollectionAction(
 
   const collectionId = text(formData, "id");
   if (!collectionId) {
-    return { status: "error", message: "No se ha indicado qué lista editar." };
+    return { status: "error", message: "actions.collectionNoIdEdit" };
   }
 
   const existing = await prisma.collection.findUnique({ where: { id: collectionId } });
   if (!existing) {
-    return { status: "error", message: "La lista ya no existe." };
+    return { status: "error", message: "actions.collectionGone" };
   }
 
   const parsed = readCollection(formData);
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados antes de guardar.",
+      message: "actions.reviewFieldsBeforeSave",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -155,22 +155,26 @@ export async function updateCollectionAction(
   });
 
   revalidateCollections(collectionId);
-  return { status: "success", message: `Se ha guardado «${parsed.data.name}».` };
+  return {
+    status: "success",
+    message: "actions.collectionSaved",
+    messageParams: { name: parsed.data.name },
+  };
 }
 
-/** Borrar listas: reservado al dueño de la plataforma, como los libros. */
+/** Borrar listas: reservado a la administración, como los libros. */
 export async function deleteCollectionAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   let user;
   try {
-    user = await assertOwner();
+    user = await assertManager();
   } catch (error) {
     if (error instanceof AuthError) {
       return {
         status: "error",
-        message: "Solo el dueño de la plataforma puede borrar listas.",
+        message: "actions.collectionOwnerOnly",
       };
     }
     throw error;
@@ -178,12 +182,12 @@ export async function deleteCollectionAction(
 
   const collectionId = text(formData, "id");
   if (!collectionId) {
-    return { status: "error", message: "No se ha indicado qué lista borrar." };
+    return { status: "error", message: "actions.collectionNoIdDelete" };
   }
 
   const collection = await prisma.collection.findUnique({ where: { id: collectionId } });
   if (!collection) {
-    return { status: "error", message: "La lista ya no existe." };
+    return { status: "error", message: "actions.collectionGone" };
   }
 
   await prisma.collection.delete({ where: { id: collectionId } });

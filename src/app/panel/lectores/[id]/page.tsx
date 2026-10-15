@@ -15,11 +15,11 @@ import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { isOverdue, isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
-import { reservationStatusLabel } from "@/lib/labels";
+import { reservationStatusKey } from "@/lib/labels";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Ficha del lector") };
+  return { title: t("panel.readers.fichaDelLector") };
 }
 
 type Params = Promise<{ id: string }>;
@@ -66,21 +66,21 @@ export default async function ReaderDetailPage({
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8">
-      <nav aria-label={t("Migas de pan")} className="text-[13px] text-ink-faint">
+      <nav aria-label={t("panel.readers.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/lectores" className="font-semibold text-ink underline underline-offset-2">
-          {t("Lectores")}
+          {t("panel.readers.lectores")}
         </Link>
         <span className="px-2">/</span>
         <span>{reader.fullName}</span>
       </nav>
 
       {aviso === "editado" ? (
-        <Notice tone="success">{t("Los cambios se han guardado.")}</Notice>
+        <Notice tone="success">{t("panel.readers.losCambiosSeHanGuardado")}</Notice>
       ) : null}
 
       {suspended ? (
         <Notice tone="danger">
-          {t("Préstamo suspendido hasta el {date}.", {
+          {t("panel.readers.prestamoSuspendidoHastaElDate", {
             date: formatDate(reader.suspendedUntil),
           })}
           {reader.suspensionReason ? ` ${reader.suspensionReason}` : ""}
@@ -92,27 +92,27 @@ export default async function ReaderDetailPage({
           <h2 className="font-display text-[28px] font-bold">{reader.fullName}</h2>
           <p className="mt-1.5 text-[14px] text-ink-soft">
             {[
-              reader.cardNumber ? t("Carné {card}", { card: reader.cardNumber }) : null,
+              reader.cardNumber ? t("panel.readers.carneCard", { card: reader.cardNumber }) : null,
               reader.groupName,
               reader.email,
               reader.phone,
             ]
               .filter(Boolean)
-              .join(" · ") || t("Sin datos de contacto")}
+              .join(" · ") || t("panel.readers.sinDatosDeContacto")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {suspended ? (
-            <span className="tag-accent">{t("Suspendido")}</span>
+            <span className="tag-accent">{t("panel.readers.suspendido")}</span>
           ) : null}
           <span className={reader.active ? "tag-muted" : "tag-accent"}>
-            {reader.active ? t("Activo") : t("Dado de baja")}
+            {reader.active ? t("panel.readers.activo") : t("panel.readers.dadoDeBaja")}
           </span>
         </div>
       </header>
 
       <section className="border-2 border-line bg-surface p-6">
-        <h3 className="font-display text-[18px] font-semibold">{t("Datos de la persona")}</h3>
+        <h3 className="font-display text-[18px] font-semibold">{t("panel.readers.datosDeLaPersona")}</h3>
         <div className="mt-4">
           <ReaderForm
             mode="edit"
@@ -132,23 +132,23 @@ export default async function ReaderDetailPage({
       <section className="border-2 border-line bg-surface p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h3 className="font-display text-[18px] font-semibold">
-            {t("Préstamo y sanciones")}
+            {t("panel.readers.prestamoYSanciones")}
           </h3>
           {suspended ? (
             <span className="text-[13px] font-semibold text-danger">
-              {t("Suspendido hasta el {date}", {
+              {t("panel.readers.suspendidoHastaElDate", {
                 date: formatDate(reader.suspendedUntil),
               })}
             </span>
           ) : (
             <span className="text-[13px] text-ink-faint">
-              {t("Sin suspensión vigente")}
+              {t("panel.readers.sinSuspensionVigente")}
             </span>
           )}
         </div>
         <p className="mt-1.5 text-[13px] text-ink-soft">
           {t(
-            "Un lector suspendido no puede llevarse nuevos libros hasta la fecha indicada.",
+            "panel.readers.unLectorSuspendidoNoPuedeLlevarseNuevosLibrosHastaLaFechaIndicad",
           )}
         </p>
         <div className="mt-4">
@@ -167,34 +167,34 @@ export default async function ReaderDetailPage({
       <section className="flex flex-col gap-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h3 className="font-display text-[20px] font-semibold">
-            {t("Préstamos en curso ({n})", { n: activeLoans.length })}
+            {t("panel.readers.prestamosEnCursoN", { n: activeLoans.length })}
             {overdueLoans > 0
-              ? t(" · {n} vencidos", { n: overdueLoans })
+              ? t("panel.readers.nVencidos", { n: overdueLoans })
               : ""}
           </h3>
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/panel/prestamos/nuevo" className="btn-outline btn-sm">
-              {t("Registrar préstamo")}
+              {t("panel.readers.registrarPrestamo")}
             </Link>
             <a href={`/panel/lectores/${reader.id}/export`} className="btn-outline btn-sm">
-              {t("Exportar historial (CSV)")}
+              {t("panel.readers.exportarHistorialCSV")}
             </a>
           </div>
         </div>
 
         {activeLoans.length === 0 ? (
           <p className="border-2 border-dashed border-hairline bg-surface p-6 text-center text-[14px] text-ink-soft">
-            {t("Esta persona no tiene préstamos activos.")}
+            {t("panel.readers.estaPersonaNoTienePrestamosActivos")}
           </p>
         ) : (
           <div className="overflow-x-auto border-2 border-line bg-surface">
             <table className="w-full min-w-[640px] border-collapse text-left">
               <thead>
                 <tr className="border-b-2 border-line bg-paper">
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Libro")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Prestado")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Devolver antes de")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">{t("Acción")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.libro")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.prestado")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.devolverAntesDe")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.accion")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -214,7 +214,7 @@ export default async function ReaderDetailPage({
                       <td className="px-4 py-3 text-[13px] tabular-nums">
                         <span className={overdue ? "font-semibold text-danger" : undefined}>
                           {formatDate(loan.dueAt)}
-                          {overdue ? t(" (vencido)") : ""}
+                          {overdue ? t("panel.readers.vencido") : ""}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -234,11 +234,11 @@ export default async function ReaderDetailPage({
 
       <section className="flex flex-col gap-4">
         <h3 className="font-display text-[20px] font-semibold">
-          {t("Reservas pendientes ({n})", { n: activeReservations.length })}
+          {t("panel.readers.reservasPendientesN", { n: activeReservations.length })}
         </h3>
         {activeReservations.length === 0 ? (
           <p className="border-2 border-dashed border-hairline bg-surface p-6 text-center text-[14px] text-ink-soft">
-            {t("Sin reservas pendientes.")}
+            {t("panel.readers.sinReservasPendientes")}
           </p>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -252,7 +252,7 @@ export default async function ReaderDetailPage({
                     {reservation.book.title}
                   </Link>
                   <p className="text-[13px] text-ink-faint">
-                    {t("Reservado el {date}", { date: formatDate(reservation.createdAt) })}
+                    {t("panel.readers.reservadoElDate", { date: formatDate(reservation.createdAt) })}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -268,23 +268,23 @@ export default async function ReaderDetailPage({
       {returnedLoans.length > 0 || pastReservations.length > 0 ? (
         <section className="flex flex-col gap-3">
           <h3 className="font-display text-[20px] font-semibold">
-            {t("Historial de préstamos y reservas")}
+            {t("panel.readers.historialDePrestamosYReservas")}
           </h3>
           <div className="overflow-x-auto border-2 border-line bg-surface">
             <table className="w-full min-w-[720px] border-collapse text-left">
               <thead>
                 <tr className="border-b-2 border-line bg-paper">
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Tipo")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Libro")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Fecha")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Cierre")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Estado")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.tipo")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.libro")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.fecha")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.cierre")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.readers.estado")}</th>
                 </tr>
               </thead>
               <tbody>
                 {returnedLoans.map((loan) => (
                   <tr key={loan.id} className="border-b border-hairline last:border-b-0">
-                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("Préstamo")}</td>
+                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("panel.readers.prestamo")}</td>
                     <td className="px-4 py-3">
                       <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
                         {loan.book.title}
@@ -297,13 +297,13 @@ export default async function ReaderDetailPage({
                       {formatDate(loan.returnedAt)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="tag-muted">{t("Devuelto")}</span>
+                      <span className="tag-muted">{t("panel.readers.devuelto")}</span>
                     </td>
                   </tr>
                 ))}
                 {pastReservations.map((reservation) => (
                   <tr key={reservation.id} className="border-b border-hairline last:border-b-0">
-                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("Reserva")}</td>
+                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("panel.readers.reserva")}</td>
                     <td className="px-4 py-3">
                       <Link href={`/libro/${reservation.book.id}`} className="font-semibold hover:text-accent">
                         {reservation.book.title}
@@ -317,7 +317,7 @@ export default async function ReaderDetailPage({
                     </td>
                     <td className="px-4 py-3">
                       <span className="tag-muted">
-                        {t(reservationStatusLabel(reservation.status))}
+                        {t(reservationStatusKey(reservation.status)) || reservation.status}
                       </span>
                     </td>
                   </tr>

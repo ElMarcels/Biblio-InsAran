@@ -7,7 +7,7 @@ import { getT } from "@/lib/i18n/server";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Añadir libro") };
+  return { title: t("panel.books.anadirLibro") };
 }
 
 export default async function NewBookPage() {
@@ -16,20 +16,20 @@ export default async function NewBookPage() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <nav aria-label={t("Migas de pan")} className="text-[13px] text-ink-faint">
+      <nav aria-label={t("panel.books.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/libros" className="font-semibold text-ink underline underline-offset-2">
-          {t("Libros")}
+          {t("panel.books.libros")}
         </Link>
         <span className="px-2">/</span>
-        <span>{t("Añadir libro")}</span>
+        <span>{t("panel.books.anadirLibro")}</span>
       </nav>
 
       <header>
-        <h2 className="font-display text-[28px] font-bold">{t("Añadir un libro")}</h2>
+        <h2 className="font-display text-[28px] font-bold">{t("panel.books.anadirUnLibro")}</h2>
         <p className="mt-1.5 text-[14px] text-ink-soft">
-          {t("Los campos marcados con ")}
+          {t("panel.books.losCamposMarcadosCon")}
           <span className="text-accent">*</span>
-          {t(" son obligatorios. El libro aparecerá en el catálogo en cuanto lo guardes.")}
+          {t("panel.books.sonObligatoriosElLibroApareceraEnElCatalogoEnCuantoLoGuardes")}
         </p>
       </header>
 

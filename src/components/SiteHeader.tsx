@@ -1,12 +1,17 @@
 import Link from "next/link";
 
+import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { logoutAction } from "@/lib/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_INSTITUTION, SITE_SHORT } from "@/lib/constants";
-import { getT } from "@/lib/i18n/server";
+import { getLocale, getT } from "@/lib/i18n/server";
 
 export async function SiteHeader() {
-  const [user, t] = await Promise.all([getCurrentUser(), getT()]);
+  const [user, t, locale] = await Promise.all([
+    getCurrentUser(),
+    getT(),
+    getLocale(),
+  ]);
 
   return (
     <header className="sticky top-0 z-40 border-b-2 border-line bg-surface/95 backdrop-blur">
@@ -23,30 +28,30 @@ export async function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Principal" className="ml-auto flex items-center gap-1.5">
+        <nav aria-label={t("nav.principal")} className="ml-auto flex items-center gap-1.5">
           <Link
             href="/catalogo"
             className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
           >
-            {t("Catálogo")}
+            {t("nav.catalogo")}
           </Link>
           <Link
             href="/autores"
             className="hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
           >
-            {t("Autorías")}
+            {t("nav.autorias")}
           </Link>
           <Link
             href="/etiquetas"
             className="hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
           >
-            {t("Materias")}
+            {t("nav.materias")}
           </Link>
           <Link
             href="/colecciones"
             className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
           >
-            {t("Colecciones")}
+            {t("nav.colecciones")}
           </Link>
 
           {user ? (
@@ -55,28 +60,35 @@ export async function SiteHeader() {
                 href="/panel"
                 className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
               >
-                {t("Panel")}
+                {t("nav.panel")}
               </Link>
               <span
                 className="mx-1 hidden items-center gap-2 border-2 border-line px-2.5 py-1 sm:flex"
-                title={t("Sesión iniciada como {user}", { user: user.username })}
+                title={t("nav.sesionIniciadaComoUser", { user: user.username })}
               >
                 <span className="micro leading-none">
-                  {user.role === "OWNER" ? t("Dueño") : t("Editor")}
+                  {user.role === "OWNER"
+                    ? t("nav.dueno")
+                    : user.role === "ADMIN"
+                      ? t("nav.admin")
+                      : t("nav.editor")}
                 </span>
                 <span className="text-[13px] font-semibold">{user.displayName}</span>
               </span>
               <form action={logoutAction}>
                 <button type="submit" className="btn-outline btn-sm">
-                  {t("Salir")}
+                  {t("nav.salir")}
                 </button>
               </form>
             </>
           ) : (
             <Link href="/login" className="btn-primary btn-sm">
-              {t("Acceder")}
+              {t("nav.acceder")}
             </Link>
           )}
+          <span className="ml-1.5 border-l-2 border-line pl-1.5">
+            <LocaleSwitcher current={locale} />
+          </span>
         </nav>
       </div>
     </header>

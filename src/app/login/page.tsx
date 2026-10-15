@@ -5,7 +5,10 @@ import { getCurrentUser } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Acceso" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("home.acceso") };
+}
 
 export default async function LoginPage({
   searchParams,
@@ -24,13 +27,13 @@ export default async function LoginPage({
     <div className="flex flex-1 items-stretch">
       <div className="shell grid flex-1 items-center gap-12 py-14 lg:grid-cols-2">
         <div className="hidden flex-col justify-center lg:flex">
-          <p className="micro mb-5">{t("Acceso restringido")}</p>
+          <p className="micro mb-5">{t("login.accesoRestringido")}</p>
           <h1 className="max-w-[14ch] text-[54px] font-bold leading-[0.98]">
-            {t("El panel de la")} <span className="text-accent">{t("biblioteca.")}</span>
+            {t("login.elPanelDeLa")} <span className="text-accent">{t("login.biblioteca")}</span>
           </h1>
           <p className="mt-6 max-w-md text-[16px] leading-relaxed text-ink-soft">
             {t(
-              "La consulta del catálogo es pública. Para incorporar o editar títulos hace falta una cuenta que la dirección del centro haya creado previamente.",
+              "login.laConsultaDelCatalogoEsPublicaParaIncorporarOEditarTitulosHaceFa",
             )}
           </p>
           <ul className="mt-8 flex flex-col gap-3 text-[14px]">
@@ -38,19 +41,19 @@ export default async function LoginPage({
               <span className="flex size-6 items-center justify-center border-2 border-line bg-paper text-[12px] font-bold">
                 1
               </span>
-              {t("Entra con tu usuario y contraseña.")}
+              {t("login.entraConTuUsuarioYContrasena")}
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-6 items-center justify-center border-2 border-line bg-paper text-[12px] font-bold">
                 2
               </span>
-              {t("Añade libros desde el panel.")}
+              {t("login.anadeLibrosDesdeElPanel")}
             </li>
             <li className="flex items-center gap-3">
               <span className="flex size-6 items-center justify-center border-2 border-line bg-paper text-[12px] font-bold">
                 3
               </span>
-              {t("Aparecerán al instante en el catálogo.")}
+              {t("login.apareceranAlInstanteEnElCatalogo")}
             </li>
           </ul>
         </div>
@@ -60,13 +63,13 @@ export default async function LoginPage({
             <div className="mb-7">
               <p className="micro mb-2">{SITE_NAME}</p>
               <h2 className="font-display text-[30px] font-bold">
-                {t("Iniciar sesión")}
+                {t("login.iniciarSesion")}
               </h2>
             </div>
             <LoginForm next={typeof next === "string" ? next : undefined} />
             <p className="mt-6 border-t border-hairline pt-5 text-[13px] text-ink-faint">
               {t(
-                "¿Necesitas una cuenta? Solo la dirección de la biblioteca puede crearlas desde su panel.",
+                "login.necesitasUnaCuentaSoloLaDireccionDeLaBibliotecaPuedeCrearlasDesd",
               )}
             </p>
           </div>

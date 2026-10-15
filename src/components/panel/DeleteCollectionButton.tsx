@@ -31,9 +31,9 @@ export function DeleteCollectionButton({
         type="button"
         onClick={() => setConfirming(true)}
         className="btn-outline text-danger"
-        aria-label={t("Borrar «{title}»", { title: name })}
+        aria-label={t("panel.collections.borrarTitle", { title: name })}
       >
-        {t("Borrar lista")}
+        {t("panel.collections.borrarLista")}
       </button>
     );
   }
@@ -41,25 +41,25 @@ export function DeleteCollectionButton({
   return (
     <form action={formAction} className="inline-flex flex-wrap items-center gap-1.5">
       <input type="hidden" name="id" value={collectionId} />
-      <span className="text-[12px] font-semibold text-danger">{t("¿Seguro?")}</span>
+      <span className="text-[12px] font-semibold text-danger">{t("panel.collections.seguro")}</span>
       <button
         type="submit"
         disabled={pending}
         className="btn-danger btn-sm"
-        aria-label={t("Confirmar borrado")}
+        aria-label={t("panel.collections.confirmarBorrado")}
       >
-        {pending ? "…" : t("Sí, borrar")}
+        {pending ? "…" : t("panel.collections.siBorrar")}
       </button>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         className="btn-ghost btn-sm"
-        aria-label={t("Cancelar")}
+        aria-label={t("panel.collections.cancelar")}
       >
-        {t("Cancelar")}
+        {t("panel.collections.cancelar")}
       </button>
       {state.status === "error" && state.message ? (
-        <span className="error-text">{t(state.message)}</span>
+        <span className="error-text">{t(state.message, state.messageParams)}</span>
       ) : null}
     </form>
   );

@@ -41,14 +41,14 @@ export async function Pagination({
     "flex h-9 min-w-9 items-center justify-center border-2 border-line px-2 text-[13px] font-semibold tabular-nums";
 
   return (
-    <nav aria-label="Paginación" className="flex flex-wrap items-center gap-1.5">
+    <nav aria-label={t("common.paginacion")} className="flex flex-wrap items-center gap-1.5">
       {page > 1 ? (
         <Link href={hrefFor(page - 1)} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
-          ← {t("Anterior")}
+          ← {t("common.anterior")}
         </Link>
       ) : (
         <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint")}>
-          ← {t("Anterior")}
+          ← {t("common.anterior")}
         </span>
       )}
 
@@ -76,11 +76,11 @@ export async function Pagination({
 
       {page < totalPages ? (
         <Link href={hrefFor(page + 1)} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
-          {t("Siguiente")} →
+          {t("common.siguiente")} →
         </Link>
       ) : (
         <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint")}>
-          {t("Siguiente")} →
+          {t("common.siguiente")} →
         </span>
       )}
     </nav>

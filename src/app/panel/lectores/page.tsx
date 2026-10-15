@@ -10,16 +10,17 @@ import { requireUser } from "@/lib/auth";
 import { PANEL_PAGE_SIZE } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
+import type { TranslationKey } from "@/lib/i18n/translate";
 import { isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Lectores") };
+  return { title: t("panel.readers.lectores") };
 }
 
-const FLASH: Record<string, string> = {
-  creado: "El lector o lectora se ha dado de alta.",
+const FLASH: Record<string, TranslationKey> = {
+  creado: "panel.readers.flashCreated",
 };
 
 function one(value: string | string[] | undefined): string {
@@ -72,10 +73,10 @@ export default async function ReadersPage({
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h2 className="font-display text-[26px] font-bold">{t("Lectores y lectoras")}</h2>
+        <h2 className="font-display text-[26px] font-bold">{t("panel.readers.lectoresYLectoras")}</h2>
         <p className="mt-1.5 max-w-2xl text-[14px] text-ink-soft">
           {t(
-            "Personas que pueden llevarse libros en préstamo. No necesitan cuenta: el personal registra sus préstamos y reservas desde aquí.",
+            "panel.readers.personasQuePuedenLlevarseLibrosEnPrestamoNoNecesitanCuentaElPers",
           )}
         </p>
       </header>
@@ -83,7 +84,7 @@ export default async function ReadersPage({
       {FLASH[aviso] ? <Notice tone="success">{t(FLASH[aviso])}</Notice> : null}
 
       <section className="border-2 border-line bg-surface p-6">
-        <h3 className="font-display text-[18px] font-semibold">{t("Dar de alta un lector o lectora")}</h3>
+        <h3 className="font-display text-[18px] font-semibold">{t("panel.readers.darDeAltaUnLectorOLectora")}</h3>
         <div className="mt-4">
           <ReaderForm mode="create" values={EMPTY_READER} />
         </div>
@@ -91,10 +92,10 @@ export default async function ReadersPage({
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h3 className="font-display text-[20px] font-semibold">{t("Listado")}</h3>
+          <h3 className="font-display text-[20px] font-semibold">{t("panel.readers.listado")}</h3>
           <p className="mt-1 text-[14px] text-ink-soft tabular-nums">
-            {total === 1 ? t("1 persona") : t("{n} personas", { n: total })}
-            {query ? t(" para “{query}”", { query }) : ""}
+            {total === 1 ? t("panel.readers.onePerson") : t("panel.readers.nPeople", { n: total })}
+            {query ? t("panel.readers.paraQuery", { query }) : ""}
           </p>
         </div>
       </div>
@@ -102,61 +103,61 @@ export default async function ReadersPage({
       <form action="/panel/lectores" method="get" className="flex flex-wrap items-end gap-3 border-2 border-line bg-surface p-4">
         <div className="min-w-56 flex-1">
           <label htmlFor="q" className="label">
-            {t("Buscar")}
+            {t("panel.readers.buscar")}
           </label>
           <input
             id="q"
             name="q"
             defaultValue={query}
             className="input"
-            placeholder={t("Nombre, carné o grupo…")}
+            placeholder={t("panel.readers.nombreCarneOGrupo")}
             autoComplete="off"
           />
         </div>
         <button type="submit" className="btn-primary">
-          {t("Buscar")}
+          {t("panel.readers.buscar")}
         </button>
         {query ? (
           <Link href="/panel/lectores" className="btn-ghost">
-            {t("Limpiar")}
+            {t("panel.readers.limpiar")}
           </Link>
         ) : null}
       </form>
 
       {readers.length === 0 ? (
         <EmptyState
-          title={query ? t("Sin resultados") : t("Aún no hay lectores")}
+          title={query ? t("panel.readers.sinResultados") : t("panel.readers.aunNoHayLectores")}
           description={
             query
-              ? t("No hay personas que coincidan con esa búsqueda.")
+              ? t("panel.readers.noHayPersonasQueCoincidanConEsaBusqueda")
               : t(
-                  "Da de alta al primer lector o lectora para empezar a registrar préstamos.",
+                  "panel.readers.daDeAltaAlPrimerLectorOLectoraParaEmpezarARegistrarPrestamos",
                 )
           }
         />
       ) : (
         <div className="overflow-x-auto border-2 border-line bg-surface">
           <table className="w-full min-w-[720px] border-collapse text-left">
-            <caption className="sr-only">{t("Listado de lectores")}</caption>
+            <caption className="sr-only">{t("panel.readers.listadoDeLectores")}</caption>
             <thead>
               <tr className="border-b-2 border-line bg-paper">
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  {t("Persona")}
+                  {t("panel.readers.persona")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  {t("Carné")}
+                  {t("panel.readers.carne")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  {t("Grupo")}
+                  {t("panel.readers.grupo")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  {t("En préstamo")}
+                  {t("panel.readers.enPrestamo")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">
-                  {t("Estado")}
+                  {t("panel.readers.estado")}
                 </th>
                 <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">
-                  {t("Acciones")}
+                  {t("panel.readers.acciones")}
                 </th>
               </tr>
             </thead>
@@ -181,16 +182,16 @@ export default async function ReadersPage({
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className={reader.active ? "tag-muted" : "tag-accent"}>
-                        {reader.active ? t("Activo") : t("Baja")}
+                        {reader.active ? t("panel.readers.activo") : t("panel.readers.baja")}
                       </span>
                       {isSuspended(reader) ? (
                         <span
                           className="tag-accent"
-                          title={t("Suspendido hasta el {date}", {
+                          title={t("panel.readers.suspendidoHastaElDate", {
                             date: formatDate(reader.suspendedUntil),
                           })}
                         >
-                          {t("Suspendido")}
+                          {t("panel.readers.suspendido")}
                         </span>
                       ) : null}
                     </div>
@@ -198,7 +199,7 @@ export default async function ReadersPage({
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center justify-end gap-1.5">
                       <Link href={`/panel/lectores/${reader.id}`} className="btn-outline btn-sm">
-                        {t("Ver ficha")}
+                        {t("panel.readers.verFicha")}
                       </Link>
                       <ReaderStatusButton readerId={reader.id} active={reader.active} />
                     </div>

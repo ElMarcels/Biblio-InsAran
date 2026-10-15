@@ -5,15 +5,16 @@ import { Notice } from "@/components/Notice";
 import { CollectionForm } from "@/components/forms/CollectionForm";
 import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
+import type { TranslationKey } from "@/lib/i18n/translate";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Listas curadas") };
+  return { title: t("panel.collections.listasCuradas") };
 }
 
-const FLASH: Record<string, string> = {
-  borrada: "La lista se ha borrado.",
+const FLASH: Record<string, TranslationKey> = {
+  borrada: "panel.collections.flashDeleted",
 };
 
 export default async function CollectionsPage({
@@ -34,10 +35,10 @@ export default async function CollectionsPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="font-display text-[26px] font-bold">{t("Listas curadas")}</h2>
+        <h2 className="font-display text-[26px] font-bold">{t("panel.collections.listasCuradas")}</h2>
         <p className="mt-1 text-[14px] text-ink-soft">
           {t(
-            "Agrupa los libros a mano para destacarlos: novedades, recomendados, club de lectura…",
+            "panel.collections.agrupaLosLibrosAManoParaDestacarlosNovedadesRecomendadosClubDeLe",
           )}
         </p>
       </div>
@@ -46,8 +47,8 @@ export default async function CollectionsPage({
 
       {collections.length === 0 ? (
         <EmptyState
-          title={t("Todavía no hay listas")}
-          description={t("Crea la primera lista con el formulario de abajo.")}
+          title={t("panel.collections.todaviaNoHayListas")}
+          description={t("panel.collections.creaLaPrimeraListaConElFormularioDeAbajo")}
         />
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -61,8 +62,8 @@ export default async function CollectionsPage({
                 </h3>
                 <p className="text-[12px] tabular-nums text-ink-faint">
                   {collection._count.books === 1
-                    ? t("1 libro")
-                    : t("{n} libros", { n: collection._count.books })}
+                    ? t("panel.collections.oneBook")
+                    : t("panel.collections.nBooks", { n: collection._count.books })}
                 </p>
                 {collection.description ? (
                   <p className="mt-1 text-[13px] text-ink-soft">{collection.description}</p>
@@ -70,7 +71,7 @@ export default async function CollectionsPage({
               </div>
               <div className="flex flex-wrap items-center gap-2 p-4">
                 <Link href={`/panel/colecciones/${collection.id}`} className="btn-outline btn-sm">
-                  {t("Gestionar")}
+                  {t("panel.collections.gestionar")}
                 </Link>
                 <Link
                   href={`/colecciones/${collection.slug}`}
@@ -78,7 +79,7 @@ export default async function CollectionsPage({
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {t("Ver en el catálogo")}
+                  {t("panel.collections.verEnElCatalogo")}
                 </Link>
               </div>
             </li>
@@ -87,9 +88,9 @@ export default async function CollectionsPage({
       )}
 
       <section className="border-2 border-line bg-surface p-6 sm:p-8">
-        <h3 className="font-display text-[20px] font-bold">{t("Nueva lista")}</h3>
+        <h3 className="font-display text-[20px] font-bold">{t("panel.collections.nuevaLista")}</h3>
         <p className="mt-1 mb-5 text-[14px] text-ink-soft">
-          {t("Le daremos automáticamente un enlace con el nombre de la lista.")}
+          {t("panel.collections.leDaremosAutomaticamenteUnEnlaceConElNombreDeLaLista")}
         </p>
         <CollectionForm mode="create" values={{ name: "", description: "" }} />
       </section>

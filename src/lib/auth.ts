@@ -94,7 +94,7 @@ export async function createSession(userId: string, role: Role): Promise<void> {
 
   const value = encodeSessionCookie({
     t: token,
-    r: role === "OWNER" ? "OWNER" : "EDITOR",
+    r: role === "OWNER" ? "OWNER" : role === "ADMIN" ? "ADMIN" : "EDITOR",
     e: expiresAt.getTime(),
   });
 
@@ -127,6 +127,14 @@ export async function revokeUserSessions(userId: string): Promise<void> {
 // Guardas para páginas (redirigen) y para acciones (lanzan error)
 // ---------------------------------------------------------------------------
 
+/**
+ * Roles con permiso de administración: el dueño de la plataforma y las
+ * cuentas de administración (`ADMIN`) comparten opciones y permisos.
+ */
+export function isManagerRole(role: string): boolean {
+  return role === "OWNER" || role === "ADMIN";
+}
+
 /** Para páginas: exige sesión y redirige al acceso si no la hay. */
 export async function requireUser(): Promise<SessionUser> {
   const user = await getCurrentUser();
@@ -134,10 +142,10 @@ export async function requireUser(): Promise<SessionUser> {
   return user;
 }
 
-/** Para páginas: exige el rol de dueño. */
-export async function requireOwner(): Promise<SessionUser> {
+/** Para páginas: exige permiso de administración (dueño o administración). */
+export async function requireManager(): Promise<SessionUser> {
   const user = await requireUser();
-  if (user.role !== "OWNER") redirect("/panel");
+  if (!isManagerRole(user.role)) redirect("/panel");
   return user;
 }
 
@@ -155,9 +163,9 @@ export async function assertUser(): Promise<SessionUser> {
   return user;
 }
 
-/** Para Server Actions: exige el rol de dueño o lanza. */
-export async function assertOwner(): Promise<SessionUser> {
+/** Para Server Actions: exige permiso de administración o lanza. */
+export async function assertManager(): Promise<SessionUser> {
   const user = await assertUser();
-  if (user.role !== "OWNER") throw new AuthError();
+  if (!isManagerRole(user.role)) throw new AuthError();
   return user;
 }

@@ -3,6 +3,7 @@
 import { useFormStatus } from "react-dom";
 
 import { classNames } from "@/lib/format";
+import type { TranslationKey } from "@/lib/i18n/translate";
 
 import { useT } from "./i18n/LocaleProvider";
 
@@ -12,11 +13,11 @@ import { useT } from "./i18n/LocaleProvider";
  */
 export function SubmitButton({
   children,
-  pendingLabel = "Guardando…",
+  pendingLabel = "common.saving",
   className = "btn-primary",
 }: {
   children: React.ReactNode;
-  pendingLabel?: string;
+  pendingLabel?: TranslationKey;
   className?: string;
 }) {
   const { pending } = useFormStatus();

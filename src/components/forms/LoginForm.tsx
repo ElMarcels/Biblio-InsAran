@@ -20,10 +20,10 @@ export function LoginForm({ next }: { next?: string }) {
       {next ? <input type="hidden" name="next" value={next} /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
-      <Field label="Nombre de usuario" htmlFor="username" error={errors.username} required>
+      <Field label="login.nombreDeUsuario" htmlFor="username" error={errors.username} required>
         <input
           id="username"
           name="username"
@@ -36,7 +36,7 @@ export function LoginForm({ next }: { next?: string }) {
         />
       </Field>
 
-      <Field label="Contraseña" htmlFor="password" error={errors.password} required>
+      <Field label="login.contrasena" htmlFor="password" error={errors.password} required>
         <input
           id="password"
           name="password"
@@ -48,8 +48,8 @@ export function LoginForm({ next }: { next?: string }) {
         />
       </Field>
 
-      <SubmitButton className="btn-primary w-full" pendingLabel="Entrando…">
-        {t("Entrar")}
+      <SubmitButton className="btn-primary w-full" pendingLabel="login.entrando">
+        {t("login.entrar")}
       </SubmitButton>
     </form>
   );

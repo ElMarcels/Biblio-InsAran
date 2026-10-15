@@ -51,11 +51,11 @@ export function ReaderForm({
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
 
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Nombre y apellidos" htmlFor="fullName" error={errors.fullName} required>
+        <Field label="forms.readers.nombreYApellidos" htmlFor="fullName" error={errors.fullName} required>
           <input
             id="fullName"
             name="fullName"
@@ -66,18 +66,18 @@ export function ReaderForm({
           />
         </Field>
 
-        <Field label="Número de carné" htmlFor="cardNumber" error={errors.cardNumber}>
+        <Field label="forms.readers.numeroDeCarne" htmlFor="cardNumber" error={errors.cardNumber}>
           <input
             id="cardNumber"
             name="cardNumber"
             defaultValue={values.cardNumber}
             className={inputClass(Boolean(errors.cardNumber))}
             maxLength={32}
-            placeholder={t("Opcional")}
+            placeholder={t("forms.readers.opcional")}
           />
         </Field>
 
-        <Field label="Curso o grupo" htmlFor="groupName" error={errors.groupName}>
+        <Field label="forms.readers.cursoOGrupo" htmlFor="groupName" error={errors.groupName}>
           <input
             id="groupName"
             name="groupName"
@@ -88,7 +88,7 @@ export function ReaderForm({
           />
         </Field>
 
-        <Field label="Correo electrónico" htmlFor="email" error={errors.email}>
+        <Field label="forms.readers.correoElectronico" htmlFor="email" error={errors.email}>
           <input
             id="email"
             name="email"
@@ -99,7 +99,7 @@ export function ReaderForm({
           />
         </Field>
 
-        <Field label="Teléfono" htmlFor="phone" error={errors.phone}>
+        <Field label="forms.readers.telefono" htmlFor="phone" error={errors.phone}>
           <input
             id="phone"
             name="phone"
@@ -110,7 +110,7 @@ export function ReaderForm({
         </Field>
       </div>
 
-      <Field label="Notas" htmlFor="notes" error={errors.notes}>
+      <Field label="forms.readers.notas" htmlFor="notes" error={errors.notes}>
         <textarea
           id="notes"
           name="notes"
@@ -121,12 +121,12 @@ export function ReaderForm({
       </Field>
 
       <div className={`flex flex-wrap items-center gap-2.5 ${compact ? "" : "border-t-2 border-line pt-4"}`}>
-        <SubmitButton pendingLabel="Guardando…">
-          {mode === "create" ? t("Dar de alta") : t("Guardar cambios")}
+        <SubmitButton pendingLabel="forms.readers.guardando">
+          {mode === "create" ? t("forms.readers.darDeAlta") : t("forms.readers.guardarCambios")}
         </SubmitButton>
         {mode === "edit" ? (
           <Link href="/panel/lectores" className="btn-ghost">
-            {t("Volver al listado")}
+            {t("forms.readers.volverAlListado")}
           </Link>
         ) : null}
       </div>

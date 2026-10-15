@@ -18,9 +18,11 @@ datasource db {
 
 /// Rol dentro de la plataforma.
 /// OWNER  -> dueño de la plataforma: gestiona usuarios y puede borrar libros.
+/// ADMIN  -> administración: mismos permisos y opciones que la cuenta de dueño.
 /// EDITOR -> usuario creado por el dueño: puede añadir y editar libros.
 enum Role {
   OWNER
+  ADMIN
   EDITOR
 }
 

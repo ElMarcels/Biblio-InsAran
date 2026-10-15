@@ -1,6 +1,16 @@
 import { z } from "zod";
 
+import type { TranslationKey } from "./i18n/messages";
+import type { TranslateParams } from "./i18n/translate";
 import { CATEGORIES, LANGUAGES } from "./catalog";
+
+/**
+ * Marca un literal como clave de traducción. Los mensajes de Zod viajan como
+ * claves hasta el formulario, que es quien los traduce.
+ */
+function msg(key: TranslationKey): string {
+  return key;
+}
 
 /** Coincidencia sospechosa con un libro que ya está en el catálogo. */
 export type DuplicateMatch = {
@@ -11,43 +21,50 @@ export type DuplicateMatch = {
   reason: "isbn" | "title";
 };
 
-/** Texto del aviso de duplicado que se muestra antes de guardar. */
-export function duplicateMessage(duplicate: DuplicateMatch): string {
+/** Clave y datos del aviso de duplicado que se muestra antes de guardar. */
+export function duplicateMessage(duplicate: DuplicateMatch): {
+  key: TranslationKey;
+  params: TranslateParams;
+} {
+  const params = { title: duplicate.title, author: duplicate.author };
   if (duplicate.reason === "isbn") {
-    return `Ya hay un libro en el catálogo con este mismo ISBN: «${duplicate.title}» de ${duplicate.author}.`;
+    return { key: "actions.duplicateIsbn", params };
   }
-  return `Ya hay un libro con el mismo título y autoría: «${duplicate.title}» de ${duplicate.author}.`;
+  return { key: "actions.duplicateTitle", params };
 }
 
 /** Estado que devuelven las Server Actions a los formularios. */
 export type ActionState = {
   status: "idle" | "error" | "success" | "warning";
-  message?: string;
-  fieldErrors?: Record<string, string>;
+  /** Clave del mensaje (se traduce en el formulario). */
+  message?: TranslationKey;
+  /** Valores para los marcadores `{nombre}` del mensaje. */
+  messageParams?: TranslateParams;
+  fieldErrors?: Record<string, TranslationKey>;
   duplicate?: DuplicateMatch | null;
 };
 
 export const initialActionState: ActionState = { status: "idle" };
 
 /**
- * Convierte los errores de Zod en un mapa `campo -> primer mensaje`.
+ * Convierte los errores de Zod en un mapa `campo -> primera clave`.
  * Se construye a mano a partir de `issues` para no depender de utilidades
  * concretas de la versión de Zod.
  */
-export function fieldErrors(error: z.ZodError): Record<string, string> {
-  const result: Record<string, string> = {};
+export function fieldErrors(error: z.ZodError): Record<string, TranslationKey> {
+  const result: Record<string, TranslationKey> = {};
   for (const issue of error.issues) {
     const key = issue.path.length > 0 ? issue.path.join(".") : "_form";
-    if (!result[key]) result[key] = issue.message;
+    if (!result[key]) result[key] = issue.message as TranslationKey;
   }
   return result;
 }
 
-function optionalText(max: number, label: string) {
+function optionalText(max: number) {
   return z
     .string()
     .trim()
-    .max(max, `${label} no puede superar los ${max} caracteres.`)
+    .max(max, msg("validation.textTooLong"))
     .transform((value) => (value === "" ? undefined : value))
     .optional();
 }
@@ -84,7 +101,7 @@ export function parseTags(value: string): string[] {
 
 const tagsSchema = z
   .string()
-  .max(1000, "Hay demasiadas etiquetas.")
+  .max(1000, msg("validation.tooManyTags"))
   .optional()
   .transform((value) => parseTags(value ?? ""));
 
@@ -96,9 +113,9 @@ export const loginSchema = z.object({
   username: z
     .string()
     .trim()
-    .min(1, "Escribe tu nombre de usuario.")
-    .max(64, "El nombre de usuario es demasiado largo."),
-  password: z.string().min(1, "Escribe tu contraseña.").max(200),
+    .min(1, msg("validation.usernameRequired"))
+    .max(64, msg("validation.usernameTooLong")),
+  password: z.string().min(1, msg("validation.passwordRequired")).max(200),
 });
 
 // ---------------------------------------------------------------------------
@@ -121,33 +138,33 @@ export function isAllowedCoverUrl(value: string): boolean {
 const coverUrlSchema = z
   .string()
   .trim()
-  .max(500, "La dirección de la portada es demasiado larga.")
+  .max(500, msg("validation.coverUrlTooLong"))
   .optional()
   .transform((value) => (value ? value : undefined))
   .refine((value) => value === undefined || isAllowedCoverUrl(value), {
-    message: "La portada debe venir de covers.openlibrary.org.",
+    message: msg("validation.coverUrlHost"),
   });
 
 export const bookSchema = z.object({
   title: z
     .string()
     .trim()
-    .min(1, "El título es obligatorio.")
-    .max(220, "El título no puede superar los 220 caracteres."),
+    .min(1, msg("validation.bookTitleRequired"))
+    .max(220, msg("validation.bookTitleTooLong")),
   author: z
     .string()
     .trim()
-    .min(1, "El autor es obligatorio.")
-    .max(180, "El autor no puede superar los 180 caracteres."),
-  category: z.enum(CATEGORIES, { message: "Selecciona una categoría válida." }),
-  isbn: optionalText(32, "El ISBN"),
-  publisher: optionalText(160, "La editorial"),
+    .min(1, msg("validation.bookAuthorRequired"))
+    .max(180, msg("validation.bookAuthorTooLong")),
+  category: z.enum(CATEGORIES, { message: msg("validation.bookCategory") }),
+  isbn: optionalText(32),
+  publisher: optionalText(160),
   year: z
     .union([z.literal(""), z.coerce.number().int()])
     .optional()
     .transform((value) => (value === "" || value === undefined ? undefined : value))
     .refine((value) => value === undefined || (value >= 1000 && value <= 2200), {
-      message: "El año debe estar entre 1000 y 2200.",
+      message: msg("validation.bookYear"),
     }),
   language: z.enum(LANGUAGES).default("Español"),
   pages: z
@@ -155,18 +172,18 @@ export const bookSchema = z.object({
     .optional()
     .transform((value) => (value === "" || value === undefined ? undefined : value))
     .refine((value) => value === undefined || (value >= 1 && value <= 100000), {
-      message: "El número de páginas no es válido.",
+      message: msg("validation.bookPages"),
     }),
   copies: z.coerce
-    .number({ message: "Indica cuántos ejemplares hay." })
-    .int("Debe ser un número entero.")
-    .min(1, "Debe haber al menos un ejemplar.")
-    .max(9999, "Demasiados ejemplares."),
-  location: optionalText(60, "La ubicación"),
-  recordNumber: optionalText(40, "El número de registro"),
-  cdu: optionalText(40, "La CDU"),
+    .number({ message: msg("validation.bookCopiesRequired") })
+    .int(msg("validation.bookCopiesInteger"))
+    .min(1, msg("validation.bookCopiesMin"))
+    .max(9999, msg("validation.bookCopiesMax")),
+  location: optionalText(60),
+  recordNumber: optionalText(40),
+  cdu: optionalText(40),
   coverUrl: coverUrlSchema,
-  description: optionalText(2000, "La descripción"),
+  description: optionalText(2000),
   tags: tagsSchema,
 });
 
@@ -179,11 +196,11 @@ export type BookInput = z.infer<typeof bookSchema>;
 export const usernameSchema = z
   .string()
   .trim()
-  .min(3, "El usuario debe tener al menos 3 caracteres.")
-  .max(32, "El usuario no puede superar los 32 caracteres.")
+  .min(3, msg("validation.usernameMin"))
+  .max(32, msg("validation.usernameMax"))
   .regex(
     /^[a-zA-Z0-9._-]+$/,
-    "Solo se permiten letras, números y los signos punto, guion y guion bajo.",
+    msg("validation.usernamePattern"),
   );
 
 export const createUserSchema = z.object({
@@ -191,25 +208,28 @@ export const createUserSchema = z.object({
   displayName: z
     .string()
     .trim()
-    .min(2, "Escribe el nombre de la persona.")
-    .max(120, "El nombre es demasiado largo."),
+    .min(2, msg("validation.displayNameRequired"))
+    .max(120, msg("validation.nameTooLong")),
   password: z
     .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres.")
-    .max(200, "La contraseña es demasiado larga."),
+    .min(8, msg("validation.passwordMin"))
+    .max(200, msg("validation.passwordMax")),
+  // Rol de la cuenta nueva. Si llega un valor inesperado se crea como editora,
+  // de modo que nunca se pueda escalar privilegios manipulando el formulario.
+  role: z.enum(["EDITOR", "ADMIN"]).catch("EDITOR"),
 });
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, "Escribe tu contraseña actual."),
+    currentPassword: z.string().min(1, msg("validation.currentPasswordRequired")),
     newPassword: z
       .string()
-      .min(8, "La nueva contraseña debe tener al menos 8 caracteres.")
+      .min(8, msg("validation.newPasswordMin"))
       .max(200),
-    confirmPassword: z.string().min(1, "Repite la nueva contraseña."),
+    confirmPassword: z.string().min(1, msg("validation.confirmPasswordRequired")),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Las contraseñas no coinciden.",
+    message: msg("validation.passwordsMismatch"),
     path: ["confirmPassword"],
   });
 
@@ -217,8 +237,8 @@ export const resetPasswordSchema = z.object({
   userId: z.string().min(1),
   newPassword: z
     .string()
-    .min(8, "La contraseña debe tener al menos 8 caracteres.")
-    .max(200, "La contraseña es demasiado larga."),
+    .min(8, msg("validation.passwordMin"))
+    .max(200, msg("validation.passwordMax")),
 });
 
 // ---------------------------------------------------------------------------
@@ -229,26 +249,26 @@ export const readerSchema = z.object({
   fullName: z
     .string()
     .trim()
-    .min(2, "Escribe el nombre del lector o lectora.")
-    .max(120, "El nombre es demasiado largo."),
-  cardNumber: optionalText(32, "El número de carné"),
-  groupName: optionalText(60, "El curso o grupo"),
+    .min(2, msg("validation.readerNameRequired"))
+    .max(120, msg("validation.nameTooLong")),
+  cardNumber: optionalText(32),
+  groupName: optionalText(60),
   email: z
     .union([
       z.literal(""),
-      z.string().trim().email("El correo no tiene un formato válido.").max(160),
+      z.string().trim().email(msg("validation.emailInvalid")).max(160),
     ])
     .optional()
     .transform((value) => (value === "" || value === undefined ? undefined : value)),
-  phone: optionalText(30, "El teléfono"),
-  notes: optionalText(500, "Las notas"),
+  phone: optionalText(30),
+  notes: optionalText(500),
 });
 
 export type ReaderInput = z.infer<typeof readerSchema>;
 
 /** Suspensión temporal del préstamo (sanción por retrasos u otras causas). */
 export const suspensionSchema = z.object({
-  readerId: z.string().min(1, "No se ha indicado qué lector."),
+  readerId: z.string().min(1, msg("validation.readerIdRequired")),
   /** Fecha `YYYY-MM-DD` hasta la que dura la suspensión. Vacía = levantarla. */
   until: z
     .string()
@@ -256,7 +276,7 @@ export const suspensionSchema = z.object({
     .max(10)
     .optional()
     .transform((value) => (value ? value : undefined)),
-  reason: optionalText(200, "El motivo"),
+  reason: optionalText(200),
 });
 
 export type SuspensionInput = z.infer<typeof suspensionSchema>;
@@ -289,24 +309,24 @@ export function addDaysInput(value: string, days: number): string {
 // ---------------------------------------------------------------------------
 
 export const loanSchema = z.object({
-  bookId: z.string().min(1, "Selecciona un libro."),
-  readerId: z.string().min(1, "Selecciona un lector o lectora."),
+  bookId: z.string().min(1, msg("validation.loanBookRequired")),
+  readerId: z.string().min(1, msg("validation.loanReaderRequired")),
   dueAt: z
     .string()
     .trim()
-    .min(1, "Indica la fecha de devolución.")
+    .min(1, msg("validation.loanDueRequired"))
     .refine((value) => parseDateInput(value) !== null, {
-      message: "La fecha de devolución no es válida.",
+      message: msg("validation.loanDueInvalid"),
     }),
-  notes: optionalText(500, "Las notas"),
+  notes: optionalText(500),
 });
 
 export type LoanInput = z.infer<typeof loanSchema>;
 
 export const reservationSchema = z.object({
-  bookId: z.string().min(1, "Selecciona un libro."),
-  readerId: z.string().min(1, "Selecciona un lector o lectora."),
-  notes: optionalText(500, "Las notas"),
+  bookId: z.string().min(1, msg("validation.loanBookRequired")),
+  readerId: z.string().min(1, msg("validation.loanReaderRequired")),
+  notes: optionalText(500),
 });
 
 // ---------------------------------------------------------------------------
@@ -317,9 +337,9 @@ export const collectionSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Escribe un nombre para la lista.")
-    .max(80, "El nombre no puede superar los 80 caracteres."),
-  description: optionalText(300, "La descripción"),
+    .min(2, msg("validation.collectionNameRequired"))
+    .max(80, msg("validation.collectionNameTooLong")),
+  description: optionalText(300),
 });
 
 export type CollectionInput = z.infer<typeof collectionSchema>;

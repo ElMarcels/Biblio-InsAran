@@ -1,5 +1,6 @@
 import "server-only";
 
+import type { TranslationKey } from "./i18n/translate";
 import { prisma } from "./prisma";
 
 /**
@@ -29,31 +30,31 @@ export async function recordAudit(input: {
   }
 }
 
-export const AUDIT_LABELS: Record<string, string> = {
-  BOOK_CREATE: "Libro añadido",
-  BOOK_UPDATE: "Libro editado",
-  BOOK_DELETE: "Libro eliminado",
-  COLLECTION_CREATE: "Lista creada",
-  COLLECTION_UPDATE: "Lista editada",
-  COLLECTION_DELETE: "Lista eliminada",
-  USER_CREATE: "Usuario creado",
-  USER_UPDATE: "Usuario actualizado",
-  USER_ACTIVATE: "Usuario activado",
-  USER_DEACTIVATE: "Usuario desactivado",
-  USER_PASSWORD_RESET: "Contraseña restablecida",
-  USER_DELETE: "Usuario eliminado",
-  AUTH_LOGIN: "Inicio de sesión",
-  AUTH_LOGOUT: "Cierre de sesión",
-  READER_CREATE: "Lector/a dado de alta",
-  READER_UPDATE: "Lector/a editado",
-  READER_ACTIVATE: "Lector/a activado",
-  READER_DEACTIVATE: "Lector/a desactivado",
-  READER_SUSPEND: "Préstamo suspendido",
-  READER_SUSPEND_LIFT: "Suspensión levantada",
-  LOAN_CREATE: "Préstamo registrado",
-  LOAN_RETURN: "Devolución registrada",
-  LOAN_RENEW: "Préstamo prorrogado",
-  RESERVATION_CREATE: "Reserva creada",
-  RESERVATION_CANCEL: "Reserva anulada",
-  RESERVATION_FULFILL: "Reserva servida",
+export const AUDIT_LABELS: Record<string, TranslationKey> = {
+  BOOK_CREATE: "audit.bookCreate",
+  BOOK_UPDATE: "audit.bookUpdate",
+  BOOK_DELETE: "audit.bookDelete",
+  COLLECTION_CREATE: "audit.collectionCreate",
+  COLLECTION_UPDATE: "audit.collectionUpdate",
+  COLLECTION_DELETE: "audit.collectionDelete",
+  USER_CREATE: "audit.userCreate",
+  USER_UPDATE: "audit.userUpdate",
+  USER_ACTIVATE: "audit.userActivate",
+  USER_DEACTIVATE: "audit.userDeactivate",
+  USER_PASSWORD_RESET: "audit.userPasswordReset",
+  USER_DELETE: "audit.userDelete",
+  AUTH_LOGIN: "audit.authLogin",
+  AUTH_LOGOUT: "audit.authLogout",
+  READER_CREATE: "audit.readerCreate",
+  READER_UPDATE: "audit.readerUpdate",
+  READER_ACTIVATE: "audit.readerActivate",
+  READER_DEACTIVATE: "audit.readerDeactivate",
+  READER_SUSPEND: "audit.readerSuspend",
+  READER_SUSPEND_LIFT: "audit.readerSuspendLift",
+  LOAN_CREATE: "audit.loanCreate",
+  LOAN_RETURN: "audit.loanReturn",
+  LOAN_RENEW: "audit.loanRenew",
+  RESERVATION_CREATE: "audit.reservationCreate",
+  RESERVATION_CANCEL: "audit.reservationCancel",
+  RESERVATION_FULFILL: "audit.reservationFulfill",
 };

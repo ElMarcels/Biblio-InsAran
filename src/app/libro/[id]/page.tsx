@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Params }) {
   });
   if (!book) {
     const t = await getT();
-    return { title: t("Libro no encontrado") };
+    return { title: t("book.libroNoEncontrado") };
   }
   return { title: `${book.title} · ${book.author}` };
 }
@@ -62,26 +62,26 @@ export default async function BookPage({ params }: { params: Params }) {
   const reservedCount = reserved.get(book.id) ?? 0;
 
   const details: Array<{ label: string; value: string }> = [
-    { label: t("Categoría"), value: book.category },
-    { label: t("Idioma"), value: book.language },
-    { label: t("Editorial"), value: book.publisher ?? "—" },
-    { label: t("Año"), value: book.year ? String(book.year) : "—" },
-    { label: t("Páginas"), value: book.pages ? String(book.pages) : "—" },
-    { label: t("ISBN"), value: book.isbn ?? "—" },
-    { label: t("Ubicación"), value: book.location ?? "—" },
+    { label: t("book.categoria"), value: book.category },
+    { label: t("book.idioma"), value: book.language },
+    { label: t("book.editorial"), value: book.publisher ?? "—" },
+    { label: t("book.ano"), value: book.year ? String(book.year) : "—" },
+    { label: t("book.paginas"), value: book.pages ? String(book.pages) : "—" },
+    { label: t("book.iSBN"), value: book.isbn ?? "—" },
+    { label: t("book.ubicacion"), value: book.location ?? "—" },
   ];
   if (book.recordNumber) {
-    details.push({ label: t("N.º de registro"), value: book.recordNumber });
+    details.push({ label: t("book.nDeRegistro"), value: book.recordNumber });
   }
   if (book.cdu) {
-    details.push({ label: t("CDU"), value: book.cdu });
+    details.push({ label: t("book.cDU"), value: book.cdu });
   }
 
   return (
     <div className="shell flex flex-1 flex-col py-10">
-      <nav aria-label="Migas de pan" className="mb-7 text-[13px] text-ink-faint">
+      <nav aria-label={t("book.migasDePan")} className="mb-7 text-[13px] text-ink-faint">
         <Link href="/catalogo" className="font-semibold text-ink underline underline-offset-2">
-          {t("Catálogo")}
+          {t("book.catalogo")}
         </Link>
         <span className="px-2">/</span>
         <Link
@@ -102,9 +102,9 @@ export default async function BookPage({ params }: { params: Params }) {
             size="lg"
           />
           <div className="mt-4 border-2 border-line bg-surface p-4">
-            <p className="micro">{t("Disponibilidad")}</p>
+            <p className="micro">{t("book.disponibilidad")}</p>
             <p className="mt-1 font-display text-[26px] font-bold leading-none">
-              {t("{available} de {total} ejemplares", {
+              {t("book.availableDeTotalEjemplares", {
                 available,
                 total: book.copies,
               })}
@@ -112,24 +112,22 @@ export default async function BookPage({ params }: { params: Params }) {
             <p className="mt-2 text-[13px] text-ink-soft">
               {available > 0
                 ? t(
-                    available === 1
-                      ? "1 disponible para préstamo"
-                      : "{n} disponibles para préstamo",
+                    available === 1 ? "book.oneAvailableForLoan" : "book.nAvailableForLoan",
                     { n: available },
                   )
-                : t("Todos los ejemplares están prestados")}
+                : t("book.todosLosEjemplaresEstanPrestados")}
               {reservedCount > 0
                 ? ` · ${t(
                     reservedCount === 1
-                      ? "1 reserva pendiente"
-                      : "{n} reservas pendientes",
+                      ? "book.onePendingReservation"
+                      : "book.nPendingReservations",
                     { n: reservedCount },
                   )}`
                 : ""}
             </p>
             {book.location ? (
               <p className="mt-2 text-[13px] text-ink-soft">
-                {t("Estantería")}{" "}
+                {t("book.estanteria")}{" "}
                 <span className="font-mono font-semibold">{book.location}</span>
               </p>
             ) : null}
@@ -175,13 +173,13 @@ export default async function BookPage({ params }: { params: Params }) {
           {user ? (
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Link href={`/panel/libros/${book.id}/editar`} className="btn-outline btn-sm">
-                {t("Editar ficha")}
+                {t("book.editarFicha")}
               </Link>
               <Link
                 href={`/panel/prestamos/nuevo?libro=${book.id}`}
                 className="btn-outline btn-sm"
               >
-                {t("Prestar")}
+                {t("book.prestar")}
               </Link>
               <DeleteBookButton bookId={book.id} title={book.title} compact />
             </div>
@@ -189,7 +187,7 @@ export default async function BookPage({ params }: { params: Params }) {
 
           {book.description ? (
             <section className="mt-8">
-              <h2 className="micro mb-3">{t("Reseña")}</h2>
+              <h2 className="micro mb-3">{t("book.resena")}</h2>
               <p className="max-w-2xl whitespace-pre-line text-[16px] leading-relaxed text-ink-soft">
                 {book.description}
               </p>
@@ -197,7 +195,7 @@ export default async function BookPage({ params }: { params: Params }) {
           ) : null}
 
           <section className="mt-9">
-            <h2 className="micro mb-3">{t("Ficha")}</h2>
+            <h2 className="micro mb-3">{t("book.ficha")}</h2>
             <dl className="grid max-w-2xl grid-cols-1 border-2 border-line bg-surface sm:grid-cols-2">
               {details.map((detail) => (
                 <div
@@ -213,16 +211,16 @@ export default async function BookPage({ params }: { params: Params }) {
 
           <section className="mt-8 text-[13px] text-ink-faint">
             <p>
-              {t("Incorporado el {date}{by}.", {
+              {t("book.incorporadoElDateBy", {
                 date: formatDate(book.createdAt),
                 by: book.createdBy
-                  ? t(" por {name}", { name: book.createdBy.displayName })
+                  ? t("book.porName", { name: book.createdBy.displayName })
                   : "",
               })}
             </p>
             {book.updatedBy && book.updatedAt.getTime() !== book.createdAt.getTime() ? (
               <p className="mt-1">
-                {t("Última edición el {date} por {name}.", {
+                {t("book.ultimaEdicionElDatePorName", {
                   date: formatDate(book.updatedAt),
                   name: book.updatedBy.displayName,
                 })}
@@ -236,13 +234,13 @@ export default async function BookPage({ params }: { params: Params }) {
         <section className="mt-14 border-t-2 border-line pt-10">
           <div className="mb-6 flex items-end justify-between gap-3">
             <h2 className="font-display text-[26px] font-bold">
-              {t("Más de {category}", { category: book.category })}
+              {t("book.masDeCategory", { category: book.category })}
             </h2>
             <Link
               href={`/catalogo?categoria=${encodeURIComponent(book.category)}`}
               className="btn-ghost btn-sm"
             >
-              {t("Ver todo")}
+              {t("book.verTodo")}
             </Link>
           </div>
           <ul className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">

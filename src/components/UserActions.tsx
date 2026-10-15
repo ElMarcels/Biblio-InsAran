@@ -7,7 +7,8 @@ import {
   resetUserPasswordAction,
   setUserActiveAction,
 } from "@/lib/actions/users";
-import { initialActionState } from "@/lib/validation";
+import type { Translator } from "@/lib/i18n/translate";
+import { initialActionState, type ActionState } from "@/lib/validation";
 
 import { useT } from "./i18n/LocaleProvider";
 
@@ -15,12 +16,12 @@ function Feedback({
   state,
   t,
 }: {
-  state: { status: string; message?: string };
-  t: (source: string) => string;
+  state: ActionState;
+  t: Translator;
 }) {
   if (!state.message) return null;
   const tone = state.status === "success" ? "text-ok" : "text-danger";
-  return <p className={`text-[12px] font-medium ${tone}`}>{t(state.message)}</p>;
+  return <p className={`text-[12px] font-medium ${tone}`}>{t(state.message, state.messageParams)}</p>;
 }
 
 export function UserActions({
@@ -64,11 +65,11 @@ export function UserActions({
             className="btn-outline btn-sm"
             title={
               isSelf && active
-                ? t("No puedes desactivar tu propia cuenta")
+                ? t("panel.users.noPuedesDesactivarTuPropiaCuenta")
                 : undefined
             }
           >
-            {active ? t("Desactivar") : t("Activar")}
+            {active ? t("panel.users.desactivar") : t("panel.users.activar")}
           </button>
         </form>
 
@@ -78,7 +79,7 @@ export function UserActions({
           className="btn-outline btn-sm"
           aria-expanded={showReset}
         >
-          {showReset ? t("Cerrar") : t("Contraseña")}
+          {showReset ? t("panel.users.cerrar") : t("panel.users.contrasena")}
         </button>
 
         {!isOwnerAccount && !isSelf ? (
@@ -86,17 +87,17 @@ export function UserActions({
             <form action={deleteAction} className="inline-flex items-center gap-1.5">
               <input type="hidden" name="userId" value={userId} />
               <span className="text-[12px] font-semibold text-danger">
-                {t("¿Eliminar?")}
+                {t("panel.users.eliminar")}
               </span>
               <button type="submit" disabled={deletePending} className="btn-danger btn-sm">
-                {deletePending ? "…" : t("Sí")}
+                {deletePending ? "…" : t("panel.users.si")}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
                 className="btn-ghost btn-sm"
               >
-                {t("No")}
+                {t("panel.users.no")}
               </button>
             </form>
           ) : (
@@ -104,9 +105,9 @@ export function UserActions({
               type="button"
               onClick={() => setConfirmDelete(true)}
               className="btn-outline btn-sm text-danger"
-              aria-label={t("Eliminar la cuenta {user}", { user: username })}
+              aria-label={t("panel.users.eliminarLaCuentaUser", { user: username })}
             >
-              {t("Eliminar")}
+              {t("panel.users.eliminar_2")}
             </button>
           )
         ) : null}
@@ -116,20 +117,20 @@ export function UserActions({
         <form action={resetAction} className="flex flex-wrap items-center gap-1.5 border-2 border-line bg-paper p-2">
           <input type="hidden" name="userId" value={userId} />
           <label className="sr-only" htmlFor={`pwd-${userId}`}>
-            {t("Nueva contraseña para {user}", { user: username })}
+            {t("panel.users.nuevaContrasenaParaUser", { user: username })}
           </label>
           <input
             id={`pwd-${userId}`}
             name="newPassword"
             type="password"
-            placeholder={t("Nueva contraseña")}
+            placeholder={t("panel.users.nuevaContrasena")}
             minLength={8}
             required
             className="input w-44 py-1.5 text-[13px]"
             autoComplete="new-password"
           />
           <button type="submit" disabled={resetPending} className="btn-primary btn-sm">
-            {resetPending ? "…" : t("Asignar")}
+            {resetPending ? "…" : t("panel.users.asignar")}
           </button>
         </form>
       ) : null}

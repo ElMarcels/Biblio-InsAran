@@ -10,7 +10,7 @@ import {
   moveBookInCollectionAction,
   removeBookFromCollectionAction,
 } from "@/lib/actions/collections";
-import { requireUser } from "@/lib/auth";
+import { isManagerRole, requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Params }) {
     select: { name: true },
   });
   const t = await getT();
-  return { title: collection ? collection.name : t("Lista no encontrada") };
+  return { title: collection ? collection.name : t("panel.collections.listaNoEncontrada") };
 }
 
 function one(value: string | string[] | undefined): string {
@@ -85,9 +85,9 @@ export default async function CollectionDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <nav aria-label={t("Migas de pan")} className="text-[13px] text-ink-faint">
+      <nav aria-label={t("panel.collections.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/colecciones" className="font-semibold text-ink underline underline-offset-2">
-          {t("Listas curadas")}
+          {t("panel.collections.listasCuradas")}
         </Link>
         <span className="px-2">/</span>
         <span>{collection.name}</span>
@@ -98,22 +98,22 @@ export default async function CollectionDetailPage({
           <h2 className="font-display text-[26px] font-bold">{collection.name}</h2>
           <p className="mt-1 text-[14px] text-ink-soft tabular-nums">
             {collection.books.length === 1
-              ? t("1 libro en la lista")
-              : t("{n} libros en la lista", { n: collection.books.length })}
+              ? t("panel.collections.oneInList")
+              : t("panel.collections.nInList", { n: collection.books.length })}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href={`/colecciones/${collection.slug}`} className="btn-outline" target="_blank" rel="noreferrer">
-            {t("Ver en el catálogo")}
+            {t("panel.collections.verEnElCatalogo")}
           </Link>
-          {user.role === "OWNER" ? (
+          {isManagerRole(user.role) ? (
             <DeleteCollectionButton collectionId={collection.id} name={collection.name} />
           ) : null}
         </div>
       </div>
 
       <section className="border-2 border-line bg-surface p-6">
-        <h3 className="micro mb-4">{t("Datos de la lista")}</h3>
+        <h3 className="micro mb-4">{t("panel.collections.datosDeLaLista")}</h3>
         <CollectionForm
           mode="edit"
           backHref="/panel/colecciones"
@@ -127,26 +127,26 @@ export default async function CollectionDetailPage({
 
       <section className="border-2 border-line bg-surface">
         <div className="border-b-2 border-line p-5">
-          <h3 className="micro mb-3">{t("Buscar libros para añadir")}</h3>
+          <h3 className="micro mb-3">{t("panel.collections.buscarLibrosParaAnadir")}</h3>
           <form method="get" className="flex flex-wrap items-end gap-2.5">
             <div className="min-w-[220px] flex-1">
               <label className="label" htmlFor="q">
-                {t("Título o autoría")}
+                {t("panel.collections.tituloOAutoria")}
               </label>
               <input
                 id="q"
                 name="q"
                 defaultValue={query}
                 className="input"
-                placeholder={t("Buscar en el catálogo…")}
+                placeholder={t("panel.collections.buscarEnElCatalogo")}
               />
             </div>
             <button type="submit" className="btn-outline">
-              {t("Buscar")}
+              {t("panel.collections.buscar")}
             </button>
             {query ? (
               <Link href={`/panel/colecciones/${collection.id}`} className="btn-ghost">
-                {t("Quitar filtros")}
+                {t("panel.collections.quitarFiltros")}
               </Link>
             ) : null}
           </form>
@@ -154,7 +154,7 @@ export default async function CollectionDetailPage({
           {query ? (
             results.length === 0 ? (
               <p className="mt-4 text-[13px] text-ink-faint">
-                {t("No hay más libros que coincidan con esa búsqueda.")}
+                {t("panel.collections.noHayMasLibrosQueCoincidanConEsaBusqueda")}
               </p>
             ) : (
               <ul className="mt-4 flex flex-col divide-y divide-hairline border-t border-hairline">
@@ -168,7 +168,7 @@ export default async function CollectionDetailPage({
                       <input type="hidden" name="collectionId" value={collection.id} />
                       <input type="hidden" name="bookId" value={book.id} />
                       <button type="submit" className="btn-outline btn-sm">
-                        {t("Añadir a la lista")}
+                        {t("panel.collections.anadirALaLista")}
                       </button>
                     </form>
                   </li>
@@ -177,7 +177,7 @@ export default async function CollectionDetailPage({
             )
           ) : (
             <p className="mt-3 text-[13px] text-ink-faint">
-              {t("Escribe un título o una autoría para buscar en el catálogo.")}
+              {t("panel.collections.escribeUnTituloOUnaAutoriaParaBuscarEnElCatalogo")}
             </p>
           )}
         </div>
@@ -185,8 +185,8 @@ export default async function CollectionDetailPage({
         {collection.books.length === 0 ? (
           <div className="p-5">
             <EmptyState
-              title={t("La lista está vacía")}
-              description={t("Busca libros arriba para ir añadiéndolos a la lista.")}
+              title={t("panel.collections.laListaEstaVacia")}
+              description={t("panel.collections.buscaLibrosArribaParaIrAnadiendolosALaLista")}
             />
           </div>
         ) : (
@@ -220,7 +220,7 @@ export default async function CollectionDetailPage({
                     <button
                       type="submit"
                       className="btn-ghost btn-sm"
-                      aria-label={t("Subir «{title}»", { title: item.book.title })}
+                      aria-label={t("panel.collections.subirTitle", { title: item.book.title })}
                       disabled={index === 0}
                     >
                       ↑
@@ -233,7 +233,7 @@ export default async function CollectionDetailPage({
                     <button
                       type="submit"
                       className="btn-ghost btn-sm"
-                      aria-label={t("Bajar «{title}»", { title: item.book.title })}
+                      aria-label={t("panel.collections.bajarTitle", { title: item.book.title })}
                       disabled={index === collection.books.length - 1}
                     >
                       ↓
@@ -243,7 +243,7 @@ export default async function CollectionDetailPage({
                     <input type="hidden" name="collectionId" value={collection.id} />
                     <input type="hidden" name="bookId" value={item.bookId} />
                     <button type="submit" className="btn-outline btn-sm text-danger">
-                      {t("Quitar")}
+                      {t("panel.collections.quitar")}
                     </button>
                   </form>
                 </div>

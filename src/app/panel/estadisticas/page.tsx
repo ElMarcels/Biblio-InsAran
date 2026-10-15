@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Estadísticas") };
+  return { title: t("panel.stats.estadisticas") };
 }
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -145,58 +145,58 @@ export default async function StatsPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h2 className="font-display text-[26px] font-bold">{t("Estadísticas")}</h2>
+        <h2 className="font-display text-[26px] font-bold">{t("panel.stats.estadisticas")}</h2>
         <p className="mt-1 max-w-2xl text-[14px] text-ink-soft">
           {t(
-            "Cómo se usa el fondo: préstamos, autorías más leídas y libros que nunca circulan.",
+            "panel.stats.comoSeUsaElFondoPrestamosAutoriasMasLeidasYLibrosQueNuncaCircula",
           )}
         </p>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile
-          label={t("Préstamos totales")}
+          label={t("panel.stats.prestamosTotales")}
           value={totalLoans}
-          hint={t("{n} en los últimos 30 días", { n: loans30 })}
+          hint={t("panel.stats.nEnLosUltimos30Dias", { n: loans30 })}
         />
         <StatTile
-          label={t("Rotación del fondo")}
+          label={t("panel.stats.rotacionDelFondo")}
           value={rotation.toFixed(1)}
-          hint={t("Préstamos por ejemplar")}
+          hint={t("panel.stats.prestamosPorEjemplar")}
         />
         <StatTile
-          label={t("Libros nunca prestados")}
+          label={t("panel.stats.librosNuncaPrestados")}
           value={neverLoaned.length}
-          hint={t("{n}% del fondo · {copies} ejemplares", {
+          hint={t("panel.stats.nDelFondoCopiesEjemplares", {
             n: neverLoanedPercent,
             copies: neverLoanedCopies,
           })}
         />
         <StatTile
-          label={t("En préstamo")}
+          label={t("panel.stats.enPrestamo")}
           value={activeLoans}
-          hint={t(overdue === 1 ? "{n} vencido" : "{n} vencidos", { n: overdue })}
+          hint={t(overdue === 1 ? "panel.nVencido" : "panel.nVencidos", { n: overdue })}
         />
         <StatTile
-          label={t("Préstamos en 12 meses")}
+          label={t("panel.stats.prestamosEn12Meses")}
           value={loans365}
-          hint={t("Actividad del último año")}
+          hint={t("panel.stats.actividadDelUltimoAno")}
         />
         <StatTile
-          label={t("Lectores activos")}
+          label={t("panel.stats.lectoresActivos")}
           value={activeReaders}
-          hint={t("Carnés en vigor")}
+          hint={t("panel.stats.carnesEnVigor")}
         />
       </section>
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="border-2 border-line bg-surface">
           <h3 className="border-b-2 border-line bg-paper px-4 py-3 font-display text-[18px] font-bold">
-            {t("Libros más prestados")}
+            {t("panel.stats.librosMasPrestados")}
           </h3>
           {topBooks.length === 0 ? (
             <p className="px-4 py-6 text-center text-[13.5px] text-ink-faint">
-              {t("Todavía no se ha registrado ningún préstamo.")}
+              {t("panel.stats.todaviaNoSeHaRegistradoNingunPrestamo")}
             </p>
           ) : (
             <ul className="divide-y divide-hairline">
@@ -227,11 +227,11 @@ export default async function StatsPage() {
 
         <section className="border-2 border-line bg-surface">
           <h3 className="border-b-2 border-line bg-paper px-4 py-3 font-display text-[18px] font-bold">
-            {t("Autorías más prestadas")}
+            {t("panel.stats.autoriasMasPrestadas")}
           </h3>
           {topAuthors.length === 0 ? (
             <p className="px-4 py-6 text-center text-[13.5px] text-ink-faint">
-              {t("Todavía no se ha registrado ningún préstamo.")}
+              {t("panel.stats.todaviaNoSeHaRegistradoNingunPrestamo")}
             </p>
           ) : (
             <ul className="divide-y divide-hairline">
@@ -248,7 +248,7 @@ export default async function StatsPage() {
                       {row.author}
                     </Link>
                     <p className="text-[13px] text-ink-faint">
-                      {t(row.titles === 1 ? "1 título" : "{n} títulos", {
+                      {t(row.titles === 1 ? "panel.stats.oneTitle" : "panel.stats.nTitles", {
                         n: row.titles,
                       })}
                     </p>
@@ -265,11 +265,11 @@ export default async function StatsPage() {
 
       <section className="border-2 border-line bg-surface">
         <h3 className="border-b-2 border-line bg-paper px-4 py-3 font-display text-[18px] font-bold">
-          {t("Préstamos por categoría")}
+          {t("panel.stats.prestamosPorCategoria")}
         </h3>
         {categories.length === 0 ? (
           <p className="px-4 py-6 text-center text-[13.5px] text-ink-faint">
-            {t("El catálogo todavía no tiene títulos.")}
+            {t("panel.stats.elCatalogoTodaviaNoTieneTitulos")}
           </p>
         ) : (
           <ul className="divide-y divide-hairline">
@@ -288,7 +288,7 @@ export default async function StatsPage() {
                   {row.loans}
                 </span>
                 <span className="hidden w-20 shrink-0 text-right text-[12px] tabular-nums text-ink-faint sm:block">
-                  {t("{n} títulos", { n: row.titles })}
+                  {t("panel.stats.nTitles", { n: row.titles })}
                 </span>
               </li>
             ))}
@@ -299,28 +299,28 @@ export default async function StatsPage() {
       <section className="border-2 border-line bg-surface">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b-2 border-line bg-paper px-4 py-3">
           <h3 className="font-display text-[18px] font-bold">
-            {t("Libros nunca prestados")}
+            {t("panel.stats.librosNuncaPrestados")}
           </h3>
           <span className="border-2 border-line px-2 py-0.5 text-[12px] font-bold tabular-nums">
             {neverLoaned.length}
           </span>
           <p className="w-full text-[13px] text-ink-soft sm:w-auto sm:pl-2">
-            {t("Candidatos al expurgo: conviene revisarlos antes de darlos de baja.")}
+            {t("panel.stats.candidatosAlExpurgoConvieneRevisarlosAntesDeDarlosDeBaja")}
           </p>
         </div>
         {neverLoaned.length === 0 ? (
           <p className="px-4 py-6 text-center text-[13.5px] text-ink-faint">
-            {t("Todo el fondo tiene al menos un préstamo registrado.")}
+            {t("panel.stats.todoElFondoTieneAlMenosUnPrestamoRegistrado")}
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-line">
-                  <th scope="col" className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide">{t("Título")}</th>
-                  <th scope="col" className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide">{t("Categoría")}</th>
-                  <th scope="col" className="px-4 py-2 text-right text-[12px] font-semibold uppercase tracking-wide">{t("Ej.")}</th>
-                  <th scope="col" className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide">{t("Incorporado")}</th>
+                  <th scope="col" className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide">{t("panel.stats.titulo")}</th>
+                  <th scope="col" className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide">{t("panel.stats.categoria")}</th>
+                  <th scope="col" className="px-4 py-2 text-right text-[12px] font-semibold uppercase tracking-wide">{t("panel.stats.ej")}</th>
+                  <th scope="col" className="px-4 py-2 text-[12px] font-semibold uppercase tracking-wide">{t("panel.stats.incorporado")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -347,7 +347,7 @@ export default async function StatsPage() {
             </table>
             {neverLoaned.length > LIST_LIMIT ? (
               <p className="px-4 py-3 text-[13px] text-ink-faint">
-                {t("Se muestran los primeros {n} títulos.", { n: LIST_LIMIT })}
+                {t("panel.stats.seMuestranLosPrimerosNTitulos", { n: LIST_LIMIT })}
               </p>
             ) : null}
           </div>

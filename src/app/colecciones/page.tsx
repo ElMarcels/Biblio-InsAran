@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Colecciones") };
+  return { title: t("collections.colecciones") };
 }
 
 export default async function CollectionsPage() {
@@ -37,20 +37,20 @@ export default async function CollectionsPage() {
   return (
     <div className="shell flex flex-1 flex-col py-10">
       <header className="mb-8">
-        <p className="micro mb-3">{t("Colecciones")}</p>
+        <p className="micro mb-3">{t("collections.colecciones")}</p>
         <h1 className="font-display text-[38px] font-bold sm:text-[44px]">
-          {t("Listas preparadas por la biblioteca")}
+          {t("collections.listasPreparadasPorLaBiblioteca")}
         </h1>
         <p className="mt-3 max-w-2xl text-[15px] text-ink-soft">
           {t(
-            "Selecciones que cambian con el curso: novedades, recomendados, el club de lectura y más.",
+            "collections.seleccionesQueCambianConElCursoNovedadesRecomendadosElClubDeLect",
           )}
         </p>
       </header>
 
       {collections.length === 0 ? (
         <p className="border-2 border-dashed border-hairline bg-surface px-6 py-14 text-center text-[15px] text-ink-soft">
-          {t("Todavía no hay listas publicadas.")}
+          {t("collections.todaviaNoHayListasPublicadas")}
         </p>
       ) : (
         <ul className="flex flex-col gap-5">
@@ -71,12 +71,12 @@ export default async function CollectionsPage() {
                   ) : null}
                   <p className="mt-2 text-[13px] tabular-nums text-ink-faint">
                     {collection._count.books === 1
-                      ? t("1 libro")
-                      : t("{n} libros", { n: collection._count.books })}
+                      ? t("collections.oneBook")
+                      : t("collections.nBooks", { n: collection._count.books })}
                   </p>
                 </div>
                 <Link href={`/colecciones/${collection.slug}`} className="btn-outline btn-sm">
-                  {t("Ver la lista")}
+                  {t("collections.verLaLista")}
                 </Link>
               </div>
 

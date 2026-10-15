@@ -1,26 +1,30 @@
+import type { TranslationKey } from "@/lib/i18n/translate";
+
 export type PanelNavItem = {
   href: string;
-  label: string;
-  ownerOnly?: boolean;
+  label: TranslationKey;
+  managerOnly?: boolean;
 };
 
 export const PANEL_NAV: PanelNavItem[] = [
-  { href: "/panel", label: "Resumen" },
-  { href: "/panel/tareas", label: "Tareas" },
-  { href: "/panel/libros", label: "Libros" },
-  { href: "/panel/libros/nuevo", label: "Añadir libro" },
-  { href: "/panel/colecciones", label: "Listas curadas" },
-  { href: "/panel/lectores", label: "Lectores" },
-  { href: "/panel/prestamos", label: "Préstamos" },
-  { href: "/panel/reservas", label: "Reservas" },
-  { href: "/panel/estadisticas", label: "Estadísticas" },
-  { href: "/panel/usuarios", label: "Usuarios", ownerOnly: true },
-  { href: "/panel/actividad", label: "Actividad", ownerOnly: true },
-  { href: "/panel/cuenta", label: "Mi cuenta" },
+  { href: "/panel", label: "panel.resumen" },
+  { href: "/panel/tareas", label: "panel.tareas" },
+  { href: "/panel/libros", label: "panel.libros" },
+  { href: "/panel/libros/nuevo", label: "panel.anadirLibro" },
+  { href: "/panel/colecciones", label: "panel.listasCuradas" },
+  { href: "/panel/lectores", label: "panel.lectores" },
+  { href: "/panel/prestamos", label: "panel.prestamos" },
+  { href: "/panel/reservas", label: "panel.reservas" },
+  { href: "/panel/estadisticas", label: "panel.estadisticas" },
+  { href: "/panel/usuarios", label: "panel.usuarios", managerOnly: true },
+  { href: "/panel/actividad", label: "panel.actividad", managerOnly: true },
+  { href: "/panel/cuenta", label: "panel.miCuenta" },
 ];
 
 export function itemsForRole(role: string): PanelNavItem[] {
-  return PANEL_NAV.filter((item) => !item.ownerOnly || role === "OWNER");
+  return PANEL_NAV.filter(
+    (item) => !item.managerOnly || role === "OWNER" || role === "ADMIN",
+  );
 }
 
 export function isActive(href: string, pathname: string): boolean {

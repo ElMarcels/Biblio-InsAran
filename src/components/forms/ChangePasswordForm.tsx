@@ -18,14 +18,14 @@ export function ChangePasswordForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
       {state.status === "success" && state.message ? (
-        <Notice tone="success">{t(state.message)}</Notice>
+        <Notice tone="success">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
       <Field
-        label="Contraseña actual"
+        label="panel.account.contrasenaActual"
         htmlFor="currentPassword"
         error={errors.currentPassword}
         required
@@ -43,10 +43,10 @@ export function ChangePasswordForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Nueva contraseña"
+          label="panel.account.nuevaContrasena"
           htmlFor="newPassword"
           error={errors.newPassword}
-          hint="Mínimo 8 caracteres."
+          hint="panel.account.minimo8Caracteres"
           required
         >
           <input
@@ -61,7 +61,7 @@ export function ChangePasswordForm() {
         </Field>
 
         <Field
-          label="Repite la nueva contraseña"
+          label="panel.account.repiteLaNuevaContrasena"
           htmlFor="confirmPassword"
           error={errors.confirmPassword}
           required
@@ -79,8 +79,8 @@ export function ChangePasswordForm() {
       </div>
 
       <div>
-        <SubmitButton pendingLabel="Actualizando…">
-          {t("Actualizar contraseña")}
+        <SubmitButton pendingLabel="panel.account.actualizando">
+          {t("panel.account.actualizarContrasena")}
         </SubmitButton>
       </div>
     </form>

@@ -16,17 +16,17 @@ export function ReturnLoanButton({ loanId }: { loanId: string }) {
   );
 
   if (state.status === "success") {
-    return <span className="text-[12px] font-semibold text-ok">{t("Devuelto")}</span>;
+    return <span className="text-[12px] font-semibold text-ok">{t("panel.loans.devuelto")}</span>;
   }
 
   return (
     <form action={formAction} className="inline-flex flex-col items-end gap-1">
       <input type="hidden" name="id" value={loanId} />
       <button type="submit" disabled={pending} className="btn-outline btn-sm">
-        {pending ? "…" : t("Devolver")}
+        {pending ? "…" : t("panel.loans.devolver")}
       </button>
       {state.status === "error" && state.message ? (
-        <span className="error-text">{t(state.message)}</span>
+        <span className="error-text">{t(state.message, state.messageParams)}</span>
       ) : null}
     </form>
   );
@@ -51,13 +51,13 @@ export function RenewLoanButton({
       <input type="hidden" name="id" value={loanId} />
       <input type="hidden" name="days" value={days} />
       <button type="submit" disabled={pending} className="btn-ghost btn-sm">
-        {pending ? "…" : t("+{days} días", { days })}
+        {pending ? "…" : t("panel.loans.daysDias", { days })}
       </button>
       {state.status === "success" && state.message ? (
-        <span className="text-[12px] font-semibold text-ok">{t(state.message)}</span>
+        <span className="text-[12px] font-semibold text-ok">{t(state.message, state.messageParams)}</span>
       ) : null}
       {state.status === "error" && state.message ? (
-        <span className="error-text">{t(state.message)}</span>
+        <span className="error-text">{t(state.message, state.messageParams)}</span>
       ) : null}
     </form>
   );

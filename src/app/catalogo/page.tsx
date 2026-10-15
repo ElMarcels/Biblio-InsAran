@@ -7,17 +7,21 @@ import { Pagination } from "@/components/Pagination";
 import { CATEGORIES, LANGUAGES } from "@/lib/catalog";
 import { CATALOG_PAGE_SIZE } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
+import type { TranslationKey } from "@/lib/i18n/translate";
 import { onLoanCounts } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = { title: "Catálogo" };
+export async function generateMetadata() {
+  const t = await getT();
+  return { title: t("catalog.catalogo") };
+}
 
 const SORTS = {
-  recientes: { label: "Incorporación reciente", orderBy: [{ createdAt: "desc" }] },
-  titulo: { label: "Título (A–Z)", orderBy: [{ title: "asc" }] },
-  autor: { label: "Autoría (A–Z)", orderBy: [{ author: "asc" }] },
-  ejemplares: { label: "Más ejemplares", orderBy: [{ copies: "desc" }] },
-} satisfies Record<string, { label: string; orderBy: Prisma.BookOrderByWithRelationInput[] }>;
+  recientes: { label: "catalog.incorporacionReciente", orderBy: [{ createdAt: "desc" }] },
+  titulo: { label: "catalog.tituloAZ", orderBy: [{ title: "asc" }] },
+  autor: { label: "catalog.autoriaAZ", orderBy: [{ author: "asc" }] },
+  ejemplares: { label: "catalog.masEjemplares", orderBy: [{ copies: "desc" }] },
+} satisfies Record<string, { label: TranslationKey; orderBy: Prisma.BookOrderByWithRelationInput[] }>;
 
 type SortKey = keyof typeof SORTS;
 
@@ -95,22 +99,22 @@ export default async function CatalogPage({
   return (
     <div className="shell flex flex-1 flex-col py-10">
       <header className="mb-8">
-        <p className="micro mb-3">{t("Catálogo")}</p>
+        <p className="micro mb-3">{t("catalog.catalogo")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
             {category
               ? category
               : tag
-                ? t("Materia: {tag}", { tag })
+                ? t("catalog.materiaTag", { tag })
                 : query
-                  ? t("Resultados de “{query}”", { query })
-                  : t("Todo el fondo")}
+                  ? t("catalog.resultadosDeQuery", { query })
+                  : t("catalog.todoElFondo")}
           </h1>
           <p className="text-[14px] text-ink-soft tabular-nums">
-            {total === 1 ? t("1 título") : t("{n} títulos", { n: total })}
+            {total === 1 ? t("catalog.oneTitle") : t("catalog.nTitles", { n: total })}
             {hasFilters
-              ? t(" con los filtros aplicados")
-              : t(" en la colección")}
+              ? t("catalog.conLosFiltrosAplicados")
+              : t("catalog.enLaColeccion")}
           </p>
         </div>
       </header>
@@ -122,24 +126,24 @@ export default async function CatalogPage({
       >
         <div className="sm:col-span-2 lg:col-span-1">
           <label htmlFor="q" className="label">
-            {t("Búsqueda")}
+            {t("catalog.busqueda")}
           </label>
           <input
             id="q"
             name="q"
             defaultValue={query}
             className="input"
-            placeholder={t("Título, autoría, ISBN…")}
+            placeholder={t("catalog.tituloAutoriaISBN")}
             autoComplete="off"
           />
         </div>
 
         <div>
           <label htmlFor="categoria" className="label">
-            {t("Categoría")}
+            {t("catalog.categoria")}
           </label>
           <select id="categoria" name="categoria" defaultValue={category} className="input">
-            <option value="">{t("Todas")}</option>
+            <option value="">{t("catalog.todas")}</option>
             {CATEGORIES.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -150,10 +154,10 @@ export default async function CatalogPage({
 
         <div>
           <label htmlFor="idioma" className="label">
-            {t("Idioma")}
+            {t("catalog.idioma")}
           </label>
           <select id="idioma" name="idioma" defaultValue={language} className="input">
-            <option value="">{t("Todos")}</option>
+            <option value="">{t("catalog.todos")}</option>
             {LANGUAGES.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -164,21 +168,21 @@ export default async function CatalogPage({
 
         <div>
           <label htmlFor="etiqueta" className="label">
-            {t("Materia")}
+            {t("catalog.materia")}
           </label>
           <input
             id="etiqueta"
             name="etiqueta"
             defaultValue={tag}
             className="input"
-            placeholder={t("Novela negra…")}
+            placeholder={t("catalog.novelaNegra")}
             autoComplete="off"
           />
         </div>
 
         <div>
           <label htmlFor="orden" className="label">
-            {t("Ordenar por")}
+            {t("catalog.ordenarPor")}
           </label>
           <select id="orden" name="orden" defaultValue={sortKey} className="input">
             {Object.entries(SORTS).map(([key, value]) => (
@@ -191,11 +195,11 @@ export default async function CatalogPage({
 
         <div className="flex items-end gap-2">
           <button type="submit" className="btn-primary">
-            {t("Filtrar")}
+            {t("catalog.filtrar")}
           </button>
           {hasFilters || sortKey !== "recientes" ? (
             <Link href={clearHref} className="btn-ghost">
-              {t("Limpiar")}
+              {t("catalog.limpiar")}
             </Link>
           ) : null}
         </div>
@@ -203,18 +207,18 @@ export default async function CatalogPage({
 
       {books.length === 0 ? (
         <EmptyState
-          title={hasFilters ? t("Sin resultados") : t("Aún no hay libros")}
+          title={hasFilters ? t("catalog.sinResultados") : t("catalog.aunNoHayLibros")}
           description={
             hasFilters
               ? t(
-                  "No se ha encontrado ningún título con esos criterios. Prueba a quitar algún filtro o a buscar de otra forma.",
+                  "catalog.noSeHaEncontradoNingunTituloConEsosCriteriosPruebaAQuitarAlgunFi",
                 )
-              : t("El catálogo todavía no tiene títulos registrados.")
+              : t("catalog.elCatalogoTodaviaNoTieneTitulosRegistrados")
           }
           action={
             hasFilters ? (
               <Link href={clearHref} className="btn-outline">
-                {t("Quitar filtros")}
+                {t("catalog.quitarFiltros")}
               </Link>
             ) : undefined
           }

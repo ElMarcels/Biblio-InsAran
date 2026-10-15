@@ -12,7 +12,7 @@ import crypto from "node:crypto";
  * tanto en el Proxy como en el servidor.
  */
 
-export type SessionRole = "OWNER" | "EDITOR";
+export type SessionRole = "OWNER" | "ADMIN" | "EDITOR";
 
 export type SessionCookiePayload = {
   /** Token de sesión (se contrasta con el hash guardado en la base de datos). */
@@ -76,7 +76,9 @@ export function decodeSessionCookie(
 
     const payload = parsed as Partial<SessionCookiePayload>;
     if (typeof payload.t !== "string" || typeof payload.e !== "number") return null;
-    if (payload.r !== "OWNER" && payload.r !== "EDITOR") return null;
+    if (payload.r !== "OWNER" && payload.r !== "ADMIN" && payload.r !== "EDITOR") {
+      return null;
+    }
     if (payload.e <= Date.now()) return null;
 
     return { t: payload.t, r: payload.r, e: payload.e };

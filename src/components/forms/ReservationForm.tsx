@@ -30,10 +30,10 @@ export function ReservationForm({
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {state.status === "error" && state.message ? (
-        <Notice tone="danger">{t(state.message)}</Notice>
+        <Notice tone="danger">{t(state.message, state.messageParams)}</Notice>
       ) : null}
 
-      <Field label="Libro" htmlFor="bookId" error={errors.bookId} required>
+      <Field label="forms.reservations.libro" htmlFor="bookId" error={errors.bookId} required>
         <select
           id="bookId"
           name="bookId"
@@ -41,7 +41,7 @@ export function ReservationForm({
           className={inputClass(Boolean(errors.bookId))}
           required
         >
-          <option value="">{t("Selecciona un libro…")}</option>
+          <option value="">{t("forms.reservations.seleccionaUnLibro")}</option>
           {books.map((book) => (
             <option key={book.id} value={book.id}>
               {book.title} — {book.author}
@@ -50,7 +50,7 @@ export function ReservationForm({
         </select>
       </Field>
 
-      <Field label="Lector o lectora" htmlFor="readerId" error={errors.readerId} required>
+      <Field label="forms.reservations.lectorOLectora" htmlFor="readerId" error={errors.readerId} required>
         <select
           id="readerId"
           name="readerId"
@@ -58,7 +58,7 @@ export function ReservationForm({
           className={inputClass(Boolean(errors.readerId))}
           required
         >
-          <option value="">{t("Selecciona una persona…")}</option>
+          <option value="">{t("forms.reservations.seleccionaUnaPersona")}</option>
           {readers.map((reader) => (
             <option key={reader.id} value={reader.id}>
               {reader.fullName}
@@ -68,7 +68,7 @@ export function ReservationForm({
         </select>
       </Field>
 
-      <Field label="Notas" htmlFor="notes" error={errors.notes}>
+      <Field label="forms.reservations.notas" htmlFor="notes" error={errors.notes}>
         <textarea
           id="notes"
           name="notes"
@@ -78,7 +78,7 @@ export function ReservationForm({
       </Field>
 
       <div className="flex flex-wrap items-center gap-2.5 border-t-2 border-line pt-4">
-        <SubmitButton pendingLabel="Guardando…">{t("Crear reserva")}</SubmitButton>
+        <SubmitButton pendingLabel="forms.reservations.guardando">{t("forms.reservations.crearReserva")}</SubmitButton>
       </div>
     </form>
   );

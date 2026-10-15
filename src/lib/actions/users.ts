@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import {
-  assertOwner,
+  assertManager,
   AuthError,
   hashPassword,
   revokeUserSessions,
@@ -19,7 +19,7 @@ import {
 
 const FORBIDDEN: ActionState = {
   status: "error",
-  message: "Solo el dueño de la plataforma puede gestionar usuarios.",
+  message: "actions.ownerOnly",
 };
 
 function text(formData: FormData, key: string): string {
@@ -31,9 +31,9 @@ export async function createUserAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  let owner;
+  let manager;
   try {
-    owner = await assertOwner();
+    manager = await assertManager();
   } catch (error) {
     if (error instanceof AuthError) return FORBIDDEN;
     throw error;
@@ -43,11 +43,12 @@ export async function createUserAction(
     username: text(formData, "username"),
     displayName: text(formData, "displayName"),
     password: text(formData, "password"),
+    role: text(formData, "role"),
   });
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados.",
+      message: "actions.reviewFields",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -58,7 +59,7 @@ export async function createUserAction(
   if (existing) {
     return {
       status: "error",
-      fieldErrors: { username: "Ese nombre de usuario ya está en uso." },
+      fieldErrors: { username: "actions.usernameTaken" },
     };
   }
 
@@ -67,10 +68,10 @@ export async function createUserAction(
       username: parsed.data.username,
       displayName: parsed.data.displayName,
       passwordHash: await hashPassword(parsed.data.password),
-      role: "EDITOR",
+      role: parsed.data.role,
       active: true,
       mustChangePassword: true,
-      createdById: owner.id,
+      createdById: manager.id,
     },
   });
 
@@ -79,14 +80,15 @@ export async function createUserAction(
     entityType: "User",
     entityId: created.id,
     summary: `Creada la cuenta «${created.username}» para ${created.displayName}`,
-    userId: owner.id,
+    userId: manager.id,
   });
 
   revalidatePath("/panel/usuarios");
   revalidatePath("/panel");
   return {
     status: "success",
-    message: `Cuenta «${created.username}» creada. La persona deberá cambiar la contraseña al entrar.`,
+    message: "actions.userCreated",
+    messageParams: { username: created.username },
   };
 }
 
@@ -94,9 +96,9 @@ export async function setUserActiveAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  let owner;
+  let manager;
   try {
-    owner = await assertOwner();
+    manager = await assertManager();
   } catch (error) {
     if (error instanceof AuthError) return FORBIDDEN;
     throw error;
@@ -104,13 +106,13 @@ export async function setUserActiveAction(
 
   const userId = text(formData, "userId");
   const active = text(formData, "active") === "true";
-  if (!userId) return { status: "error", message: "Usuario no indicado." };
-  if (userId === owner.id && !active) {
-    return { status: "error", message: "No puedes desactivar tu propia cuenta." };
+  if (!userId) return { status: "error", message: "actions.userNoId" };
+  if (userId === manager.id && !active) {
+    return { status: "error", message: "actions.userCantDisableSelf" };
   }
 
   const target = await prisma.user.findUnique({ where: { id: userId } });
-  if (!target) return { status: "error", message: "El usuario ya no existe." };
+  if (!target) return { status: "error", message: "actions.userGone" };
 
   await prisma.user.update({ where: { id: userId }, data: { active } });
   if (!active) await revokeUserSessions(userId);
@@ -120,13 +122,14 @@ export async function setUserActiveAction(
     entityType: "User",
     entityId: userId,
     summary: `${active ? "Activada" : "Desactivada"} la cuenta «${target.username}»`,
-    userId: owner.id,
+    userId: manager.id,
   });
 
   revalidatePath("/panel/usuarios");
   return {
     status: "success",
-    message: `Cuenta «${target.username}» ${active ? "activada" : "desactivada"}.`,
+    message: active ? "actions.userActivated" : "actions.userDeactivated",
+    messageParams: { username: target.username },
   };
 }
 
@@ -134,9 +137,9 @@ export async function resetUserPasswordAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  let owner;
+  let manager;
   try {
-    owner = await assertOwner();
+    manager = await assertManager();
   } catch (error) {
     if (error instanceof AuthError) return FORBIDDEN;
     throw error;
@@ -151,7 +154,7 @@ export async function resetUserPasswordAction(
   }
 
   const target = await prisma.user.findUnique({ where: { id: parsed.data.userId } });
-  if (!target) return { status: "error", message: "El usuario ya no existe." };
+  if (!target) return { status: "error", message: "actions.userGone" };
 
   await prisma.user.update({
     where: { id: target.id },
@@ -167,13 +170,14 @@ export async function resetUserPasswordAction(
     entityType: "User",
     entityId: target.id,
     summary: `Restablecida la contraseña de «${target.username}»`,
-    userId: owner.id,
+    userId: manager.id,
   });
 
   revalidatePath("/panel/usuarios");
   return {
     status: "success",
-    message: `Nueva contraseña asignada a «${target.username}». Deberá cambiarla al entrar.`,
+    message: "actions.userPasswordReset",
+    messageParams: { username: target.username },
   };
 }
 
@@ -181,24 +185,24 @@ export async function deleteUserAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  let owner;
+  let manager;
   try {
-    owner = await assertOwner();
+    manager = await assertManager();
   } catch (error) {
     if (error instanceof AuthError) return FORBIDDEN;
     throw error;
   }
 
   const userId = text(formData, "userId");
-  if (!userId) return { status: "error", message: "Usuario no indicado." };
-  if (userId === owner.id) {
-    return { status: "error", message: "No puedes eliminar tu propia cuenta." };
+  if (!userId) return { status: "error", message: "actions.userNoId" };
+  if (userId === manager.id) {
+    return { status: "error", message: "actions.userCantDeleteSelf" };
   }
 
   const target = await prisma.user.findUnique({ where: { id: userId } });
-  if (!target) return { status: "error", message: "El usuario ya no existe." };
+  if (!target) return { status: "error", message: "actions.userGone" };
   if (target.role === "OWNER") {
-    return { status: "error", message: "No se puede eliminar una cuenta de dueño." };
+    return { status: "error", message: "actions.userCantDeleteOwner" };
   }
 
   await prisma.user.delete({ where: { id: userId } });
@@ -207,10 +211,14 @@ export async function deleteUserAction(
     entityType: "User",
     entityId: userId,
     summary: `Eliminada la cuenta «${target.username}»`,
-    userId: owner.id,
+    userId: manager.id,
   });
 
   revalidatePath("/panel/usuarios");
   revalidatePath("/panel");
-  return { status: "success", message: `Cuenta «${target.username}» eliminada.` };
+  return {
+    status: "success",
+    message: "actions.userDeleted",
+    messageParams: { username: target.username },
+  };
 }

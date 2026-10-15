@@ -36,7 +36,7 @@ export async function loginAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los datos introducidos.",
+      message: "actions.reviewData",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
@@ -47,7 +47,8 @@ export async function loginAction(
     const minutes = Math.max(1, Math.ceil(limit.retryAfterSeconds / 60));
     return {
       status: "error",
-      message: `Demasiados intentos fallidos. Vuelve a intentarlo dentro de ${minutes} minuto(s).`,
+      message: "actions.tooManyAttempts",
+      messageParams: { minutes },
     };
   }
 
@@ -59,17 +60,17 @@ export async function loginAction(
   // constante para no revelar qué nombres de usuario están registrados.
   if (!user) {
     await new Promise((resolve) => setTimeout(resolve, 250));
-    return { status: "error", message: "Usuario o contraseña incorrectos." };
+    return { status: "error", message: "actions.invalidCredentials" };
   }
 
   const valid = await verifyPassword(parsed.data.password, user.passwordHash);
   if (!valid) {
-    return { status: "error", message: "Usuario o contraseña incorrectos." };
+    return { status: "error", message: "actions.invalidCredentials" };
   }
   if (!user.active) {
     return {
       status: "error",
-      message: "Esta cuenta está desactivada. Contacta con la dirección de la biblioteca.",
+      message: "actions.accountDisabled",
     };
   }
 
@@ -111,7 +112,7 @@ export async function changeOwnPasswordAction(
 ): Promise<ActionState> {
   const user = await getCurrentUser();
   if (!user) {
-    return { status: "error", message: "Tu sesión ha caducado. Vuelve a entrar." };
+    return { status: "error", message: "actions.sessionExpiredShort" };
   }
 
   const parsed = changePasswordSchema.safeParse({
@@ -122,21 +123,21 @@ export async function changeOwnPasswordAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Revisa los campos marcados.",
+      message: "actions.reviewFields",
       fieldErrors: fieldErrors(parsed.error),
     };
   }
 
   const account = await prisma.user.findUnique({ where: { id: user.id } });
   if (!account) {
-    return { status: "error", message: "No se encontró tu cuenta." };
+    return { status: "error", message: "actions.accountNotFound" };
   }
 
   const valid = await verifyPassword(parsed.data.currentPassword, account.passwordHash);
   if (!valid) {
     return {
       status: "error",
-      fieldErrors: { currentPassword: "La contraseña actual no es correcta." },
+      fieldErrors: { currentPassword: "actions.currentPasswordWrong" },
     };
   }
 
@@ -155,5 +156,5 @@ export async function changeOwnPasswordAction(
     userId: user.id,
   });
 
-  return { status: "success", message: "Contraseña actualizada correctamente." };
+  return { status: "success", message: "actions.passwordUpdated" };
 }

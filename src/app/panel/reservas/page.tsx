@@ -10,16 +10,17 @@ import {
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
-import { reservationStatusLabel } from "@/lib/labels";
+import type { TranslationKey } from "@/lib/i18n/translate";
+import { reservationStatusKey } from "@/lib/labels";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
   const t = await getT();
-  return { title: t("Reservas") };
+  return { title: t("panel.reservations.reservas") };
 }
 
-const FLASH: Record<string, string> = {
-  creada: "La reserva se ha creado.",
+const FLASH: Record<string, TranslationKey> = {
+  creada: "panel.reservations.flashCreated",
 };
 
 function one(value: string | string[] | undefined): string {
@@ -69,10 +70,10 @@ export default async function ReservationsPage({
   return (
     <div className="flex flex-col gap-8">
       <header>
-        <h2 className="font-display text-[26px] font-bold">{t("Reservas")}</h2>
+        <h2 className="font-display text-[26px] font-bold">{t("panel.reservations.reservas")}</h2>
         <p className="mt-1.5 max-w-2xl text-[14px] text-ink-soft">
           {t(
-            "Libros que el alumnado o el profesorado quieren pedir prestados y que ahora mismo no están disponibles. Cuando quieras, puedes servir una reserva para convertirla en préstamo.",
+            "panel.reservations.librosQueElAlumnadoOElProfesoradoQuierenPedirPrestadosYQueAhoraM",
           )}
         </p>
       </header>
@@ -80,11 +81,11 @@ export default async function ReservationsPage({
       {FLASH[aviso] ? <Notice tone="success">{t(FLASH[aviso])}</Notice> : null}
 
       <section className="border-2 border-line bg-surface p-6">
-        <h3 className="font-display text-[18px] font-semibold">{t("Crear una reserva")}</h3>
+        <h3 className="font-display text-[18px] font-semibold">{t("panel.reservations.crearUnaReserva")}</h3>
         {books.length === 0 || readers.length === 0 ? (
           <p className="mt-3 text-[14px] text-ink-soft">
             {t(
-              "Necesitas tener algún libro en el catálogo y algún lector dado de alta.",
+              "panel.reservations.necesitasTenerAlgunLibroEnElCatalogoYAlgunLectorDadoDeAlta",
             )}
           </p>
         ) : (
@@ -96,23 +97,23 @@ export default async function ReservationsPage({
 
       <section className="flex flex-col gap-4">
         <h3 className="font-display text-[20px] font-semibold">
-          {t("Reservas pendientes ({n})", { n: active.length })}
+          {t("panel.reservations.reservasPendientesN", { n: active.length })}
         </h3>
         {active.length === 0 ? (
           <EmptyState
-            title={t("Sin reservas pendientes")}
-            description={t("Cuando alguien reserve un libro que está prestado, aparecerá aquí.")}
+            title={t("panel.reservations.sinReservasPendientes")}
+            description={t("panel.reservations.cuandoAlguienReserveUnLibroQueEstaPrestadoApareceraAqui")}
           />
         ) : (
           <div className="overflow-x-auto border-2 border-line bg-surface">
             <table className="w-full min-w-[760px] border-collapse text-left">
-              <caption className="sr-only">{t("Reservas pendientes")}</caption>
+              <caption className="sr-only">{t("panel.reservations.reservasPendientes")}</caption>
               <thead>
                 <tr className="border-b-2 border-line bg-paper">
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Libro")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Lector/a")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Fijada el")}</th>
-                  <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">{t("Acciones")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.reservations.libro")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.reservations.lectorA")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("panel.reservations.fijadaEl")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-right text-[12px] font-semibold uppercase tracking-wide">{t("panel.reservations.acciones")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,7 +152,7 @@ export default async function ReservationsPage({
 
       {resolved.length > 0 ? (
         <section className="flex flex-col gap-3">
-          <h3 className="font-display text-[20px] font-semibold">{t("Reservas resueltas")}</h3>
+          <h3 className="font-display text-[20px] font-semibold">{t("panel.reservations.reservasResueltas")}</h3>
           <ul className="flex flex-col gap-1.5 text-[14px]">
             {resolved.map((reservation) => (
               <li
@@ -164,7 +165,7 @@ export default async function ReservationsPage({
                   </Link>{" "}
                   <span className="text-ink-faint">
                     · {reservation.reader.fullName} ·{" "}
-                    {t(reservationStatusLabel(reservation.status)).toLowerCase()}
+                    {(t(reservationStatusKey(reservation.status)) || reservation.status).toLowerCase()}
                   </span>
                 </span>
                 <span className="text-[13px] tabular-nums text-ink-faint">

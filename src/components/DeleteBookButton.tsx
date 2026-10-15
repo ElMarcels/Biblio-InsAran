@@ -26,7 +26,7 @@ export function DeleteBookButton({
   const [confirming, setConfirming] = useState(false);
 
   if (state.status === "success") {
-    return <span className="text-[12px] font-semibold text-ok">{t("Borrado")}</span>;
+    return <span className="text-[12px] font-semibold text-ok">{t("panel.books.borrado")}</span>;
   }
 
   if (!confirming) {
@@ -35,9 +35,9 @@ export function DeleteBookButton({
         type="button"
         onClick={() => setConfirming(true)}
         className={compact ? "btn-outline btn-sm text-danger" : "btn-outline text-danger"}
-        aria-label={t("Borrar «{title}»", { title })}
+        aria-label={t("panel.books.borrarTitle", { title })}
       >
-        {t("Borrar")}
+        {t("panel.books.borrar")}
       </button>
     );
   }
@@ -45,22 +45,22 @@ export function DeleteBookButton({
   return (
     <form action={formAction} className="inline-flex flex-wrap items-center gap-1.5">
       <input type="hidden" name="id" value={bookId} />
-      <span className="text-[12px] font-semibold text-danger">{t("¿Seguro?")}</span>
+      <span className="text-[12px] font-semibold text-danger">{t("panel.books.seguro")}</span>
       <button
         type="submit"
         disabled={pending}
         className="btn-danger btn-sm"
-        aria-label={t("Confirmar borrado")}
+        aria-label={t("panel.books.confirmarBorrado")}
       >
-        {pending ? "…" : t("Sí, borrar")}
+        {pending ? "…" : t("panel.books.siBorrar")}
       </button>
       <button
         type="button"
         onClick={() => setConfirming(false)}
         className="btn-ghost btn-sm"
-        aria-label={t("Cancelar")}
+        aria-label={t("panel.books.cancelar")}
       >
-        {t("Cancelar")}
+        {t("panel.books.cancelar")}
       </button>
       {state.status === "error" && state.message ? (
         <span className="error-text">{state.message}</span>

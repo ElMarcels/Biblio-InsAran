@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 
 import { createBookAction, updateBookAction } from "@/lib/actions/books";
+import { lookupIsbnAction } from "@/lib/actions/isbn";
 import { CATEGORIES, LANGUAGES } from "@/lib/catalog";
+import type { IsbnMetadata } from "@/lib/isbn";
 import { initialActionState } from "@/lib/validation";
 
 import { BookCover } from "../BookCover";
@@ -13,6 +15,19 @@ import { SubmitButton } from "../SubmitButton";
 import { useT } from "../i18n/LocaleProvider";
 import type { BookFormValues } from "./book-form-values";
 import { Field, inputClass } from "./Field";
+
+/** Estado de la consulta de la ficha por ISBN. */
+type IsbnStatus = "idle" | "loading" | "success" | "nothing" | "notFound" | "invalid" | "error";
+
+/** Rellena un campo del formulario sólo si todavía está vacío. */
+function fillIfEmpty(form: HTMLFormElement, name: string, value?: string | number): boolean {
+  if (value === undefined || value === "") return false;
+  const field = form.elements.namedItem(name);
+  if (!(field instanceof HTMLInputElement)) return false;
+  if (field.value.trim() !== "") return false;
+  field.value = String(value);
+  return true;
+}
 
 export function BookForm({
   mode,
@@ -27,11 +42,84 @@ export function BookForm({
     initialActionState,
   );
   const [coverUrl, setCoverUrl] = useState(values.coverUrl);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [isbnStatus, setIsbnStatus] = useState<IsbnStatus>("idle");
   const errors = state.fieldErrors ?? {};
   const duplicate = state.status === "warning" ? state.duplicate : null;
 
+  /** Rellena los datos vacíos del formulario con la ficha de Open Library. */
+  function applyMetadata(form: HTMLFormElement, data: IsbnMetadata): number {
+    let filled = 0;
+    if (fillIfEmpty(form, "title", data.title)) filled += 1;
+    if (fillIfEmpty(form, "author", data.author)) filled += 1;
+    if (fillIfEmpty(form, "publisher", data.publisher)) filled += 1;
+    if (fillIfEmpty(form, "year", data.year)) filled += 1;
+    if (fillIfEmpty(form, "pages", data.pages)) filled += 1;
+    if (data.coverUrl && coverUrl.trim() === "") {
+      setCoverUrl(data.coverUrl);
+      filled += 1;
+    }
+    return filled;
+  }
+
+  async function lookupIsbn() {
+    const form = formRef.current;
+    if (!form || isbnStatus === "loading") return;
+
+    const field = form.elements.namedItem("isbn");
+    const isbn = field instanceof HTMLInputElement ? field.value : "";
+    if (!isbn.trim()) return;
+
+    setIsbnStatus("loading");
+    const result = await lookupIsbnAction(isbn);
+
+    if (result.status === "invalid") {
+      setIsbnStatus("invalid");
+      return;
+    }
+    if (result.status === "notFound") {
+      setIsbnStatus("notFound");
+      return;
+    }
+    if (result.status === "error") {
+      setIsbnStatus("error");
+      return;
+    }
+
+    setIsbnStatus(applyMetadata(form, result.data) > 0 ? "success" : "nothing");
+  }
+
+  /** Al salir del campo, completa la ficha si aún faltan los datos principales. */
+  function handleIsbnBlur(event: React.FocusEvent<HTMLInputElement>) {
+    // Si el foco va a un botón (guardar o el de búsqueda), no adelantamos la
+    // consulta: el botón ya la hace y no queremos interferir con el guardado.
+    if (event.relatedTarget instanceof HTMLElement && event.relatedTarget.closest("button")) {
+      return;
+    }
+
+    const digits = event.target.value.replace(/[^0-9Xx]/g, "");
+    if (digits.length !== 10 && digits.length !== 13) return;
+
+    const title = formRef.current?.elements.namedItem("title");
+    if (title instanceof HTMLInputElement && title.value.trim() !== "") return;
+    void lookupIsbn();
+  }
+
+  const isbnHasError =
+    isbnStatus === "notFound" || isbnStatus === "invalid" || isbnStatus === "error";
+
+  const isbnMessage: Record<IsbnStatus, string | null> = {
+    idle: null,
+    loading: null,
+    success: t("forms.book.isbnFichaCompletada"),
+    nothing: t("forms.book.isbnNadaQueRellenar"),
+    notFound: t("forms.book.isbnSinResultados"),
+    invalid: t("forms.book.isbnNoValido"),
+    error: t("forms.book.isbnErrorConsulta"),
+  };
+
   return (
-    <form action={formAction} className="flex flex-col gap-6" noValidate>
+    <form ref={formRef} action={formAction} className="flex flex-col gap-6" noValidate>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
       {/* Segunda vuelta: el usuario confirma que quiere guardar un duplicado. */}
       {duplicate ? <input type="hidden" name="confirm" value="1" /> : null}
@@ -156,15 +244,43 @@ export function BookForm({
             />
           </Field>
 
-          <Field label="forms.book.iSBN" htmlFor="isbn" error={errors.isbn}>
-            <input
-              id="isbn"
-              name="isbn"
-              defaultValue={values.isbn}
-              className={inputClass(Boolean(errors.isbn))}
-              maxLength={32}
-              placeholder="978-84-376-0494-7"
-            />
+          <Field
+            label="forms.book.iSBN"
+            htmlFor="isbn"
+            error={errors.isbn}
+            hint="forms.book.escribeElIsbnParaTraerLosDatosDelLibroAutomaticamente"
+          >
+            <div className="flex items-start gap-2">
+              <input
+                id="isbn"
+                name="isbn"
+                defaultValue={values.isbn}
+                className={`${inputClass(Boolean(errors.isbn))} flex-1`}
+                maxLength={32}
+                placeholder="978-84-376-0494-7"
+                onBlur={handleIsbnBlur}
+              />
+              <button
+                type="button"
+                onClick={() => void lookupIsbn()}
+                disabled={isbnStatus === "loading"}
+                className="btn-outline btn-sm shrink-0 whitespace-nowrap"
+              >
+                {isbnStatus === "loading"
+                  ? t("forms.book.buscandoEnOpenLibrary")
+                  : t("forms.book.rellenarDesdeIsbn")}
+              </button>
+            </div>
+            {isbnMessage[isbnStatus] ? (
+              <p
+                role={isbnHasError ? "alert" : "status"}
+                className={`mt-1.5 text-[12px] font-medium ${
+                  isbnHasError ? "text-danger" : "text-ink-faint"
+                }`}
+              >
+                {isbnMessage[isbnStatus]}
+              </p>
+            ) : null}
           </Field>
 
           <Field label="forms.book.numeroDePaginas" htmlFor="pages" error={errors.pages}>

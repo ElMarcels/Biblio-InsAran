@@ -17,7 +17,7 @@ export default async function EditBookPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireUser();
+  await requireUser();
   const { id } = await params;
   const t = await getT();
 
@@ -49,9 +49,7 @@ export default async function EditBookPage({
           <Link href={`/libro/${book.id}`} className="btn-ghost btn-sm">
             {t("Ver en el catálogo")}
           </Link>
-          {user.role === "OWNER" ? (
-            <DeleteBookButton bookId={book.id} title={book.title} compact />
-          ) : null}
+          <DeleteBookButton bookId={book.id} title={book.title} compact />
         </div>
       </header>
 

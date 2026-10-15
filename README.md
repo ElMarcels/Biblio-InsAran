@@ -6,9 +6,10 @@ fondo está restringida a las cuentas de la plataforma.
 
 - **Visitante** (sin cuenta): consulta el catálogo, busca y filtra por
   categoría, idioma o año, y ve la ficha de cada libro.
-- **Editor** (cuenta creada por la dirección): añade y edita libros.
-- **Dueño/dirección**: además, borra libros, gestiona las cuentas y consulta el
-  registro de actividad.
+- **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
+  gestiona préstamos, reservas, lectores y listas curadas.
+- **Dueño/dirección**: además, gestiona las cuentas de la plataforma y consulta
+  el registro de actividad.
 
 ---
 
@@ -95,7 +96,8 @@ antes de sembrar, o cambiarla luego desde **Panel → Mi cuenta**.
 
 ```
 prisma/
-  schema.prisma          Modelo de datos (User, Session, Book, AuditLog)
+  schema.prisma          Modelo de datos (User, Session, Book, Reader, Loan,
+                         Reservation, Collection, AuditLog)
   seed.ts                Datos iniciales
 src/
   app/
@@ -103,7 +105,9 @@ src/
     catalogo/            Catálogo público (búsqueda, filtros, paginación)
     libro/[id]/          Ficha de un libro
     login/               Acceso
-    panel/               Área privada (dashboard, libros, usuarios, actividad, cuenta)
+    panel/               Área privada (resumen, tareas, libros, colecciones,
+                         lectores, préstamos, reservas, estadísticas, usuarios,
+                         actividad, cuenta)
   components/            Componentes de la interfaz
   lib/
     auth.ts              Sesiones y comprobaciones de permisos
@@ -194,3 +198,11 @@ docker compose --profile selfhost-db up -d --build
   imágenes externas, para no depender de ficheros ni de servicios de terceros.
 - **Sin registro público:** las cuentas solo puede crearlas el dueño desde el
   panel.
+- **Solo en castellano:** la interfaz se escribe directamente en castellano; no
+  hay selector de idioma ni diccionarios de traducción.
+- **Sanciones:** un lector o lectora puede quedar suspendido hasta una fecha. No
+  se le pueden registrar préstamos (ni servir reservas) mientras la suspensión
+  esté vigente.
+- **Estadísticas:** el panel incluye una página con los libros y autorías más
+  prestados, la rotación del fondo y los títulos que nunca se han prestado
+  (candidatos al expurgo).

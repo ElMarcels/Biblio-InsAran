@@ -4,7 +4,7 @@ import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { assertOwner, assertUser, AuthError } from "../auth";
+import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { findCoverUrl } from "../covers";
 import { prisma } from "../prisma";
@@ -245,17 +245,17 @@ export async function updateBookAction(
   redirect("/panel/libros?aviso=editado");
 }
 
-/** Borrar libros: reservado al dueño de la plataforma. */
+/** Borrar libros: cualquier cuenta con sesión (dueño o editor). */
 export async function deleteBookAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   let user;
   try {
-    user = await assertOwner();
+    user = await assertUser();
   } catch (error) {
     if (error instanceof AuthError) {
-      return { status: "error", message: "Solo el dueño de la plataforma puede borrar libros." };
+      return { status: "error", message: "Tu sesión ha caducado. Vuelve a iniciar sesión." };
     }
     throw error;
   }

@@ -28,7 +28,7 @@ export default async function UsersPage() {
         </h2>
         <p className="mt-1.5 max-w-2xl text-[14px] text-ink-soft">
           {t(
-            "Solo el dueño puede crear cuentas. Cada cuenta creada aquí puede iniciar sesión y añadir o editar libros en el catálogo.",
+            "Solo el dueño puede crear cuentas. Cada cuenta creada aquí puede iniciar sesión y añadir, editar o borrar libros en el catálogo.",
           )}
         </p>
       </header>

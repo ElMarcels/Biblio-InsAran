@@ -246,6 +246,21 @@ export const readerSchema = z.object({
 
 export type ReaderInput = z.infer<typeof readerSchema>;
 
+/** Suspensión temporal del préstamo (sanción por retrasos u otras causas). */
+export const suspensionSchema = z.object({
+  readerId: z.string().min(1, "No se ha indicado qué lector."),
+  /** Fecha `YYYY-MM-DD` hasta la que dura la suspensión. Vacía = levantarla. */
+  until: z
+    .string()
+    .trim()
+    .max(10)
+    .optional()
+    .transform((value) => (value ? value : undefined)),
+  reason: optionalText(200, "El motivo"),
+});
+
+export type SuspensionInput = z.infer<typeof suspensionSchema>;
+
 /** Convierte "2026-03-15" en una fecha al final de ese día (en UTC). */
 export function parseDateInput(value: string): Date | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());

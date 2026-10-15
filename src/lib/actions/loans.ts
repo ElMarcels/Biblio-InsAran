@@ -86,6 +86,14 @@ export async function createLoanAction(
   if (!reader.active) {
     return { status: "error", message: "Ese lector está dado de baja." };
   }
+  if (reader.suspendedUntil && reader.suspendedUntil.getTime() > Date.now()) {
+    return {
+      status: "error",
+      message: `Este lector tiene el préstamo suspendido hasta el ${reader.suspendedUntil
+        .toISOString()
+        .slice(0, 10)}.`,
+    };
+  }
 
   const available = await availableCopies(book.id, book.copies);
   if (available <= 0) {
@@ -343,6 +351,16 @@ export async function fulfillReservationAction(
   if (!reservation) return { status: "error", message: "Esa reserva ya no existe." };
   if (reservation.status !== "ACTIVE") {
     return { status: "error", message: "Esa reserva ya está resuelta." };
+  }
+
+  if (
+    reservation.reader.suspendedUntil &&
+    reservation.reader.suspendedUntil.getTime() > Date.now()
+  ) {
+    return {
+      status: "error",
+      message: `${reservation.reader.fullName} tiene el préstamo suspendido. Levanta la sanción antes de servir la reserva.`,
+    };
   }
 
   const available = await availableCopies(

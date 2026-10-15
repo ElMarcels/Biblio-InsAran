@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { prisma } from "../prisma";
-import { fieldErrors, readerSchema, type ActionState } from "../validation";
+import { fieldErrors, parseDateInput, readerSchema, suspensionSchema, type ActionState } from "../validation";
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
@@ -169,5 +169,88 @@ export async function setReaderActiveAction(
   return {
     status: "success",
     message: active ? "Lector activado." : "Lector desactivado.",
+  };
+}
+
+/**
+ * Suspende o levanta la suspensión del préstamo a un lector (sanción por
+ * retrasos u otras incidencias). Si se envía una fecha, la suspensión dura
+ * hasta ese día; si se deja vacía, se levanta.
+ */
+export async function setReaderSuspensionAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  let user;
+  try {
+    user = await assertUser();
+  } catch (error) {
+    if (error instanceof AuthError) return UNAUTHORIZED;
+    throw error;
+  }
+
+  const parsed = suspensionSchema.safeParse({
+    readerId: text(formData, "readerId"),
+    until: text(formData, "until"),
+    reason: text(formData, "reason"),
+  });
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Revisa los datos de la suspensión.",
+      fieldErrors: fieldErrors(parsed.error),
+    };
+  }
+
+  const reader = await prisma.reader.findUnique({
+    where: { id: parsed.data.readerId },
+  });
+  if (!reader) return { status: "error", message: "Ese lector ya no existe." };
+
+  let suspendedUntil: Date | null = null;
+  if (parsed.data.until) {
+    suspendedUntil = parseDateInput(parsed.data.until);
+    if (!suspendedUntil) {
+      return {
+        status: "error",
+        message: "La fecha de suspensión no es válida.",
+        fieldErrors: { until: "La fecha no es válida." },
+      };
+    }
+    if (suspendedUntil.getTime() <= Date.now()) {
+      return {
+        status: "error",
+        message: "La fecha de suspensión debe ser futura.",
+        fieldErrors: { until: "Elige una fecha futura." },
+      };
+    }
+  }
+
+  await prisma.reader.update({
+    where: { id: reader.id },
+    data: {
+      suspendedUntil,
+      suspensionReason: suspendedUntil ? (parsed.data.reason ?? null) : null,
+    },
+  });
+
+  await recordAudit({
+    action: suspendedUntil ? "READER_SUSPEND" : "READER_SUSPEND_LIFT",
+    entityType: "Reader",
+    entityId: reader.id,
+    summary: suspendedUntil
+      ? `Suspendido el préstamo a «${reader.fullName}» hasta el ${suspendedUntil
+          .toISOString()
+          .slice(0, 10)}`
+      : `Levantada la suspensión de «${reader.fullName}»`,
+    userId: user.id,
+  });
+
+  revalidateReaders(reader.id);
+  return {
+    status: "success",
+    message: suspendedUntil
+      ? "Préstamo suspendido."
+      : "Suspensión levantada.",
   };
 }

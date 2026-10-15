@@ -63,6 +63,13 @@ export function isOverdue(loan: {
   return loan.returnedAt === null && loan.dueAt.getTime() < Date.now();
 }
 
+/** ¿El lector/a tiene el préstamo suspendido ahora mismo? */
+export function isSuspended(reader: { suspendedUntil: Date | null }): boolean {
+  return (
+    reader.suspendedUntil !== null && reader.suspendedUntil.getTime() > Date.now()
+  );
+}
+
 /** Días de diferencia (positivo = en el futuro) respecto a hoy. */
 export function daysUntil(date: Date): number {
   const day = 1000 * 60 * 60 * 24;

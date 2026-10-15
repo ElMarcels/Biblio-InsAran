@@ -9,7 +9,8 @@ import { useT } from "./i18n/LocaleProvider";
 
 /**
  * Borrado con confirmación en dos pasos, sin ventanas emergentes del navegador.
- * Solo el dueño puede ejecutarlo; el servidor lo verifica de todos modos.
+ * Puede ejecutarlo cualquier cuenta con sesión (dueño o editor); el servidor lo
+ * verifica de todos modos.
  */
 export function DeleteBookButton({
   bookId,

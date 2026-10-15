@@ -3,15 +3,17 @@ import { notFound } from "next/navigation";
 
 import { Notice } from "@/components/Notice";
 import { ReaderForm } from "@/components/forms/ReaderForm";
-import { ReturnLoanButton } from "@/components/panel/LoanRowActions";
+import { ReaderSuspensionForm } from "@/components/forms/ReaderSuspensionForm";
+import { RenewLoanButton, ReturnLoanButton } from "@/components/panel/LoanRowActions";
 import {
   CancelReservationButton,
   FulfillReservationButton,
 } from "@/components/panel/ReservationRowActions";
 import { requireUser } from "@/lib/auth";
+import { DEFAULT_LOAN_DAYS } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
-import { isOverdue } from "@/lib/library";
+import { isOverdue, isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 import { reservationStatusLabel } from "@/lib/labels";
 
@@ -59,6 +61,9 @@ export default async function ReaderDetailPage({
     (reservation) => reservation.status !== "ACTIVE",
   );
 
+  const suspended = isSuspended(reader);
+  const overdueLoans = activeLoans.filter((loan) => isOverdue(loan)).length;
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8">
       <nav aria-label={t("Migas de pan")} className="text-[13px] text-ink-faint">
@@ -71,6 +76,15 @@ export default async function ReaderDetailPage({
 
       {aviso === "editado" ? (
         <Notice tone="success">{t("Los cambios se han guardado.")}</Notice>
+      ) : null}
+
+      {suspended ? (
+        <Notice tone="danger">
+          {t("Préstamo suspendido hasta el {date}.", {
+            date: formatDate(reader.suspendedUntil),
+          })}
+          {reader.suspensionReason ? ` ${reader.suspensionReason}` : ""}
+        </Notice>
       ) : null}
 
       <header className="flex flex-wrap items-start justify-between gap-4">
@@ -87,9 +101,14 @@ export default async function ReaderDetailPage({
               .join(" · ") || t("Sin datos de contacto")}
           </p>
         </div>
-        <span className={reader.active ? "tag-muted" : "tag-accent"}>
-          {reader.active ? t("Activo") : t("Dado de baja")}
-        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          {suspended ? (
+            <span className="tag-accent">{t("Suspendido")}</span>
+          ) : null}
+          <span className={reader.active ? "tag-muted" : "tag-accent"}>
+            {reader.active ? t("Activo") : t("Dado de baja")}
+          </span>
+        </div>
       </header>
 
       <section className="border-2 border-line bg-surface p-6">
@@ -110,14 +129,57 @@ export default async function ReaderDetailPage({
         </div>
       </section>
 
+      <section className="border-2 border-line bg-surface p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-display text-[18px] font-semibold">
+            {t("Préstamo y sanciones")}
+          </h3>
+          {suspended ? (
+            <span className="text-[13px] font-semibold text-danger">
+              {t("Suspendido hasta el {date}", {
+                date: formatDate(reader.suspendedUntil),
+              })}
+            </span>
+          ) : (
+            <span className="text-[13px] text-ink-faint">
+              {t("Sin suspensión vigente")}
+            </span>
+          )}
+        </div>
+        <p className="mt-1.5 text-[13px] text-ink-soft">
+          {t(
+            "Un lector suspendido no puede llevarse nuevos libros hasta la fecha indicada.",
+          )}
+        </p>
+        <div className="mt-4">
+          <ReaderSuspensionForm
+            readerId={reader.id}
+            suspendedUntil={
+              reader.suspendedUntil
+                ? reader.suspendedUntil.toISOString().slice(0, 10)
+                : null
+            }
+            reason={reader.suspensionReason}
+          />
+        </div>
+      </section>
+
       <section className="flex flex-col gap-4">
-        <div className="flex items-baseline justify-between gap-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
           <h3 className="font-display text-[20px] font-semibold">
             {t("Préstamos en curso ({n})", { n: activeLoans.length })}
+            {overdueLoans > 0
+              ? t(" · {n} vencidos", { n: overdueLoans })
+              : ""}
           </h3>
-          <Link href="/panel/prestamos/nuevo" className="btn-outline btn-sm">
-            {t("Registrar préstamo")}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/panel/prestamos/nuevo" className="btn-outline btn-sm">
+              {t("Registrar préstamo")}
+            </Link>
+            <a href={`/panel/lectores/${reader.id}/export`} className="btn-outline btn-sm">
+              {t("Exportar historial (CSV)")}
+            </a>
+          </div>
         </div>
 
         {activeLoans.length === 0 ? (
@@ -155,8 +217,9 @@ export default async function ReaderDetailPage({
                           {overdue ? t(" (vencido)") : ""}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex justify-end">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap items-start justify-end gap-1.5">
+                          <RenewLoanButton loanId={loan.id} days={DEFAULT_LOAN_DAYS} />
                           <ReturnLoanButton loanId={loan.id} />
                         </div>
                       </td>
@@ -204,45 +267,64 @@ export default async function ReaderDetailPage({
 
       {returnedLoans.length > 0 || pastReservations.length > 0 ? (
         <section className="flex flex-col gap-3">
-          <h3 className="font-display text-[20px] font-semibold">{t("Historial")}</h3>
-          <ul className="flex flex-col gap-1.5 text-[14px]">
-            {returnedLoans.map((loan) => (
-              <li
-                key={loan.id}
-                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-hairline py-1.5"
-              >
-                <span>
-                  <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
-                    {loan.book.title}
-                  </Link>{" "}
-                  <span className="text-ink-faint">{t("· devuelto")}</span>
-                </span>
-                <span className="text-[13px] tabular-nums text-ink-faint">
-                  {formatDate(loan.returnedAt)}
-                </span>
-              </li>
-            ))}
-            {pastReservations.map((reservation) => (
-              <li
-                key={reservation.id}
-                className="flex flex-wrap items-baseline justify-between gap-2 border-b border-hairline py-1.5"
-              >
-                <span>
-                  <Link href={`/libro/${reservation.book.id}`} className="font-semibold hover:text-accent">
-                    {reservation.book.title}
-                  </Link>{" "}
-                  <span className="text-ink-faint">
-                    {t("· reserva {status}", {
-                      status: t(reservationStatusLabel(reservation.status)).toLowerCase(),
-                    })}
-                  </span>
-                </span>
-                <span className="text-[13px] tabular-nums text-ink-faint">
-                  {formatDate(reservation.resolvedAt)}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <h3 className="font-display text-[20px] font-semibold">
+            {t("Historial de préstamos y reservas")}
+          </h3>
+          <div className="overflow-x-auto border-2 border-line bg-surface">
+            <table className="w-full min-w-[720px] border-collapse text-left">
+              <thead>
+                <tr className="border-b-2 border-line bg-paper">
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Tipo")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Libro")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Fecha")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Cierre")}</th>
+                  <th scope="col" className="px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wide">{t("Estado")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {returnedLoans.map((loan) => (
+                  <tr key={loan.id} className="border-b border-hairline last:border-b-0">
+                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("Préstamo")}</td>
+                    <td className="px-4 py-3">
+                      <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
+                        {loan.book.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
+                      {formatDate(loan.loanedAt)}
+                    </td>
+                    <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
+                      {formatDate(loan.returnedAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="tag-muted">{t("Devuelto")}</span>
+                    </td>
+                  </tr>
+                ))}
+                {pastReservations.map((reservation) => (
+                  <tr key={reservation.id} className="border-b border-hairline last:border-b-0">
+                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("Reserva")}</td>
+                    <td className="px-4 py-3">
+                      <Link href={`/libro/${reservation.book.id}`} className="font-semibold hover:text-accent">
+                        {reservation.book.title}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
+                      {formatDate(reservation.createdAt)}
+                    </td>
+                    <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
+                      {formatDate(reservation.resolvedAt)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="tag-muted">
+                        {t(reservationStatusLabel(reservation.status))}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
     </div>

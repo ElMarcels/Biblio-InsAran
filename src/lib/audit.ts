@@ -48,6 +48,8 @@ export const AUDIT_LABELS: Record<string, string> = {
   READER_UPDATE: "Lector/a editado",
   READER_ACTIVATE: "Lector/a activado",
   READER_DEACTIVATE: "Lector/a desactivado",
+  READER_SUSPEND: "Préstamo suspendido",
+  READER_SUSPEND_LIFT: "Suspensión levantada",
   LOAN_CREATE: "Préstamo registrado",
   LOAN_RETURN: "Devolución registrada",
   LOAN_RENEW: "Préstamo prorrogado",

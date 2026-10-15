@@ -31,7 +31,7 @@ export default async function PanelBooksPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await requireUser();
+  await requireUser();
   const t = await getT();
   const params = await searchParams;
   const query = one(params.q).trim();
@@ -190,9 +190,7 @@ export default async function PanelBooksPage({
                       <Link href={`/panel/libros/${book.id}/editar`} className="btn-outline btn-sm">
                         {t("Editar")}
                       </Link>
-                      {user.role === "OWNER" ? (
-                        <DeleteBookButton bookId={book.id} title={book.title} compact />
-                      ) : null}
+                      <DeleteBookButton bookId={book.id} title={book.title} compact />
                     </div>
                   </td>
                 </tr>

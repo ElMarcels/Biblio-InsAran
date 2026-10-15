@@ -183,9 +183,7 @@ export default async function BookPage({ params }: { params: Params }) {
               >
                 {t("Prestar")}
               </Link>
-              {user.role === "OWNER" ? (
-                <DeleteBookButton bookId={book.id} title={book.title} compact />
-              ) : null}
+              <DeleteBookButton bookId={book.id} title={book.title} compact />
             </div>
           ) : null}
 

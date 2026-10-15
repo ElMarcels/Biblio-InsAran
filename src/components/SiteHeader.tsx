@@ -1,17 +1,12 @@
 import Link from "next/link";
 
-import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { logoutAction } from "@/lib/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_INSTITUTION, SITE_SHORT } from "@/lib/constants";
-import { getLocale, getT } from "@/lib/i18n/server";
+import { getT } from "@/lib/i18n/server";
 
 export async function SiteHeader() {
-  const [user, locale, t] = await Promise.all([
-    getCurrentUser(),
-    getLocale(),
-    getT(),
-  ]);
+  const [user, t] = await Promise.all([getCurrentUser(), getT()]);
 
   return (
     <header className="sticky top-0 z-40 border-b-2 border-line bg-surface/95 backdrop-blur">
@@ -82,10 +77,6 @@ export async function SiteHeader() {
               {t("Acceder")}
             </Link>
           )}
-
-          <span className="ml-1 border-l-2 border-hairline pl-2">
-            <LocaleSwitcher current={locale} />
-          </span>
         </nav>
       </div>
     </header>

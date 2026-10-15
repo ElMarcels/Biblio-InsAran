@@ -8,7 +8,9 @@ import { ReaderForm, EMPTY_READER } from "@/components/forms/ReaderForm";
 import { ReaderStatusButton } from "@/components/panel/ReaderStatusButton";
 import { requireUser } from "@/lib/auth";
 import { PANEL_PAGE_SIZE } from "@/lib/constants";
+import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
+import { isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata() {
@@ -177,9 +179,21 @@ export default async function ReadersPage({
                     {reader._count.loans}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={reader.active ? "tag-muted" : "tag-accent"}>
-                      {reader.active ? t("Activo") : t("Baja")}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className={reader.active ? "tag-muted" : "tag-accent"}>
+                        {reader.active ? t("Activo") : t("Baja")}
+                      </span>
+                      {isSuspended(reader) ? (
+                        <span
+                          className="tag-accent"
+                          title={t("Suspendido hasta el {date}", {
+                            date: formatDate(reader.suspendedUntil),
+                          })}
+                        >
+                          {t("Suspendido")}
+                        </span>
+                      ) : null}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center justify-end gap-1.5">

@@ -51,10 +51,50 @@
   --animate-float: float 3.6s ease-in-out infinite;
 }
 
+/* =========================================================================
+   Modo oscuro
+   El tema lo decide la clase `dark` en <html> (cookie de preferencia +
+   preferencia del sistema). Como toda la interfaz se pinta con los tokens de
+   arriba, basta con redefinirlos aquí: el resto se invierte solo.
+   ========================================================================= */
+
+/* Permite usar `dark:` cuando haga falta un ajuste puntual. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+.dark {
+  /* Los controles nativos (select, scrollbar…) también se oscurecen. */
+  color-scheme: dark;
+
+  /* Superficies */
+  --color-paper: #131318;
+  --color-surface: #1b1b21;
+  --color-ink: #ece7dd;
+  --color-ink-soft: #b3aea3;
+  --color-ink-faint: #837f76;
+
+  /* Líneas */
+  --color-line: #ece7dd;
+  --color-hairline: #38383f;
+
+  /* Acento */
+  --color-accent: #ff5b38;
+  --color-accent-ink: #131318;
+  --color-accent-soft: #3a1d15;
+
+  /* Estados */
+  --color-ok: #6cc98f;
+  --color-ok-soft: #14301f;
+  --color-warn: #e3a63f;
+  --color-warn-soft: #33260f;
+  --color-danger: #ff857b;
+  --color-danger-soft: #3a1917;
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    color-scheme: light;
   }
 
   body {
@@ -63,6 +103,9 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
   }
 
   h1,
@@ -213,6 +256,15 @@
   }
 }
 
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
 /* ---- Movimiento: utilidades y componentes -------------------------------- */
 
 @layer components {
@@ -241,6 +293,12 @@
   .bar-fill {
     transform-origin: left;
     animation: grow-x 700ms var(--ease-out-quart) 120ms both;
+  }
+
+  /* Barras de gráficas que crecen desde abajo. */
+  .bar-up {
+    transform-origin: bottom;
+    animation: grow-y 620ms var(--ease-out-quart) both;
   }
 
   /* Indicador de trabajo en curso (botones de envío). */
@@ -374,7 +432,7 @@
   }
 
   .btn-danger {
-    @apply btn border-line bg-danger text-white shadow-[3px_3px_0_0_var(--color-line)]
+    @apply btn border-line bg-danger text-paper shadow-[3px_3px_0_0_var(--color-line)]
       hover:-translate-y-[2px] hover:shadow-[5px_5px_0_0_var(--color-line)];
   }
 

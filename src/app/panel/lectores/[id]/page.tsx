@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CountUp } from "@/components/CountUp";
 import { Notice } from "@/components/Notice";
 import { PageTransition } from "@/components/PageTransition";
 import { ReaderForm } from "@/components/forms/ReaderForm";
 import { ReaderSuspensionForm } from "@/components/forms/ReaderSuspensionForm";
+import { ActivityChart, type ActivityMonth } from "@/components/panel/ActivityChart";
 import { RenewLoanButton, ReturnLoanButton } from "@/components/panel/LoanRowActions";
 import {
   CancelReservationButton,
@@ -12,8 +14,9 @@ import {
 } from "@/components/panel/ReservationRowActions";
 import { requireUser } from "@/lib/auth";
 import { DEFAULT_LOAN_DAYS } from "@/lib/constants";
-import { formatDate } from "@/lib/format";
-import { getT } from "@/lib/i18n/server";
+import { daysLate, formatDate, isPermanentSuspension } from "@/lib/format";
+import { LOCALE_TAGS } from "@/lib/i18n/config";
+import { getLocale, getT } from "@/lib/i18n/server";
 import { isOverdue, isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 import { reservationStatusKey } from "@/lib/labels";
@@ -33,10 +36,18 @@ export default async function ReaderDetailPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   await requireUser();
-  const t = await getT();
+  const [t, locale] = await Promise.all([getT(), getLocale()]);
   const { id } = await params;
   const sp = await searchParams;
   const aviso = Array.isArray(sp.aviso) ? sp.aviso[0] : sp.aviso;
+  const sancionar = sp.sancionar === "1";
+  const lateDays = Math.max(
+    1,
+    Number.parseInt(
+      (Array.isArray(sp.dias) ? sp.dias[0] : sp.dias) ?? "1",
+      10,
+    ) || 1,
+  );
 
   const reader = await prisma.reader.findUnique({
     where: { id },
@@ -63,7 +74,45 @@ export default async function ReaderDetailPage({
   );
 
   const suspended = isSuspended(reader);
+  const permanent = isPermanentSuspension(reader.suspendedUntil);
   const overdueLoans = activeLoans.filter((loan) => isOverdue(loan)).length;
+
+  // Suspensión permanente: se muestra como «Permanente» en lugar de una fecha.
+  const suspendedLabel = permanent
+    ? t("panel.readers.permanente")
+    : formatDate(reader.suspendedUntil);
+
+  // Devoluciones que volvieron fuera de plazo (histórico completo).
+  const lateReturns = returnedLoans.filter(
+    (loan) => daysLate(loan.dueAt, loan.returnedAt) > 0,
+  ).length;
+
+  // Actividad de los últimos 12 meses (incluido el actual).
+  const monthFormatter = new Intl.DateTimeFormat(LOCALE_TAGS[locale], {
+    month: "short",
+  });
+  const now = new Date();
+  const monthDates = Array.from({ length: 12 }, (_, index) =>
+    new Date(now.getFullYear(), now.getMonth() - (11 - index), 1),
+  );
+  const keyOf = (date: Date) => `${date.getFullYear()}-${date.getMonth()}`;
+  const slotByKey = new Map(
+    monthDates.map((date, index) => [keyOf(date), index]),
+  );
+  const months: ActivityMonth[] = monthDates.map((date) => ({
+    label: monthFormatter.format(date).replace(/\./g, ""),
+    year: date.getFullYear(),
+    loans: 0,
+    returns: 0,
+  }));
+  for (const loan of reader.loans) {
+    const loanSlot = slotByKey.get(keyOf(loan.loanedAt));
+    if (loanSlot !== undefined) months[loanSlot].loans += 1;
+    if (loan.returnedAt) {
+      const returnSlot = slotByKey.get(keyOf(loan.returnedAt));
+      if (returnSlot !== undefined) months[returnSlot].returns += 1;
+    }
+  }
 
   return (
     <PageTransition>
@@ -82,9 +131,11 @@ export default async function ReaderDetailPage({
 
       {suspended ? (
         <Notice tone="danger">
-          {t("panel.readers.prestamoSuspendidoHastaElDate", {
-            date: formatDate(reader.suspendedUntil),
-          })}
+          {permanent
+            ? t("panel.readers.prestamoSuspendidoPermanente")
+            : t("panel.readers.prestamoSuspendidoHastaElDate", {
+                date: suspendedLabel,
+              })}
           {reader.suspensionReason ? ` ${reader.suspensionReason}` : ""}
         </Notice>
       ) : null}
@@ -138,9 +189,11 @@ export default async function ReaderDetailPage({
           </h3>
           {suspended ? (
             <span className="text-[13px] font-semibold text-danger">
-              {t("panel.readers.suspendidoHastaElDate", {
-                date: formatDate(reader.suspendedUntil),
-              })}
+              {permanent
+                ? t("panel.readers.suspendidoPermanente")
+                : t("panel.readers.suspendidoHastaElDate", {
+                    date: suspendedLabel,
+                  })}
             </span>
           ) : (
             <span className="text-[13px] text-ink-faint">
@@ -153,17 +206,65 @@ export default async function ReaderDetailPage({
             "panel.readers.unLectorSuspendidoNoPuedeLlevarseNuevosLibrosHastaLaFechaIndicad",
           )}
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-4">
+          {sancionar ? (
+            <Notice tone="warning">
+              {t("panel.readers.avisoSancionPorRetraso", { days: lateDays })}
+            </Notice>
+          ) : null}
           <ReaderSuspensionForm
             readerId={reader.id}
-            suspendedUntil={
-              reader.suspendedUntil
-                ? reader.suspendedUntil.toISOString().slice(0, 10)
-                : null
+            suspended={suspended}
+            reason={
+              reader.suspensionReason ??
+              (sancionar
+                ? t("forms.readers.motivoDevolucionTardia", { days: lateDays })
+                : null)
             }
-            reason={reader.suspensionReason}
           />
         </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h3 className="font-display text-[20px] font-semibold">
+          {t("panel.readers.actividadDeLosUltimos12Meses")}
+        </h3>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { key: "total" as const, label: t("panel.readers.totalPrestamos"), value: reader.loans.length },
+            { key: "active" as const, label: t("panel.readers.enCurso"), value: activeLoans.length },
+            { key: "returned" as const, label: t("panel.readers.devueltos"), value: returnedLoans.length },
+            { key: "late" as const, label: t("panel.readers.conRetraso"), value: lateReturns },
+          ].map((tile, index) => (
+            <div
+              key={tile.key}
+              className="anim-row flex flex-col gap-1 border-2 border-line bg-surface p-4"
+              style={{ animationDelay: `${index * 70}ms` }}
+            >
+              <span className="micro">{tile.label}</span>
+              <span
+                className={`font-display text-[30px] font-bold tabular-nums ${
+                  tile.key === "late" && tile.value > 0 ? "text-danger" : "text-ink"
+                }`}
+              >
+                <CountUp value={tile.value} />
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {reader.loans.length > 0 ? (
+          <ActivityChart
+            months={months}
+            loansLabel={t("panel.readers.leyendaPrestamos")}
+            returnsLabel={t("panel.readers.leyendaDevoluciones")}
+          />
+        ) : (
+          <p className="border-2 border-dashed border-hairline bg-surface p-6 text-center text-[14px] text-ink-soft">
+            {t("panel.readers.todaviaNoHayActividad")}
+          </p>
+        )}
       </section>
 
       <section className="flex flex-col gap-4">
@@ -284,25 +385,38 @@ export default async function ReaderDetailPage({
                 </tr>
               </thead>
               <tbody>
-                {returnedLoans.map((loan) => (
-                  <tr key={loan.id} className="border-b border-hairline last:border-b-0">
-                    <td className="px-4 py-3 text-[13px] text-ink-soft">{t("panel.readers.prestamo")}</td>
-                    <td className="px-4 py-3">
-                      <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
-                        {loan.book.title}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
-                      {formatDate(loan.loanedAt)}
-                    </td>
-                    <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
-                      {formatDate(loan.returnedAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="tag-muted">{t("panel.readers.devuelto")}</span>
-                    </td>
-                  </tr>
-                ))}
+                {returnedLoans.map((loan) => {
+                  const late = daysLate(loan.dueAt, loan.returnedAt);
+                  return (
+                    <tr key={loan.id} className="border-b border-hairline last:border-b-0">
+                      <td className="px-4 py-3 text-[13px] text-ink-soft">{t("panel.readers.prestamo")}</td>
+                      <td className="px-4 py-3">
+                        <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
+                          {loan.book.title}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
+                        {formatDate(loan.loanedAt)}
+                      </td>
+                      <td className="px-4 py-3 text-[13px] tabular-nums text-ink-soft">
+                        {formatDate(loan.returnedAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          <span className="tag-muted">{t("panel.readers.devuelto")}</span>
+                          {late > 0 ? (
+                            <span
+                              className="tag-warn"
+                              title={t("panel.readers.retrasoNDias", { days: late })}
+                            >
+                              +{late}
+                            </span>
+                          ) : null}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {pastReservations.map((reservation) => (
                   <tr key={reservation.id} className="border-b border-hairline last:border-b-0">
                     <td className="px-4 py-3 text-[13px] text-ink-soft">{t("panel.readers.reserva")}</td>

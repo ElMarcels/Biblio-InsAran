@@ -9,7 +9,7 @@ import { ReaderForm, EMPTY_READER } from "@/components/forms/ReaderForm";
 import { ReaderStatusButton } from "@/components/panel/ReaderStatusButton";
 import { requireUser } from "@/lib/auth";
 import { PANEL_PAGE_SIZE } from "@/lib/constants";
-import { formatDate } from "@/lib/format";
+import { formatDate, isPermanentSuspension } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import type { TranslationKey } from "@/lib/i18n/translate";
 import { isSuspended } from "@/lib/library";
@@ -189,9 +189,13 @@ export default async function ReadersPage({
                       {isSuspended(reader) ? (
                         <span
                           className="tag-accent"
-                          title={t("panel.readers.suspendidoHastaElDate", {
-                            date: formatDate(reader.suspendedUntil),
-                          })}
+                          title={
+                            isPermanentSuspension(reader.suspendedUntil)
+                              ? t("panel.readers.suspendidoPermanente")
+                              : t("panel.readers.suspendidoHastaElDate", {
+                                  date: formatDate(reader.suspendedUntil),
+                                })
+                          }
                         >
                           {t("panel.readers.suspendido")}
                         </span>

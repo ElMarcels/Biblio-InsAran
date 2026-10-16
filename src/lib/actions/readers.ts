@@ -6,8 +6,14 @@ import { redirect } from "next/navigation";
 
 import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
+import { addSuspensionDuration, PERMANENT_SUSPENSION_DATE } from "../format";
 import { prisma } from "../prisma";
-import { fieldErrors, parseDateInput, readerSchema, suspensionSchema, type ActionState } from "../validation";
+import {
+  fieldErrors,
+  readerSchema,
+  suspensionSchema,
+  type ActionState,
+} from "../validation";
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
@@ -174,8 +180,11 @@ export async function setReaderActiveAction(
 
 /**
  * Suspende o levanta la suspensión del préstamo a un lector (sanción por
- * retrasos u otras incidencias). Si se envía una fecha, la suspensión dura
- * hasta ese día; si se deja vacía, se levanta.
+ * retrasos u otras incidencias).
+ *
+ * La duración la decide el personal: una cantidad con su unidad (minutos,
+ * horas, días, semanas o meses) o `permanent` para una sanción sin caducidad.
+ * El campo `lift` levanta la suspensión vigente.
  */
 export async function setReaderSuspensionAction(
   _prev: ActionState,
@@ -189,9 +198,36 @@ export async function setReaderSuspensionAction(
     throw error;
   }
 
+  const readerId = text(formData, "readerId");
+  if (!readerId) {
+    return { status: "error", message: "actions.suspensionReview" };
+  }
+
+  const reader = await prisma.reader.findUnique({ where: { id: readerId } });
+  if (!reader) return { status: "error", message: "actions.readerGone" };
+
+  // Levantar la suspensión vigente.
+  if (text(formData, "lift") === "1") {
+    await prisma.reader.update({
+      where: { id: reader.id },
+      data: { suspendedUntil: null, suspensionReason: null },
+    });
+    await recordAudit({
+      action: "READER_SUSPEND_LIFT",
+      entityType: "Reader",
+      entityId: reader.id,
+      summary: `Levantada la suspensión de «${reader.fullName}»`,
+      userId: user.id,
+    });
+    revalidateReaders(reader.id);
+    return { status: "success", message: "actions.suspensionLifted" };
+  }
+
   const parsed = suspensionSchema.safeParse({
-    readerId: text(formData, "readerId"),
-    until: text(formData, "until"),
+    readerId,
+    permanent: text(formData, "permanent") === "1" ? "1" : undefined,
+    amount: text(formData, "amount"),
+    unit: text(formData, "unit"),
     reason: text(formData, "reason"),
   });
   if (!parsed.success) {
@@ -202,55 +238,43 @@ export async function setReaderSuspensionAction(
     };
   }
 
-  const reader = await prisma.reader.findUnique({
-    where: { id: parsed.data.readerId },
-  });
-  if (!reader) return { status: "error", message: "actions.readerGone" };
-
-  let suspendedUntil: Date | null = null;
-  if (parsed.data.until) {
-    suspendedUntil = parseDateInput(parsed.data.until);
-    if (!suspendedUntil) {
-      return {
-        status: "error",
-        message: "actions.suspensionInvalidDate",
-        fieldErrors: { until: "actions.suspensionDateFieldInvalid" },
-      };
-    }
-    if (suspendedUntil.getTime() <= Date.now()) {
-      return {
-        status: "error",
-        message: "actions.suspensionFutureDate",
-        fieldErrors: { until: "actions.suspensionFutureFieldInvalid" },
-      };
-    }
+  const permanent = parsed.data.permanent === "1";
+  const amount =
+    !permanent && parsed.data.amount
+      ? Number.parseInt(parsed.data.amount, 10)
+      : 0;
+  if (!permanent && (!Number.isFinite(amount) || amount <= 0)) {
+    return {
+      status: "error",
+      message: "actions.suspensionReview",
+      fieldErrors: { amount: "validation.suspensionAmountRequired" },
+    };
   }
+
+  const suspendedUntil = permanent
+    ? PERMANENT_SUSPENSION_DATE
+    : addSuspensionDuration(new Date(), amount, parsed.data.unit!);
 
   await prisma.reader.update({
     where: { id: reader.id },
     data: {
       suspendedUntil,
-      suspensionReason: suspendedUntil ? (parsed.data.reason ?? null) : null,
+      suspensionReason: parsed.data.reason ?? null,
     },
   });
 
   await recordAudit({
-    action: suspendedUntil ? "READER_SUSPEND" : "READER_SUSPEND_LIFT",
+    action: "READER_SUSPEND",
     entityType: "Reader",
     entityId: reader.id,
-    summary: suspendedUntil
-      ? `Suspendido el préstamo a «${reader.fullName}» hasta el ${suspendedUntil
-          .toISOString()
-          .slice(0, 10)}`
-      : `Levantada la suspensión de «${reader.fullName}»`,
+    summary: permanent
+      ? `Suspendido el préstamo a «${reader.fullName}» de forma permanente`
+      : `Suspendido el préstamo a «${reader.fullName}» ${amount} ${
+          parsed.data.unit
+        } (hasta el ${suspendedUntil.toISOString().slice(0, 10)})`,
     userId: user.id,
   });
 
   revalidateReaders(reader.id);
-  return {
-    status: "success",
-    message: suspendedUntil
-      ? "actions.suspensionSaved"
-      : "actions.suspensionLifted",
-  };
+  return { status: "success", message: "actions.suspensionSaved" };
 }

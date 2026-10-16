@@ -8,6 +8,8 @@ import { SITE_NAME } from "@/lib/constants";
 import { LOCALE_TAGS, OG_LOCALES } from "@/lib/i18n/config";
 import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { createTranslator } from "@/lib/i18n/translate";
+import { DARK_CLASS, THEME_INIT_SCRIPT } from "@/lib/theme";
+import { getThemePreference } from "@/lib/theme-server";
 
 import "./globals.css";
 
@@ -56,19 +58,30 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0e0e11",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f1eee7" },
+    { media: "(prefers-color-scheme: dark)", color: "#131318" },
+  ],
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const { locale, messages, fallback } = await getTranslations();
+  const [{ locale, messages, fallback }, theme] = await Promise.all([
+    getTranslations(),
+    getThemePreference(),
+  ]);
   const t = createTranslator(messages, fallback);
 
   return (
     <html
       lang={LOCALE_TAGS[locale]}
-      className={`${display.variable} ${body.variable} ${mono.variable} h-full`}
+      className={`${display.variable} ${body.variable} ${mono.variable} h-full ${
+        theme === "dark" ? DARK_CLASS : ""
+      }`}
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
+        {/* Antes del primer pintado: resuelve el tema del sistema. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <LocaleProvider locale={locale} messages={messages} fallback={fallback}>
           <a
             href="#contenido"

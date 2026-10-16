@@ -2,16 +2,19 @@ import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "@/lib/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_INSTITUTION, SITE_SHORT } from "@/lib/constants";
 import { getLocale, getT } from "@/lib/i18n/server";
+import { getThemePreference } from "@/lib/theme-server";
 
 export async function SiteHeader() {
-  const [user, t, locale] = await Promise.all([
+  const [user, t, locale, theme] = await Promise.all([
     getCurrentUser(),
     getT(),
     getLocale(),
+    getThemePreference(),
   ]);
 
   return (
@@ -90,7 +93,8 @@ export async function SiteHeader() {
               {t("nav.acceder")}
             </Link>
           )}
-          <span className="ml-1.5 border-l-2 border-line pl-1.5">
+          <span className="ml-1.5 flex items-center gap-1 border-l-2 border-line pl-1.5">
+            <ThemeToggle initial={theme} />
             <LocaleSwitcher current={locale} />
           </span>
         </nav>

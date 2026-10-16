@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { renewLoanAction, returnLoanAction } from "@/lib/actions/loans";
@@ -15,8 +16,32 @@ export function ReturnLoanButton({ loanId }: { loanId: string }) {
     initialActionState,
   );
 
-  if (state.status === "success") {
-    return <span className="text-[12px] font-semibold text-ok">{t("panel.loans.devuelto")}</span>;
+  if (
+    (state.status === "success" || state.status === "warning") &&
+    state.message
+  ) {
+    const late = state.lateReturn;
+    return (
+      <div className="flex flex-col items-end gap-1 text-right">
+        <span
+          className={
+            late
+              ? "text-[12px] font-semibold text-warn"
+              : "text-[12px] font-semibold text-ok"
+          }
+        >
+          {t(state.message, state.messageParams)}
+        </span>
+        {late ? (
+          <Link
+            href={`/panel/lectores/${late.readerId}?sancionar=1&dias=${late.days}`}
+            className="text-[12px] font-semibold text-accent underline underline-offset-2"
+          >
+            {t("panel.loans.sancionarLector")}
+          </Link>
+        ) : null}
+      </div>
+    );
   }
 
   return (

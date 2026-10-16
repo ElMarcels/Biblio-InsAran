@@ -42,6 +42,15 @@ export type ActionState = {
   messageParams?: TranslateParams;
   fieldErrors?: Record<string, TranslationKey>;
   duplicate?: DuplicateMatch | null;
+  /**
+   * Devolución registrada con retraso: permite ofrecer en el propio formulario
+   * la sanción (suspensión) del lector, cuya duración decide el personal.
+   */
+  lateReturn?: {
+    readerId: string;
+    readerName: string;
+    days: number;
+  };
 };
 
 export const initialActionState: ActionState = { status: "idle" };
@@ -266,18 +275,51 @@ export const readerSchema = z.object({
 
 export type ReaderInput = z.infer<typeof readerSchema>;
 
-/** Suspensión temporal del préstamo (sanción por retrasos u otras causas). */
-export const suspensionSchema = z.object({
-  readerId: z.string().min(1, msg("validation.readerIdRequired")),
-  /** Fecha `YYYY-MM-DD` hasta la que dura la suspensión. Vacía = levantarla. */
-  until: z
-    .string()
-    .trim()
-    .max(10)
-    .optional()
-    .transform((value) => (value ? value : undefined)),
-  reason: optionalText(200),
-});
+/** Unidades con las que el personal mide una suspensión. */
+export const SUSPENSION_UNITS = [
+  "minutos",
+  "horas",
+  "dias",
+  "semanas",
+  "meses",
+] as const;
+
+export type SuspensionUnit = (typeof SUSPENSION_UNITS)[number];
+
+/**
+ * Suspensión del préstamo (sanción por retrasos u otras causas). La duración
+ * la decide el personal: una cantidad en la unidad elegida, o permanente (sin
+ * caducidad). Levantar la suspensión vigente se hace con el campo `lift`.
+ */
+export const suspensionSchema = z
+  .object({
+    readerId: z.string().min(1, msg("validation.readerIdRequired")),
+    /** Marca la suspensión como permanente (no caduca). */
+    permanent: z.literal("1").optional(),
+    /** Cantidad de la duración (vacía si la suspensión es permanente). */
+    amount: z
+      .string()
+      .trim()
+      .max(7)
+      .optional()
+      .transform((value) => (value ? value : undefined)),
+    unit: z
+      .enum(SUSPENSION_UNITS, { message: msg("validation.suspensionUnitInvalid") })
+      .optional(),
+    reason: optionalText(200),
+  })
+  .refine((data) => data.permanent === "1" || data.amount !== undefined, {
+    message: msg("validation.suspensionAmountRequired"),
+    path: ["amount"],
+  })
+  .refine((data) => data.permanent === "1" || data.unit !== undefined, {
+    message: msg("validation.suspensionUnitRequired"),
+    path: ["unit"],
+  })
+  .refine((data) => data.amount === undefined || /^\d+$/.test(data.amount), {
+    message: msg("validation.suspensionAmountInvalid"),
+    path: ["amount"],
+  });
 
 export type SuspensionInput = z.infer<typeof suspensionSchema>;
 

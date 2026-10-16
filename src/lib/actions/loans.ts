@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { DEFAULT_LOAN_DAYS } from "../constants";
+import { daysLate } from "../format";
 import { prisma } from "../prisma";
 import {
   fieldErrors,
@@ -160,19 +161,40 @@ export async function returnLoanAction(
     return { status: "success", message: "actions.loanAlreadyReturned" };
   }
 
+  const now = new Date();
   await prisma.loan.update({
     where: { id: loanId },
-    data: { returnedAt: new Date() },
+    data: { returnedAt: now },
   });
+
+  // Devolución tardía: se devuelve el aviso para que el personal decida si
+  // sanciona al lector (la duración la elige en el propio formulario).
+  const lateDays = daysLate(loan.dueAt, now);
+
   await recordAudit({
     action: "LOAN_RETURN",
     entityType: "Loan",
     entityId: loanId,
-    summary: `Devuelto «${loan.book.title}» por ${loan.reader.fullName}`,
+    summary:
+      lateDays > 0
+        ? `Devuelto con ${lateDays} día(s) de retraso «${loan.book.title}» por ${loan.reader.fullName}`
+        : `Devuelto «${loan.book.title}» por ${loan.reader.fullName}`,
     userId: user.id,
   });
 
   revalidateLoans(loan.bookId);
+  if (lateDays > 0) {
+    return {
+      status: "warning",
+      message: "actions.loanReturnedLate",
+      messageParams: { title: loan.book.title, days: lateDays },
+      lateReturn: {
+        readerId: loan.reader.id,
+        readerName: loan.reader.fullName,
+        days: lateDays,
+      },
+    };
+  }
   return {
     status: "success",
     message: "actions.loanReturned",

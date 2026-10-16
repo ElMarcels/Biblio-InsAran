@@ -30,7 +30,7 @@ export function PanelNavList({
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={classNames(
-              "border-b-2 px-3 py-2 text-[14px] font-semibold transition-colors",
+              "border-b-2 px-3 py-2 text-[14px] font-semibold transition-[color,border-color,transform] duration-150 hover:-translate-y-px",
               active
                 ? "border-accent text-ink"
                 : "border-transparent text-ink-faint hover:border-line hover:text-ink",

@@ -13,6 +13,7 @@ import {
 import { isManagerRole, requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
+import { PageTransition } from "@/components/PageTransition";
 
 type Params = Promise<{ id: string }>;
 
@@ -84,6 +85,7 @@ export default async function CollectionDetailPage({
     : [];
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-6">
       <nav aria-label={t("panel.collections.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/colecciones" className="font-semibold text-ink underline underline-offset-2">
@@ -253,5 +255,6 @@ export default async function CollectionDetailPage({
         )}
       </section>
     </div>
+    </PageTransition>
   );
 }

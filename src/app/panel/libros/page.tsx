@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import type { TranslationKey } from "@/lib/i18n/translate";
 import { prisma } from "@/lib/prisma";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -71,6 +72,7 @@ export default async function PanelBooksPage({
   const flash = FLASH[aviso];
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -207,5 +209,6 @@ export default async function PanelBooksPage({
         </div>
       ) : null}
     </div>
+    </PageTransition>
   );
 }

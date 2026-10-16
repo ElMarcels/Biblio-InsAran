@@ -84,14 +84,14 @@ export function BookCover({
           alt=""
           fill
           sizes={SIZES[size]}
-          className="object-cover"
+          className="object-cover transition-transform duration-500 ease-[var(--ease-out-quart)] group-hover:scale-[1.05]"
           onError={() => setFailed(true)}
         />
       ) : (
         <>
           {theme.variant === "spine" ? (
             <span
-              className="absolute inset-y-0 left-0 w-[6px]"
+              className="absolute inset-y-0 left-0 w-[6px] transition-[width] duration-300 ease-[var(--ease-out-quart)] group-hover:w-[11px]"
               style={{ backgroundColor: theme.accent }}
             />
           ) : null}
@@ -99,7 +99,7 @@ export function BookCover({
           {theme.variant === "corner" ? (
             <span
               className={classNames(
-                "pointer-events-none absolute -right-3 -bottom-6 font-bold opacity-25",
+                "pointer-events-none absolute -right-3 -bottom-6 font-bold opacity-25 transition-transform duration-500 ease-[var(--ease-out-quart)] group-hover:-translate-y-2",
                 INITIALS_SIZE[size],
               )}
               style={{ color: theme.accent }}
@@ -134,7 +134,7 @@ export function BookCover({
           {theme.variant === "rule" ? (
             <span className="relative flex flex-col gap-3">
               <span
-                className="block h-[6px] w-12"
+                className="block h-[6px] w-12 transition-[width] duration-300 ease-[var(--ease-out-quart)] group-hover:w-20"
                 style={{ backgroundColor: theme.accent }}
               />
               <span className={classNames("font-semibold", TITLE_SIZE[size])}>{title}</span>

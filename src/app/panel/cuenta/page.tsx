@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/auth";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -24,6 +25,7 @@ export default async function AccountPage() {
   });
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-8">
       <header>
         <h2 className="font-display text-[26px] font-bold">{t("panel.account.miCuenta")}</h2>
@@ -84,5 +86,6 @@ export default async function AccountPage() {
         </section>
       </div>
     </div>
+    </PageTransition>
   );
 }

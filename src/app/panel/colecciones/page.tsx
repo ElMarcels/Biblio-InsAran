@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
 import { Notice } from "@/components/Notice";
+import { PageTransition } from "@/components/PageTransition";
 import { CollectionForm } from "@/components/forms/CollectionForm";
 import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
@@ -33,6 +34,7 @@ export default async function CollectionsPage({
   });
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-[26px] font-bold">{t("panel.collections.listasCuradas")}</h2>
@@ -95,5 +97,6 @@ export default async function CollectionsPage({
         <CollectionForm mode="create" values={{ name: "", description: "" }} />
       </section>
     </div>
+    </PageTransition>
   );
 }

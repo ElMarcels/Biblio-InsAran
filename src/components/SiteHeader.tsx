@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
+import { ScrollProgress } from "@/components/ScrollProgress";
 import { logoutAction } from "@/lib/actions/auth";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_INSTITUTION, SITE_SHORT } from "@/lib/constants";
@@ -14,11 +15,14 @@ export async function SiteHeader() {
   ]);
 
   return (
-    <header className="sticky top-0 z-40 border-b-2 border-line bg-surface/95 backdrop-blur">
+    <header
+      style={{ viewTransitionName: "site-header" }}
+      className="sticky top-0 z-40 border-b-2 border-line bg-surface/95 backdrop-blur"
+    >
       <div className="shell flex h-[60px] items-center gap-4">
         <Link
           href="/"
-          className="flex items-baseline gap-2 focus-visible:outline-2 focus-visible:outline-offset-4"
+          className="flex items-baseline gap-2 transition-transform duration-150 hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <span className="font-display text-[20px] font-bold tracking-tight">
             {SITE_SHORT}
@@ -31,25 +35,25 @@ export async function SiteHeader() {
         <nav aria-label={t("nav.principal")} className="ml-auto flex items-center gap-1.5">
           <Link
             href="/catalogo"
-            className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
+            className="nav-link border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
           >
             {t("nav.catalogo")}
           </Link>
           <Link
             href="/autores"
-            className="hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
+            className="nav-link hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
           >
             {t("nav.autorias")}
           </Link>
           <Link
             href="/etiquetas"
-            className="hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
+            className="nav-link hidden border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper md:inline-flex"
           >
             {t("nav.materias")}
           </Link>
           <Link
             href="/colecciones"
-            className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
+            className="nav-link border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
           >
             {t("nav.colecciones")}
           </Link>
@@ -58,7 +62,7 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/panel"
-                className="border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
+                className="nav-link border-2 border-transparent px-3 py-1.5 text-[14px] font-semibold hover:border-line hover:bg-paper"
               >
                 {t("nav.panel")}
               </Link>
@@ -91,6 +95,7 @@ export async function SiteHeader() {
           </span>
         </nav>
       </div>
+      <ScrollProgress />
     </header>
   );
 }

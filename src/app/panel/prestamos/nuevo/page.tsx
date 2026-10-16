@@ -7,6 +7,7 @@ import { DEFAULT_LOAN_DAYS } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { addDaysInput, todayInput } from "@/lib/validation";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -42,6 +43,7 @@ export default async function NewLoanPage({
   const defaultDueAt = addDaysInput(todayInput(), DEFAULT_LOAN_DAYS);
 
   return (
+    <PageTransition>
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <nav aria-label={t("panel.loans.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/prestamos" className="font-semibold text-ink underline underline-offset-2">
@@ -94,5 +96,6 @@ export default async function NewLoanPage({
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

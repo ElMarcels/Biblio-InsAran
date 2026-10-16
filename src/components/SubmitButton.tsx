@@ -30,7 +30,14 @@ export function SubmitButton({
       aria-busy={pending}
       className={classNames(className)}
     >
-      {pending ? t(pendingLabel) : children}
+      {pending ? (
+        <>
+          <span className="spinner" aria-hidden="true" />
+          {t(pendingLabel)}
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }

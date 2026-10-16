@@ -16,6 +16,7 @@ import { getT } from "@/lib/i18n/server";
 import { isOverdue, isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 import { reservationStatusKey } from "@/lib/labels";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -65,6 +66,7 @@ export default async function ReaderDetailPage({
   const overdueLoans = activeLoans.filter((loan) => isOverdue(loan)).length;
 
   return (
+    <PageTransition>
     <div className="mx-auto flex max-w-4xl flex-col gap-8">
       <nav aria-label={t("panel.readers.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/lectores" className="font-semibold text-ink underline underline-offset-2">
@@ -328,5 +330,6 @@ export default async function ReaderDetailPage({
         </section>
       ) : null}
     </div>
+    </PageTransition>
   );
 }

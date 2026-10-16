@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { PageTransition } from "@/components/PageTransition";
+import { Reveal } from "@/components/Reveal";
 import { getT } from "@/lib/i18n/server";
 import { authorHref, authorKey } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
@@ -36,9 +38,10 @@ export default async function AuthorsPage() {
   );
 
   return (
-    <div className="shell flex flex-1 flex-col py-10">
-      <header className="mb-8">
-        <p className="micro mb-3">{t("authors.autorias")}</p>
+    <PageTransition>
+      <div className="shell flex flex-1 flex-col py-10">
+        <header className="mb-8 animate-fade-in-up">
+          <p className="micro mb-3">{t("authors.autorias")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
             {t("authors.quienEscribeEnLaBiblioteca")}
@@ -60,25 +63,28 @@ export default async function AuthorsPage() {
         </p>
       ) : (
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {authors.map((author) => (
+          {authors.map((author, index) => (
             <li key={author.name}>
-              <Link
-                href={authorHref(author.name)}
-                className="flex items-baseline justify-between gap-4 border-2 border-line bg-surface px-4 py-3 transition-colors hover:border-accent hover:text-accent"
-              >
-                <span className="font-display text-[16px] font-semibold">
-                  {author.name}
-                </span>
-                <span className="text-[13px] tabular-nums text-ink-faint">
-                  {author.count === 1
-                    ? t("authors.oneTitle")
-                    : t("authors.nTitles", { n: author.count })}
-                </span>
-              </Link>
+              <Reveal delay={(index % 6) * 60}>
+                <Link
+                  href={authorHref(author.name)}
+                  className="flex items-baseline justify-between gap-4 border-2 border-line bg-surface px-4 py-3 transition-[transform,border-color,color,box-shadow] duration-150 hover:-translate-y-[2px] hover:border-accent hover:text-accent hover:shadow-[4px_4px_0_0_var(--color-line)]"
+                >
+                  <span className="font-display text-[16px] font-semibold">
+                    {author.name}
+                  </span>
+                  <span className="text-[13px] tabular-nums text-ink-faint">
+                    {author.count === 1
+                      ? t("authors.oneTitle")
+                      : t("authors.nTitles", { n: author.count })}
+                  </span>
+                </Link>
+              </Reveal>
             </li>
           ))}
         </ul>
       )}
-    </div>
+      </div>
+    </PageTransition>
   );
 }

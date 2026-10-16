@@ -20,8 +20,8 @@ export function LocaleSwitcher({ current }: { current: Locale }) {
             title={LOCALE_LABELS[locale]}
             className={
               active
-                ? "border-2 border-line bg-ink px-2 py-1 font-mono text-[11px] font-semibold uppercase text-paper"
-                : "border-2 border-transparent px-2 py-1 font-mono text-[11px] font-semibold uppercase text-ink-faint hover:border-line hover:text-ink"
+                ? "border-2 border-line bg-ink px-2 py-1 font-mono text-[11px] font-semibold uppercase text-paper transition-colors duration-150"
+                : "border-2 border-transparent px-2 py-1 font-mono text-[11px] font-semibold uppercase text-ink-faint transition-[color,border-color] duration-150 hover:border-line hover:text-ink"
             }
           >
             {locale}

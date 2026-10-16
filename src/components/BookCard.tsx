@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ViewTransition } from "react";
 
 import { BookCover } from "./BookCover";
 import { useT } from "./i18n/LocaleProvider";
@@ -25,17 +26,20 @@ export function BookCard({ book }: { book: BookSummary }) {
   return (
     <Link
       href={`/libro/${book.id}`}
-      className="group flex flex-col border-2 border-line bg-surface transition-[transform,box-shadow] duration-100 hover:-translate-y-[3px] hover:shadow-[6px_6px_0_0_var(--color-line)]"
+      transitionTypes={["nav-forward"]}
+      className="group flex flex-col border-2 border-line bg-surface transition-[transform,box-shadow] duration-150 hover:-translate-y-[3px] hover:shadow-[6px_6px_0_0_var(--color-line)]"
     >
-      <BookCover
-        title={book.title}
-        author={book.author}
-        category={book.category}
-        src={book.coverUrl}
-        size="md"
-      />
+      <ViewTransition name={`cover-${book.id}`} share="morph" default="none">
+        <BookCover
+          title={book.title}
+          author={book.author}
+          category={book.category}
+          src={book.coverUrl}
+          size="md"
+        />
+      </ViewTransition>
       <div className="flex flex-1 flex-col gap-1 border-t-2 border-line p-3.5">
-        <h3 className="font-display text-[15px] font-semibold leading-tight group-hover:text-accent">
+        <h3 className="font-display text-[15px] font-semibold leading-tight transition-colors duration-150 group-hover:text-accent">
           {book.title}
         </h3>
         <p className="text-[13px] text-ink-soft">{book.author}</p>

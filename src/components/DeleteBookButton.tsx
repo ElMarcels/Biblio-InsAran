@@ -26,7 +26,11 @@ export function DeleteBookButton({
   const [confirming, setConfirming] = useState(false);
 
   if (state.status === "success") {
-    return <span className="text-[12px] font-semibold text-ok">{t("panel.books.borrado")}</span>;
+    return (
+      <span className="animate-pop text-[12px] font-semibold text-ok">
+        {t("panel.books.borrado")}
+      </span>
+    );
   }
 
   if (!confirming) {
@@ -43,7 +47,10 @@ export function DeleteBookButton({
   }
 
   return (
-    <form action={formAction} className="inline-flex flex-wrap items-center gap-1.5">
+    <form
+      action={formAction}
+      className="animate-pop inline-flex flex-wrap items-center gap-1.5"
+    >
       <input type="hidden" name="id" value={bookId} />
       <span className="text-[12px] font-semibold text-danger">{t("panel.books.seguro")}</span>
       <button
@@ -63,7 +70,7 @@ export function DeleteBookButton({
         {t("panel.books.cancelar")}
       </button>
       {state.status === "error" && state.message ? (
-        <span className="error-text">{state.message}</span>
+        <span className="error-text animate-shake">{state.message}</span>
       ) : null}
     </form>
   );

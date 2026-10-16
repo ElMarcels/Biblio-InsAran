@@ -8,10 +8,10 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-hairline bg-surface px-6 py-14 text-center">
+    <div className="animate-fade-in-up flex flex-col items-center justify-center gap-3 border-2 border-dashed border-hairline bg-surface px-6 py-14 text-center">
       <span
         aria-hidden="true"
-        className="flex size-12 items-center justify-center border-2 border-line font-display text-[22px] font-bold"
+        className="animate-float flex size-12 items-center justify-center border-2 border-line font-display text-[22px] font-bold"
       >
         ∅
       </span>

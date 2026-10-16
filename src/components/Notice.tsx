@@ -29,14 +29,14 @@ export function Notice({
     <div
       role={tone === "danger" ? "alert" : "status"}
       className={classNames(
-        "flex items-start gap-3 border-2 px-3.5 py-2.5 text-[13.5px] font-medium",
+        "animate-fade-in-up flex items-start gap-3 border-2 px-3.5 py-2.5 text-[13.5px] font-medium",
         TONES[tone],
         className,
       )}
     >
       <span
         aria-hidden="true"
-        className="mt-px flex size-5 shrink-0 items-center justify-center border-2 border-current text-[11px] font-bold"
+        className="animate-pop mt-px flex size-5 shrink-0 items-center justify-center border-2 border-current text-[11px] font-bold"
       >
         {ICONS[tone]}
       </span>

@@ -38,16 +38,16 @@ export async function Pagination({
   }
 
   const linkClass =
-    "flex h-9 min-w-9 items-center justify-center border-2 border-line px-2 text-[13px] font-semibold tabular-nums";
+    "flex h-9 min-w-9 items-center justify-center border-2 border-line px-2 text-[13px] font-semibold tabular-nums transition duration-150 hover:-translate-y-0.5 hover:shadow-[2px_2px_0_0_var(--color-line)]";
 
   return (
     <nav aria-label={t("common.paginacion")} className="flex flex-wrap items-center gap-1.5">
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
+        <Link href={hrefFor(page - 1)} transitionTypes={["nav-back"]} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
           ← {t("common.anterior")}
         </Link>
       ) : (
-        <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint")}>
+        <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint hover:translate-y-0 hover:shadow-none")}>
           ← {t("common.anterior")}
         </span>
       )}
@@ -75,11 +75,11 @@ export async function Pagination({
       )}
 
       {page < totalPages ? (
-        <Link href={hrefFor(page + 1)} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
+        <Link href={hrefFor(page + 1)} transitionTypes={["nav-forward"]} className={classNames(linkClass, "bg-surface hover:bg-paper")}>
           {t("common.siguiente")} →
         </Link>
       ) : (
-        <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint")}>
+        <span className={classNames(linkClass, "cursor-not-allowed border-hairline text-ink-faint hover:translate-y-0 hover:shadow-none")}>
           {t("common.siguiente")} →
         </span>
       )}

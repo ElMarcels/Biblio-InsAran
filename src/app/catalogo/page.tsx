@@ -3,7 +3,9 @@ import Link from "next/link";
 
 import { BookCard } from "@/components/BookCard";
 import { EmptyState } from "@/components/EmptyState";
+import { PageTransition } from "@/components/PageTransition";
 import { Pagination } from "@/components/Pagination";
+import { Reveal } from "@/components/Reveal";
 import { CATEGORIES, LANGUAGES } from "@/lib/catalog";
 import { CATALOG_PAGE_SIZE } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
@@ -97,9 +99,10 @@ export default async function CatalogPage({
   const clearHref = sortKey !== "recientes" ? `/catalogo?orden=${sortKey}` : "/catalogo";
 
   return (
-    <div className="shell flex flex-1 flex-col py-10">
-      <header className="mb-8">
-        <p className="micro mb-3">{t("catalog.catalogo")}</p>
+    <PageTransition>
+      <div className="shell flex flex-1 flex-col py-10">
+        <header className="mb-8 animate-fade-in-up">
+          <p className="micro mb-3">{t("catalog.catalogo")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
             {category
@@ -122,7 +125,8 @@ export default async function CatalogPage({
       <form
         action="/catalogo"
         method="get"
-        className="mb-8 grid gap-3 border-2 border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
+        className="mb-8 grid animate-fade-in-up gap-3 border-2 border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
+        style={{ animationDelay: "80ms" }}
       >
         <div className="sm:col-span-2 lg:col-span-1">
           <label htmlFor="q" className="label">
@@ -225,17 +229,19 @@ export default async function CatalogPage({
         />
       ) : (
         <ul className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-          {books.map((book) => (
+          {books.map((book, index) => (
             <li key={book.id}>
-              <BookCard
-                book={{
-                  ...book,
-                  available: Math.max(
-                    0,
-                    book.copies - (onLoan.get(book.id) ?? 0),
-                  ),
-                }}
-              />
+              <Reveal delay={(index % 4) * 70}>
+                <BookCard
+                  book={{
+                    ...book,
+                    available: Math.max(
+                      0,
+                      book.copies - (onLoan.get(book.id) ?? 0),
+                    ),
+                  }}
+                />
+              </Reveal>
             </li>
           ))}
         </ul>
@@ -246,6 +252,7 @@ export default async function CatalogPage({
           <Pagination page={page} totalPages={totalPages} hrefFor={hrefFor} />
         </div>
       ) : null}
-    </div>
+      </div>
+    </PageTransition>
   );
 }

@@ -18,14 +18,14 @@ export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
     <div className="flex flex-1 flex-col">
       <div className="border-b-2 border-line bg-surface">
         <div className="shell flex flex-col gap-5 py-6">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex animate-fade-in-up flex-wrap items-end justify-between gap-3">
             <div>
               <p className="micro mb-1.5">{t("panel.panelDeGestion")}</p>
               <h1 className="font-display text-[26px] font-bold">
                 {user.displayName}
               </h1>
             </div>
-            <span className="tag-muted">
+            <span className="tag-muted animate-pop">
               {user.role === "OWNER"
                 ? t("panel.duenoDeLaPlataforma")
                 : user.role === "ADMIN"

@@ -13,6 +13,7 @@ import { getT } from "@/lib/i18n/server";
 import type { TranslationKey } from "@/lib/i18n/translate";
 import { isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -71,6 +72,7 @@ export default async function ReadersPage({
   };
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-8">
       <header>
         <h2 className="font-display text-[26px] font-bold">{t("panel.readers.lectoresYLectoras")}</h2>
@@ -217,5 +219,6 @@ export default async function ReadersPage({
         </div>
       ) : null}
     </div>
+    </PageTransition>
   );
 }

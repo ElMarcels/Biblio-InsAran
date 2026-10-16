@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { CountUp } from "@/components/CountUp";
+import { PageTransition } from "@/components/PageTransition";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -19,16 +21,21 @@ function StatTile({
   label,
   value,
   hint,
+  delay = 0,
 }: {
   label: string;
   value: string | number;
   hint?: string;
+  delay?: number;
 }) {
   return (
-    <div className="border-2 border-line bg-surface p-5">
+    <div
+      className="animate-fade-in-up border-2 border-line bg-surface p-5"
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <p className="micro">{label}</p>
       <p className="mt-2 font-display text-[34px] font-bold leading-none tabular-nums">
-        {value}
+        {typeof value === "number" ? <CountUp value={value} /> : value}
       </p>
       {hint ? <p className="mt-1.5 text-[12px] text-ink-faint">{hint}</p> : null}
     </div>
@@ -40,7 +47,7 @@ function Bar({ value, max }: { value: number; max: number }) {
   const width = max > 0 ? Math.max(2, Math.round((value / max) * 100)) : 0;
   return (
     <div className="h-2 w-full min-w-[80px] border border-line bg-paper">
-      <div className="h-full bg-accent" style={{ width: `${width}%` }} />
+      <div className="bar-fill h-full bg-accent" style={{ width: `${width}%` }} />
     </div>
   );
 }
@@ -143,6 +150,7 @@ export default async function StatsPage() {
   const maxCategory = categories[0]?.loans ?? 0;
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-8">
       <div>
         <h2 className="font-display text-[26px] font-bold">{t("panel.stats.estadisticas")}</h2>
@@ -158,11 +166,13 @@ export default async function StatsPage() {
           label={t("panel.stats.prestamosTotales")}
           value={totalLoans}
           hint={t("panel.stats.nEnLosUltimos30Dias", { n: loans30 })}
+          delay={0}
         />
         <StatTile
           label={t("panel.stats.rotacionDelFondo")}
           value={rotation.toFixed(1)}
           hint={t("panel.stats.prestamosPorEjemplar")}
+          delay={70}
         />
         <StatTile
           label={t("panel.stats.librosNuncaPrestados")}
@@ -171,21 +181,25 @@ export default async function StatsPage() {
             n: neverLoanedPercent,
             copies: neverLoanedCopies,
           })}
+          delay={140}
         />
         <StatTile
           label={t("panel.stats.enPrestamo")}
           value={activeLoans}
           hint={t(overdue === 1 ? "panel.nVencido" : "panel.nVencidos", { n: overdue })}
+          delay={210}
         />
         <StatTile
           label={t("panel.stats.prestamosEn12Meses")}
           value={loans365}
           hint={t("panel.stats.actividadDelUltimoAno")}
+          delay={280}
         />
         <StatTile
           label={t("panel.stats.lectoresActivos")}
           value={activeReaders}
           hint={t("panel.stats.carnesEnVigor")}
+          delay={350}
         />
       </section>
 
@@ -354,5 +368,6 @@ export default async function StatsPage() {
         )}
       </section>
     </div>
+    </PageTransition>
   );
 }

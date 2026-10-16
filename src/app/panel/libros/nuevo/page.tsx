@@ -4,6 +4,7 @@ import { BookForm } from "@/components/forms/BookForm";
 import { EMPTY_BOOK } from "@/components/forms/book-form-values";
 import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -15,6 +16,7 @@ export default async function NewBookPage() {
   const t = await getT();
 
   return (
+    <PageTransition>
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <nav aria-label={t("panel.books.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/libros" className="font-semibold text-ink underline underline-offset-2">
@@ -37,5 +39,6 @@ export default async function NewBookPage() {
         <BookForm mode="create" values={EMPTY_BOOK} />
       </div>
     </div>
+    </PageTransition>
   );
 }

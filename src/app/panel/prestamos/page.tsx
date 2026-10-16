@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
 import { Notice } from "@/components/Notice";
+import { PageTransition } from "@/components/PageTransition";
 import { Pagination } from "@/components/Pagination";
 import { RenewLoanButton, ReturnLoanButton } from "@/components/panel/LoanRowActions";
 import { requireUser } from "@/lib/auth";
@@ -101,6 +102,7 @@ export default async function LoansPage({
   ];
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -124,8 +126,8 @@ export default async function LoansPage({
             href={tab.key === "activos" ? "/panel/prestamos" : `/panel/prestamos?estado=${tab.key}`}
             className={
               tab.key === estado
-                ? "border-2 border-line bg-ink px-3 py-1.5 text-[13px] font-semibold text-paper"
-                : "border-2 border-line bg-surface px-3 py-1.5 text-[13px] font-semibold hover:bg-paper"
+                ? "animate-pop border-2 border-line bg-ink px-3 py-1.5 text-[13px] font-semibold text-paper"
+                : "border-2 border-line bg-surface px-3 py-1.5 text-[13px] font-semibold transition duration-150 hover:-translate-y-0.5 hover:bg-paper hover:shadow-[2px_2px_0_0_var(--color-line)]"
             }
           >
             {t(STATES[tab.key])} ({tab.count})
@@ -167,10 +169,14 @@ export default async function LoansPage({
               </tr>
             </thead>
             <tbody>
-              {loans.map((loan) => {
+              {loans.map((loan, index) => {
                 const overdue = isOverdue(loan);
                 return (
-                  <tr key={loan.id} className="border-b border-hairline last:border-b-0 align-top">
+                  <tr
+                    key={loan.id}
+                    className="anim-row border-b border-hairline last:border-b-0 align-top"
+                    style={{ animationDelay: `${Math.min(index * 45, 540)}ms` }}
+                  >
                     <td className="px-4 py-3">
                       <Link href={`/libro/${loan.book.id}`} className="font-semibold hover:text-accent">
                         {loan.book.title}
@@ -224,5 +230,6 @@ export default async function LoansPage({
         </div>
       ) : null}
     </div>
+    </PageTransition>
   );
 }

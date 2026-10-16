@@ -3,6 +3,7 @@ import { requireManager } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -19,6 +20,7 @@ export default async function ActivityPage() {
   });
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-6">
       <header>
         <h2 className="font-display text-[26px] font-bold">
@@ -59,5 +61,6 @@ export default async function ActivityPage() {
         </ol>
       )}
     </div>
+    </PageTransition>
   );
 }

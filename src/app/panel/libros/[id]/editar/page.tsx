@@ -6,6 +6,7 @@ import { BookForm } from "@/components/forms/BookForm";
 import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
+import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();
@@ -25,6 +26,7 @@ export default async function EditBookPage({
   if (!book) notFound();
 
   return (
+    <PageTransition>
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
       <nav aria-label={t("panel.books.migasDePan")} className="text-[13px] text-ink-faint">
         <Link href="/panel/libros" className="font-semibold text-ink underline underline-offset-2">
@@ -77,5 +79,6 @@ export default async function EditBookPage({
         />
       </div>
     </div>
+    </PageTransition>
   );
 }

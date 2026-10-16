@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { CountUp } from "@/components/CountUp";
+import { PageTransition } from "@/components/PageTransition";
 import { AUDIT_LABELS } from "@/lib/audit";
 import { isManagerRole, requireUser } from "@/lib/auth";
 import { formatDate, formatDateTime } from "@/lib/format";
@@ -10,16 +12,21 @@ function StatTile({
   label,
   value,
   hint,
+  delay = 0,
 }: {
   label: string;
   value: string | number;
   hint?: string;
+  delay?: number;
 }) {
   return (
-    <div className="border-2 border-line bg-surface p-5">
+    <div
+      className="animate-fade-in-up border-2 border-line bg-surface p-5"
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <p className="micro">{label}</p>
       <p className="mt-2 font-display text-[36px] font-bold leading-none tabular-nums">
-        {value}
+        {typeof value === "number" ? <CountUp value={value} /> : value}
       </p>
       {hint ? <p className="mt-1.5 text-[12px] text-ink-faint">{hint}</p> : null}
     </div>
@@ -51,17 +58,20 @@ export default async function PanelHomePage() {
     : [];
 
   return (
+    <PageTransition>
     <div className="flex flex-col gap-9">
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile
           label={t("panel.home.titulos")}
           value={totalBooks}
           hint={t("panel.home.librosDistintosEnElFondo")}
+          delay={0}
         />
         <StatTile
           label={t("panel.home.ejemplares")}
           value={copies._sum.copies ?? 0}
           hint={t("panel.home.sumaDeCopiasFisicas")}
+          delay={70}
         />
         <StatTile
           label={t("panel.home.enPrestamo")}
@@ -69,16 +79,19 @@ export default async function PanelHomePage() {
           hint={t(overdueLoans === 1 ? "panel.nVencido" : "panel.nVencidos", {
             n: overdueLoans,
           })}
+          delay={140}
         />
         <StatTile
           label={t("panel.home.reservasPendientes")}
           value={activeReservations}
           hint={t("panel.home.librosEsperandoEstarLibres")}
+          delay={210}
         />
         <StatTile
           label={t("panel.home.lectoresActivos")}
           value={readers}
           hint={t("panel.home.personasConCarneEnVigor")}
+          delay={280}
         />
         <StatTile
           label={isManager ? t("panel.home.usuariosEditores") : t("panel.home.tuRol")}
@@ -88,10 +101,11 @@ export default async function PanelHomePage() {
               ? t("panel.home.cuentasAdemasDeLaTuya")
               : t("panel.home.puedesGestionarPrestamosYLibros")
           }
+          delay={350}
         />
       </section>
 
-      <section className="flex flex-wrap items-center gap-2.5 border-2 border-line bg-surface p-4">
+      <section className="animate-fade-in-up flex flex-wrap items-center gap-2.5 border-2 border-line bg-surface p-4" style={{ animationDelay: "420ms" }}>
         <span className="micro mr-1">{t("panel.home.accionesRapidas")}</span>
         <Link href="/panel/prestamos/nuevo" className="btn-primary btn-sm">
           {t("panel.home.registrarPrestamo")}
@@ -149,10 +163,11 @@ export default async function PanelHomePage() {
             </div>
           ) : (
             <ul className="border-2 border-line bg-surface">
-              {recentBooks.map((book) => (
+              {recentBooks.map((book, index) => (
                 <li
                   key={book.id}
-                  className="flex items-center gap-4 border-b border-hairline px-4 py-3 last:border-b-0"
+                  className="anim-row flex items-center gap-4 border-b border-hairline px-4 py-3 last:border-b-0"
+                  style={{ animationDelay: `${Math.min(index * 55, 500)}ms` }}
                 >
                   <div className="min-w-0 flex-1">
                     <Link
@@ -197,10 +212,11 @@ export default async function PanelHomePage() {
             </div>
           ) : (
             <ol className="border-2 border-line bg-surface">
-              {activity.map((entry) => (
+              {activity.map((entry, index) => (
                 <li
                   key={entry.id}
-                  className="border-b border-hairline px-4 py-3 last:border-b-0"
+                  className="anim-row border-b border-hairline px-4 py-3 last:border-b-0"
+                  style={{ animationDelay: `${Math.min(index * 55, 500)}ms` }}
                 >
                   <p className="text-[13px] font-semibold">
                     {t(AUDIT_LABELS[entry.action]) || entry.action}
@@ -224,5 +240,6 @@ export default async function PanelHomePage() {
         </section>
       </div>
     </div>
+    </PageTransition>
   );
 }

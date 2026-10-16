@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BookCover } from "@/components/BookCover";
 import { EmptyState } from "@/components/EmptyState";
 import { CollectionForm } from "@/components/forms/CollectionForm";
+import { PageTransition } from "@/components/PageTransition";
 import { DeleteCollectionButton } from "@/components/panel/DeleteCollectionButton";
 import {
   addBookToCollectionAction,
@@ -13,7 +14,6 @@ import {
 import { isManagerRole, requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 type Params = Promise<{ id: string }>;
 

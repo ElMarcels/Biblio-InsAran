@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BookCover } from "@/components/BookCover";
+import { PageTransition } from "@/components/PageTransition";
 import { ReturnLoanButton } from "@/components/panel/LoanRowActions";
 import {
   CancelReservationButton,
@@ -11,7 +12,6 @@ import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { daysUntil } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

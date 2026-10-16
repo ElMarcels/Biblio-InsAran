@@ -2,12 +2,12 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
 import { LoanForm } from "@/components/forms/LoanForm";
+import { PageTransition } from "@/components/PageTransition";
 import { requireUser } from "@/lib/auth";
 import { DEFAULT_LOAN_DAYS } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
 import { addDaysInput, todayInput } from "@/lib/validation";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

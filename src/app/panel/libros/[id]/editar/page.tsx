@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 
 import { DeleteBookButton } from "@/components/DeleteBookButton";
 import { BookForm } from "@/components/forms/BookForm";
+import { PageTransition } from "@/components/PageTransition";
 import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

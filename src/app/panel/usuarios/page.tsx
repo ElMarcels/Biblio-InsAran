@@ -1,10 +1,10 @@
 import { CreateUserForm } from "@/components/forms/CreateUserForm";
+import { PageTransition } from "@/components/PageTransition";
 import { UserActions } from "@/components/UserActions";
 import { requireManager } from "@/lib/auth";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DeleteBookButton } from "@/components/DeleteBookButton";
 import { EmptyState } from "@/components/EmptyState";
 import { Notice } from "@/components/Notice";
+import { PageTransition } from "@/components/PageTransition";
 import { Pagination } from "@/components/Pagination";
 import { requireUser } from "@/lib/auth";
 import { PANEL_PAGE_SIZE } from "@/lib/constants";
@@ -11,7 +12,6 @@ import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import type { TranslationKey } from "@/lib/i18n/translate";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

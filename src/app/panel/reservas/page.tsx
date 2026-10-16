@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { EmptyState } from "@/components/EmptyState";
 import { Notice } from "@/components/Notice";
+import { PageTransition } from "@/components/PageTransition";
 import { ReservationForm } from "@/components/forms/ReservationForm";
 import {
   CancelReservationButton,
@@ -13,7 +14,6 @@ import { getT } from "@/lib/i18n/server";
 import type { TranslationKey } from "@/lib/i18n/translate";
 import { reservationStatusKey } from "@/lib/labels";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

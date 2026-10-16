@@ -1,10 +1,10 @@
 import Link from "next/link";
 
+import { PageTransition } from "@/components/PageTransition";
 import { BookForm } from "@/components/forms/BookForm";
 import { EMPTY_BOOK } from "@/components/forms/book-form-values";
 import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

@@ -1,9 +1,9 @@
+import { PageTransition } from "@/components/PageTransition";
 import { AUDIT_LABELS } from "@/lib/audit";
 import { requireManager } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

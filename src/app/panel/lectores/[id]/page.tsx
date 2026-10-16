@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Notice } from "@/components/Notice";
+import { PageTransition } from "@/components/PageTransition";
 import { ReaderForm } from "@/components/forms/ReaderForm";
 import { ReaderSuspensionForm } from "@/components/forms/ReaderSuspensionForm";
 import { RenewLoanButton, ReturnLoanButton } from "@/components/panel/LoanRowActions";
@@ -16,7 +17,6 @@ import { getT } from "@/lib/i18n/server";
 import { isOverdue, isSuspended } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
 import { reservationStatusKey } from "@/lib/labels";
-import { PageTransition } from "@/components/PageTransition";
 
 export async function generateMetadata() {
   const t = await getT();

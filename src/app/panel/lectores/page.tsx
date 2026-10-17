@@ -207,6 +207,9 @@ export default async function ReadersPage({
                       <Link href={`/panel/lectores/${reader.id}`} className="btn-outline btn-sm">
                         {t("panel.readers.verFicha")}
                       </Link>
+                      <a href={`/panel/lectores/${reader.id}/carnet`} className="btn-outline btn-sm">
+                        {t("panel.readers.carne")}
+                      </a>
                       <ReaderStatusButton readerId={reader.id} active={reader.active} />
                     </div>
                   </td>

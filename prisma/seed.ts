@@ -51,9 +51,9 @@ const BOOK_TAGS: Record<string, string[]> = {
 
 /** Lectores de ejemplo para poder probar los préstamos. */
 const READERS = [
-  { cardNumber: "ALU-001", fullName: "Marta Solé", groupName: "2n ESO A" },
-  { cardNumber: "ALU-002", fullName: "Joan Peret", groupName: "3r ESO B" },
-  { cardNumber: "PROF-01", fullName: "Miquel Aunós", groupName: "Departament de Ciències" },
+  { cardNumber: "INSARAN-0001", fullName: "Marta Solé", groupName: "2n ESO A" },
+  { cardNumber: "INSARAN-0002", fullName: "Joan Peret", groupName: "3r ESO B" },
+  { cardNumber: "INSARAN-0003", fullName: "Miquel Aunós", groupName: "Departament de Ciències" },
 ];
 
 const BOOKS: SeedBook[] = [

@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { TranslationKey } from "./i18n/messages";
 import type { TranslateParams } from "./i18n/translate";
 import { CATEGORIES, LANGUAGES } from "./catalog";
+import { isValidCardNumber } from "./reader-card";
 
 /**
  * Marca un literal como clave de traducción. Los mensajes de Zod viajan como
@@ -254,13 +255,27 @@ export const resetPasswordSchema = z.object({
 // Lectores (préstamos gestionados por el personal)
 // ---------------------------------------------------------------------------
 
+/**
+ * Número de carné, opcional pero con la nomenclatura fija del centro
+ * (`INSARAN-0001`). El botón «Generar» del formulario rellena este valor.
+ */
+const cardNumberSchema = z
+  .string()
+  .trim()
+  .max(32, msg("validation.textTooLong"))
+  .optional()
+  .transform((value) => (value === "" || value === undefined ? undefined : value))
+  .refine((value) => value === undefined || isValidCardNumber(value), {
+    message: msg("validation.readerCardFormat"),
+  });
+
 export const readerSchema = z.object({
   fullName: z
     .string()
     .trim()
     .min(2, msg("validation.readerNameRequired"))
     .max(120, msg("validation.nameTooLong")),
-  cardNumber: optionalText(32),
+  cardNumber: cardNumberSchema,
   groupName: optionalText(60),
   email: z
     .union([

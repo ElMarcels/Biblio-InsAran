@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Salida autocontenida para la imagen de Docker (ver Dockerfile).
   output: "standalone",
+  // `bwip-js` (códigos de barras y QR de los carnés) trae builds separados para
+  // navegador y Node. Se deja fuera del bundling del servidor para que se
+  // resuelva la versión de Node con `require` nativo.
+  serverExternalPackages: ["bwip-js"],
   // La aplicación es totalmente dinámica (sesión + base de datos en cada
   // petición), así que no habilitamos Cache Components / PPR: su "shell"
   // estático provoca que `redirect()` y `notFound()` se transmitan con estado

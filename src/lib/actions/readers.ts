@@ -8,6 +8,7 @@ import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { addSuspensionDuration, PERMANENT_SUSPENSION_DATE } from "../format";
 import { prisma } from "../prisma";
+import { CARD_PREFIX, nextCardNumber } from "../reader-card";
 import {
   fieldErrors,
   readerSchema,
@@ -49,6 +50,26 @@ function revalidateReaders(readerId?: string) {
   revalidatePath("/panel/prestamos");
   revalidatePath("/panel/reservas");
   if (readerId) revalidatePath(`/panel/lectores/${readerId}`);
+}
+
+/**
+ * Calcula el siguiente número de carné libre siguiendo la nomenclatura del
+ * centro (`INSARAN-0001`). Lo usa el botón «Generar» del formulario de lectores
+ * para no tener que inventar el número a mano.
+ *
+ * La unicidad definitiva la garantiza la restricción de la base de datos: si
+ * dos personas generan el mismo número a la vez, la segunda verá el aviso de
+ * carné repetido al guardar.
+ */
+export async function generateReaderCardNumberAction(): Promise<string> {
+  await assertUser();
+
+  const readers = await prisma.reader.findMany({
+    where: { cardNumber: { startsWith: `${CARD_PREFIX}-` } },
+    select: { cardNumber: true },
+  });
+
+  return nextCardNumber(readers.map((reader) => reader.cardNumber));
 }
 
 export async function createReaderAction(

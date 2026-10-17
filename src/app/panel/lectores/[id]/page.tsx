@@ -279,6 +279,9 @@ export default async function ReaderDetailPage({
             <Link href="/panel/prestamos/nuevo" className="btn-outline btn-sm">
               {t("panel.readers.registrarPrestamo")}
             </Link>
+            <a href={`/panel/lectores/${reader.id}/carnet`} className="btn-outline btn-sm">
+              {t("panel.readers.descargarCarnePdf")}
+            </a>
             <a href={`/panel/lectores/${reader.id}/export`} className="btn-outline btn-sm">
               {t("panel.readers.exportarHistorialCSV")}
             </a>

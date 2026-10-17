@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 
-import { createReaderAction, updateReaderAction } from "@/lib/actions/readers";
+import {
+  createReaderAction,
+  generateReaderCardNumberAction,
+  updateReaderAction,
+} from "@/lib/actions/readers";
 import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
@@ -46,6 +50,23 @@ export function ReaderForm({
   );
   const errors = state.fieldErrors ?? {};
 
+  // El número de carné se rellena con el botón «Generar», que consulta al
+  // servidor el siguiente número libre de la nomenclatura del centro.
+  const cardInputRef = useRef<HTMLInputElement>(null);
+  const [cardStatus, setCardStatus] = useState<"idle" | "loading" | "error">("idle");
+
+  async function generateCardNumber() {
+    if (cardStatus === "loading") return;
+    setCardStatus("loading");
+    try {
+      const value = await generateReaderCardNumberAction();
+      if (cardInputRef.current) cardInputRef.current.value = value;
+      setCardStatus("idle");
+    } catch {
+      setCardStatus("error");
+    }
+  }
+
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
@@ -66,15 +87,38 @@ export function ReaderForm({
           />
         </Field>
 
-        <Field label="forms.readers.numeroDeCarne" htmlFor="cardNumber" error={errors.cardNumber}>
-          <input
-            id="cardNumber"
-            name="cardNumber"
-            defaultValue={values.cardNumber}
-            className={inputClass(Boolean(errors.cardNumber))}
-            maxLength={32}
-            placeholder={t("forms.readers.opcional")}
-          />
+        <Field
+          label="forms.readers.numeroDeCarne"
+          htmlFor="cardNumber"
+          error={errors.cardNumber}
+          hint="forms.readers.hintNumeroDeCarne"
+        >
+          <div className="flex items-start gap-2">
+            <input
+              ref={cardInputRef}
+              id="cardNumber"
+              name="cardNumber"
+              defaultValue={values.cardNumber}
+              className={`${inputClass(Boolean(errors.cardNumber))} flex-1 font-mono`}
+              maxLength={32}
+              placeholder={t("forms.readers.opcional")}
+            />
+            <button
+              type="button"
+              onClick={() => void generateCardNumber()}
+              disabled={cardStatus === "loading"}
+              className="btn-outline btn-sm shrink-0 whitespace-nowrap"
+            >
+              {cardStatus === "loading"
+                ? t("forms.readers.generandoCarne")
+                : t("forms.readers.generarCarne")}
+            </button>
+          </div>
+          {cardStatus === "error" ? (
+            <p role="alert" className="mt-1.5 text-[12px] font-medium text-danger">
+              {t("forms.readers.errorGenerarCarne")}
+            </p>
+          ) : null}
         </Field>
 
         <Field label="forms.readers.cursoOGrupo" htmlFor="groupName" error={errors.groupName}>

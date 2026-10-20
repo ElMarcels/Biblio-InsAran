@@ -7,6 +7,7 @@ import {
   CancelReservationButton,
   FulfillReservationButton,
 } from "@/components/panel/ReservationRowActions";
+import { LiftSuspensionButton } from "@/components/panel/LiftSuspensionButton";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -63,7 +64,16 @@ export default async function TasksPage() {
   );
   const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
 
-  const [overdue, dueToday, reservations, grouped] = await Promise.all([
+  const [
+    overdue,
+    dueToday,
+    reservations,
+    grouped,
+    expiredSuspensions,
+    expiredSuspensionsTotal,
+    neverLoaned,
+    neverLoanedTotal,
+  ] = await Promise.all([
     prisma.loan.findMany({
       where: { returnedAt: null, dueAt: { lt: now } },
       orderBy: { dueAt: "asc" },
@@ -87,6 +97,35 @@ export default async function TasksPage() {
       where: { returnedAt: null },
       _count: { _all: true },
     }),
+    // Sanciones cuyo plazo ya pasó (la suspensión permanente, guardada con
+    // una fecha lejana, nunca caduca y por eso no aparece aquí).
+    prisma.reader.findMany({
+      where: { suspendedUntil: { lt: now } },
+      orderBy: { suspendedUntil: "asc" },
+      take: LIMIT,
+      select: {
+        id: true,
+        fullName: true,
+        groupName: true,
+        suspendedUntil: true,
+        suspensionReason: true,
+      },
+    }),
+    prisma.reader.count({ where: { suspendedUntil: { lt: now } } }),
+    // Libros sin ningún préstamo desde su alta: candidatos al expurgo.
+    prisma.book.findMany({
+      where: { loans: { none: {} } },
+      orderBy: { title: "asc" },
+      take: LIMIT,
+      select: {
+        id: true,
+        title: true,
+        author: true,
+        category: true,
+        coverUrl: true,
+      },
+    }),
+    prisma.book.count({ where: { loans: { none: {} } } }),
   ]);
 
   const onLoan = new Map(grouped.map((row) => [row.bookId, row._count._all]));
@@ -106,7 +145,13 @@ export default async function TasksPage() {
     (book) => (onLoan.get(book.id) ?? 0) >= book.copies,
   );
 
-  const total = overdue.length + dueToday.length + reservations.length + noCopies.length;
+  const total =
+    overdue.length +
+    dueToday.length +
+    reservations.length +
+    noCopies.length +
+    expiredSuspensionsTotal +
+    neverLoanedTotal;
 
   return (
     <PageTransition>
@@ -303,6 +348,119 @@ export default async function TasksPage() {
               </li>
             ))}
           </ul>
+        )}
+      </Block>
+      <Block
+        title={t("panel.tasks.sancionesCaducadas")}
+        count={expiredSuspensionsTotal}
+        description={t("panel.tasks.sancionesCaducadasDesc")}
+      >
+        {expiredSuspensions.length === 0 ? (
+          <EmptyBlock text={t("panel.tasks.noHaySancionesCaducadas")} />
+        ) : (
+          <>
+            <ul className="divide-y divide-hairline">
+              {expiredSuspensions.map((reader) => (
+                <li
+                  key={reader.id}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3"
+                >
+                  <div className="min-w-[180px] flex-1">
+                    <Link
+                      href={`/panel/lectores/${reader.id}`}
+                      className="font-semibold hover:text-accent"
+                    >
+                      {reader.fullName}
+                    </Link>
+                    {reader.groupName ? (
+                      <p className="text-[13px] text-ink-faint">{reader.groupName}</p>
+                    ) : null}
+                  </div>
+                  <span className="border-2 border-warn px-2 py-0.5 text-[12px] font-bold text-warn">
+                    {t("panel.tasks.caducada")}
+                  </span>
+                  <span className="text-[13px] tabular-nums text-ink-faint">
+                    {formatDate(reader.suspendedUntil)}
+                  </span>
+                  {reader.suspensionReason ? (
+                    <span
+                      className="min-w-0 max-w-[240px] truncate text-[13px] text-ink-faint"
+                      title={reader.suspensionReason}
+                    >
+                      {t("forms.readers.motivo")}: {reader.suspensionReason}
+                    </span>
+                  ) : null}
+                  <LiftSuspensionButton readerId={reader.id} />
+                </li>
+              ))}
+            </ul>
+            {expiredSuspensionsTotal > LIMIT ? (
+              <p className="border-t border-hairline px-4 py-2.5 text-[13px] text-ink-faint">
+                {t("panel.tasks.mostrandoNDeTotal", {
+                  n: expiredSuspensions.length,
+                  total: expiredSuspensionsTotal,
+                })}
+              </p>
+            ) : null}
+          </>
+        )}
+      </Block>
+
+      <Block
+        title={t("panel.tasks.librosSinPrestarNunca")}
+        count={neverLoanedTotal}
+        description={t("panel.tasks.librosSinPrestarNuncaDesc")}
+      >
+        {neverLoaned.length === 0 ? (
+          <EmptyBlock text={t("panel.tasks.todosLosLibrosSeHanPrestadoAlgunaVez")} />
+        ) : (
+          <>
+            <ul className="divide-y divide-hairline">
+              {neverLoaned.map((book) => (
+                <li
+                  key={book.id}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3"
+                >
+                  <span className="w-[44px] shrink-0">
+                    <BookCover
+                      title={book.title}
+                      author={book.author}
+                      category={book.category}
+                      src={book.coverUrl}
+                      size="sm"
+                    />
+                  </span>
+                  <div className="min-w-[180px] flex-1">
+                    <Link
+                      href={`/libro/${book.id}`}
+                      className="font-semibold hover:text-accent"
+                    >
+                      {book.title}
+                    </Link>
+                    <p className="text-[13px] text-ink-faint">{book.author}</p>
+                  </div>
+                  <span className="text-[13px] text-ink-soft">{book.category}</span>
+                  <Link href={`/libro/${book.id}`} className="btn-outline btn-sm">
+                    {t("panel.tasks.verLaFicha")}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="border-t border-hairline px-4 py-2.5 text-[13px] text-ink-faint">
+              {neverLoanedTotal > LIMIT
+                ? `${t("panel.tasks.mostrandoNDeTotal", {
+                    n: neverLoaned.length,
+                    total: neverLoanedTotal,
+                  })} · `
+                : ""}
+              <Link
+                href="/panel/estadisticas"
+                className="font-semibold text-accent underline underline-offset-2"
+              >
+                {t("panel.tasks.verEstadisticas")}
+              </Link>
+            </p>
+          </>
         )}
       </Block>
     </div>

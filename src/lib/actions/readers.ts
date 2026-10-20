@@ -50,6 +50,9 @@ function revalidateReaders(readerId?: string) {
   revalidatePath("/panel/lectores");
   revalidatePath("/panel/prestamos");
   revalidatePath("/panel/reservas");
+  // La bandeja de tareas lista sanciones caducadas: hay que refrescarla al
+  // levantar o crear una suspensión.
+  revalidatePath("/panel/tareas");
   if (readerId) revalidatePath(`/panel/lectores/${readerId}`);
 }
 

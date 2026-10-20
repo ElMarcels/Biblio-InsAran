@@ -6,6 +6,7 @@ import { Notice } from "@/components/Notice";
 import { PageTransition } from "@/components/PageTransition";
 import { ReaderForm } from "@/components/forms/ReaderForm";
 import { ReaderSuspensionForm } from "@/components/forms/ReaderSuspensionForm";
+import { ResetReaderPinButton } from "@/components/panel/ResetReaderPinButton";
 import { ActivityChart, type ActivityMonth } from "@/components/panel/ActivityChart";
 import { RenewLoanButton, ReturnLoanButton } from "@/components/panel/LoanRowActions";
 import {
@@ -13,7 +14,7 @@ import {
   FulfillReservationButton,
 } from "@/components/panel/ReservationRowActions";
 import { requireUser } from "@/lib/auth";
-import { DEFAULT_LOAN_DAYS } from "@/lib/constants";
+import { DEFAULT_LOAN_DAYS, INITIAL_READER_PIN } from "@/lib/constants";
 import { daysLate, formatDate, isPermanentSuspension } from "@/lib/format";
 import { LOCALE_TAGS } from "@/lib/i18n/config";
 import { getLocale, getT } from "@/lib/i18n/server";
@@ -179,6 +180,32 @@ export default async function ReaderDetailPage({
               notes: reader.notes ?? "",
             }}
           />
+        </div>
+      </section>
+
+      <section className="border-2 border-line bg-surface p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="font-display text-[18px] font-semibold">
+            {t("panel.readers.accesoMiBiblioteca")}
+          </h3>
+          <span className={reader.pinHash && !reader.pinMustChange ? "tag-ok" : "tag-warn"}>
+            {reader.pinHash
+              ? reader.pinMustChange
+                ? t("panel.readers.pinDebeCambiar")
+                : t("panel.readers.pinPersonalizado")
+              : t("panel.readers.pinInicial")}
+          </span>
+        </div>
+        <p className="mt-1.5 text-[13px] text-ink-soft">
+          {t("panel.readers.pinExplicacion")}
+        </p>
+        {!reader.pinHash ? (
+          <p className="mt-2 text-[13px] text-ink-faint">
+            {t("panel.readers.pinInicialValue", { pin: INITIAL_READER_PIN })}
+          </p>
+        ) : null}
+        <div className="mt-4">
+          <ResetReaderPinButton readerId={reader.id} />
         </div>
       </section>
 

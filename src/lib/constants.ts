@@ -12,6 +12,23 @@ export const SESSION_COOKIE = "biblio_session";
 /** Duración de una sesión: 7 días. */
 export const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 7;
 
+/** Nombre de la cookie de sesión del área del lector («Mi biblioteca»). */
+export const READER_SESSION_COOKIE = "biblio_reader";
+
+/** Duración de la sesión del lector/a: 30 días. */
+export const READER_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+
+/**
+ * PIN inicial con el que el alumnado entra en «Mi biblioteca» la primera vez
+ * (todavía no ha elegido el suyo). Es el mismo para todas las personas y solo
+ * sirve para el primer acceso: acto seguido la plataforma obliga a cambiarlo.
+ * El personal lo puede restablecer desde la ficha del lector/a.
+ */
+export const INITIAL_READER_PIN = "1234";
+
+/** Prórrogas que la persona lectora puede pedir sobre el mismo préstamo. */
+export const READER_MAX_RENEWALS = 2;
+
 /** Libros por página en el catálogo público. */
 export const CATALOG_PAGE_SIZE = 12;
 

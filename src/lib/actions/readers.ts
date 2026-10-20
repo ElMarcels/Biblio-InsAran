@@ -8,6 +8,7 @@ import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { addSuspensionDuration, PERMANENT_SUSPENSION_DATE } from "../format";
 import { prisma } from "../prisma";
+import { revokeReaderSessions } from "../reader-auth";
 import { CARD_PREFIX, nextCardNumber } from "../reader-card";
 import {
   fieldErrors,
@@ -298,4 +299,47 @@ export async function setReaderSuspensionAction(
 
   revalidateReaders(reader.id);
   return { status: "success", message: "actions.suspensionSaved" };
+}
+
+/**
+ * Restablece el PIN de acceso a «Mi biblioteca»: el lector o la lectora
+ * vuelve al PIN inicial y deberá elegir el suyo en el próximo acceso.
+ * Las sesiones abiertas se revocan al instante.
+ */
+export async function resetReaderPinAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  let user;
+  try {
+    user = await assertUser();
+  } catch (error) {
+    if (error instanceof AuthError) return UNAUTHORIZED;
+    throw error;
+  }
+
+  const readerId = text(formData, "readerId");
+  if (!readerId) {
+    return { status: "error", message: "actions.readerNoId" };
+  }
+
+  const reader = await prisma.reader.findUnique({ where: { id: readerId } });
+  if (!reader) return { status: "error", message: "actions.readerGone" };
+
+  await prisma.reader.update({
+    where: { id: reader.id },
+    data: { pinHash: null, pinMustChange: true },
+  });
+  await revokeReaderSessions(reader.id);
+  await recordAudit({
+    action: "READER_PIN_RESET",
+    entityType: "Reader",
+    entityId: reader.id,
+    summary: `Restablecido el PIN de «Mi biblioteca» de ${reader.fullName}`,
+    userId: user.id,
+  });
+
+  revalidateReaders(reader.id);
+  revalidatePath("/mi-biblioteca");
+  return { status: "success", message: "actions.readerPinReset" };
 }

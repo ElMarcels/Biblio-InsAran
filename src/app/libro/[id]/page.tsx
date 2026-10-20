@@ -6,6 +6,7 @@ import { BookCard } from "@/components/BookCard";
 import { BookCover } from "@/components/BookCover";
 import { DeleteBookButton } from "@/components/DeleteBookButton";
 import { PageTransition } from "@/components/PageTransition";
+import { ReserveBookButton } from "@/components/reader/ReaderActions";
 import { Reveal } from "@/components/Reveal";
 import { getCurrentUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
@@ -17,6 +18,7 @@ import {
   tagHref,
 } from "@/lib/library";
 import { prisma } from "@/lib/prisma";
+import { getCurrentReader } from "@/lib/reader-auth";
 
 type Params = Promise<{ id: string }>;
 
@@ -37,7 +39,7 @@ export default async function BookPage({ params }: { params: Params }) {
   const { id } = await params;
   const t = await getT();
 
-  const [book, user] = await Promise.all([
+  const [book, user, reader] = await Promise.all([
     prisma.book.findUnique({
       where: { id },
       include: {
@@ -46,6 +48,7 @@ export default async function BookPage({ params }: { params: Params }) {
       },
     }),
     getCurrentUser(),
+    getCurrentReader(),
   ]);
 
   if (!book) notFound();
@@ -55,6 +58,14 @@ export default async function BookPage({ params }: { params: Params }) {
     orderBy: { title: "asc" },
     take: 4,
   });
+
+  const readerReservation =
+    reader && !reader.pinMustChange
+      ? await prisma.reservation.findFirst({
+          where: { bookId: book.id, readerId: reader.id, status: "ACTIVE" },
+          select: { id: true },
+        })
+      : null;
 
   const [onLoan, reserved] = await Promise.all([
     onLoanCounts([book.id]),
@@ -194,6 +205,24 @@ export default async function BookPage({ params }: { params: Params }) {
                 <DeleteBookButton bookId={book.id} title={book.title} compact />
               </div>
             ) : null}
+
+            <div className="mt-4 flex animate-fade-in-up flex-wrap items-center gap-2" style={{ animationDelay: "280ms" }}>
+              {reader ? (
+                reader.pinMustChange ? (
+                  <Link href="/mi-biblioteca/cambio-pin" className="btn-outline btn-sm">
+                    {t("reader.changePinFirst")}
+                  </Link>
+                ) : readerReservation ? (
+                  <span className="tag-muted">{t("reader.alreadyReserved")}</span>
+                ) : (
+                  <ReserveBookButton bookId={book.id} />
+                )
+              ) : (
+                <Link href="/mi-biblioteca" className="btn-outline btn-sm">
+                  {t("reader.reserveFromLibrary")}
+                </Link>
+              )}
+            </div>
 
             {book.description ? (
               <section className="mt-8 animate-fade-in-up" style={{ animationDelay: "300ms" }}>

@@ -51,6 +51,9 @@ model User {
   reservationsCreated Reservation[] @relation("ReservationCreatedBy")
   collectionsCreated  Collection[]  @relation("CollectionCreatedBy")
 
+  changelogsCreated Changelog[]     @relation("ChangelogCreatedBy")
+  changelogViews    ChangelogView[] @relation("ChangelogViewUser")
+
   @@index([role])
   @@index([active])
 }
@@ -148,7 +151,8 @@ model BookCollection {
 
 /// Lector/a de la biblioteca (alumnado, profesorado, familias…).
 /// No dispone de cuenta en la plataforma: es el personal quien gestiona sus
-/// préstamos y reservas.
+/// préstamos y reservas. Sí puede entrar en «Mi biblioteca» con su carné y un
+/// PIN (ver `reader-auth.ts`).
 model Reader {
   id         String   @id @default(cuid())
   cardNumber String?  @unique
@@ -157,6 +161,13 @@ model Reader {
   email      String?
   phone      String?
   active     Boolean  @default(true)
+  /// PIN de acceso a «Mi biblioteca», guardado con bcrypt. `null` significa
+  /// que sigue vigente el PIN inicial compartido: la primera vez que entra,
+  /// la persona debe elegir el suyo (`pinMustChange`).
+  pinHash       String?
+  pinMustChange Boolean   @default(true)
+  /// Última vez que inició sesión en «Mi biblioteca».
+  lastReaderLoginAt DateTime?
   /// Fecha hasta la que el lector/a tiene el préstamo suspendido por retrasos
   /// u otras incidencias. Si es nula o ya ha pasado, no hay sanción vigente.
   suspendedUntil DateTime?
@@ -168,10 +179,26 @@ model Reader {
 
   loans        Loan[]
   reservations Reservation[]
+  sessions     ReaderSession[]
 
   @@index([fullName])
   @@index([active])
   @@index([suspendedUntil])
+}
+
+/// Sesión de «Mi biblioteca» (área del lector/a). El token se guarda hasheado.
+model ReaderSession {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  readerId  String
+  reader    Reader   @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+  ip        String?
+
+  @@index([readerId])
+  @@index([expiresAt])
 }
 
 /// Préstamo de un ejemplar a un lector/a.
@@ -186,6 +213,9 @@ model Loan {
   loanedAt   DateTime  @default(now())
   dueAt      DateTime
   returnedAt DateTime?
+  /// Prórrogas aplicadas al préstamo (las decide el personal o la persona
+  /// lectora desde «Mi biblioteca»; el límite de estas última es propio).
+  renewals   Int       @default(0)
   notes      String?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -243,4 +273,35 @@ model AuditLog {
   @@index([createdAt])
   @@index([userId])
   @@index([entityType])
+}
+
+/// Novedad de la plataforma publicada por la dirección (dueño o rol ADMIN).
+/// Se muestra automáticamente a cada cuenta de personal la próxima vez que
+/// entra, una sola vez: al cerrar el aviso se registra la lectura en
+/// `ChangelogView` y ya no vuelve a aparecer hasta la siguiente publicación.
+model Changelog {
+  id        String   @id @default(cuid())
+  title     String
+  /// Contenido en Markdown.
+  body      String
+  createdAt DateTime @default(now())
+
+  createdById String?
+  createdBy   User?   @relation("ChangelogCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  views ChangelogView[]
+
+  @@index([createdAt])
+}
+
+/// Lectura de un changelog por una cuenta de personal.
+model ChangelogView {
+  changelogId String
+  changelog   Changelog @relation(fields: [changelogId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User      @relation("ChangelogViewUser", fields: [userId], references: [id], onDelete: Cascade)
+  seenAt      DateTime  @default(now())
+
+  @@id([changelogId, userId])
+  @@index([userId])
 }

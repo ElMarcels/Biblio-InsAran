@@ -231,7 +231,10 @@ export async function renewLoanAction(
   const base = loan.dueAt.getTime() > Date.now() ? loan.dueAt : new Date();
   const dueAt = new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
 
-  await prisma.loan.update({ where: { id: loanId }, data: { dueAt } });
+  await prisma.loan.update({
+    where: { id: loanId },
+    data: { dueAt, renewals: { increment: 1 } },
+  });
   await recordAudit({
     action: "LOAN_RENEW",
     entityType: "Loan",

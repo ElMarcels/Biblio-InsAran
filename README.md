@@ -6,10 +6,14 @@ fondo está restringida a las cuentas de la plataforma.
 
 - **Visitante** (sin cuenta): consulta el catálogo, busca y filtra por
   categoría, idioma o año, y ve la ficha de cada libro.
+- **Lector/a** (sin cuenta de personal): entra en «Mi biblioteca» con su número
+  de carné y un PIN, consulta sus préstamos y reservas, prorroga y reserva
+  libros. El primer acceso obliga a elegir PIN propio.
 - **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
   gestiona préstamos, reservas, lectores y listas curadas.
-- **Dueño/dirección**: además, gestiona las cuentas de la plataforma y consulta
-  el registro de actividad.
+- **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la
+  plataforma, consulta el registro de actividad y publica las novedades de la
+  plataforma (changelog), que cada cuenta de personal ve una sola vez.
 
 ---
 
@@ -96,26 +100,32 @@ antes de sembrar, o cambiarla luego desde **Panel → Mi cuenta**.
 
 ```
 prisma/
-  schema.prisma          Modelo de datos (User, Session, Book, Reader, Loan,
-                         Reservation, Collection, AuditLog)
+  schema.prisma          Modelo de datos (User, Session, Book, Reader,
+                         ReaderSession, Loan, Reservation, Collection,
+                         Changelog, ChangelogView, AuditLog)
   seed.ts                Datos iniciales
 src/
   app/
     page.tsx             Portada
     catalogo/            Catálogo público (búsqueda, filtros, paginación)
-    libro/[id]/          Ficha de un libro
-    login/               Acceso
+    libro/[id]/          Ficha de un libro (con reserva para lectoras y lectores)
+    login/               Acceso del personal
+    mi-biblioteca/       Área del lector/a (acceso con carné y PIN, préstamos,
+                         reservas, historial, cuenta, cambio de PIN)
     panel/               Área privada (resumen, tareas, libros, colecciones,
                          lectores, préstamos, reservas, estadísticas, usuarios,
-                         actividad, cuenta)
+                         actividad, changelog, cuenta)
   components/            Componentes de la interfaz
   lib/
-    auth.ts              Sesiones y comprobaciones de permisos
-    session-cookie.ts    Cookie de sesión firmada
-    actions/             Server Actions (auth, books, users)
+    auth.ts              Sesiones y comprobaciones de permisos (personal)
+    reader-auth.ts       Sesiones y PIN del área del lector/a
+    session-cookie.ts    Cookie de sesión firmada (personal)
+    reader-session-cookie.ts  Cookie de sesión del lector/a
+    changelog.ts         Novedades pendientes por cuenta
+    actions/             Server Actions (auth, books, users, reader, changelog…)
     validation.ts        Esquemas de Zod
     ...
-  proxy.ts               Redirección optimista del panel (antes «middleware»)
+  proxy.ts               Redirección optimista del panel y del área del lector/a
 ```
 
 ---
@@ -198,8 +208,23 @@ docker compose --profile selfhost-db up -d --build
   imágenes externas, para no depender de ficheros ni de servicios de terceros.
 - **Sin registro público:** las cuentas solo puede crearlas el dueño desde el
   panel.
-- **Solo en castellano:** la interfaz se escribe directamente en castellano; no
-  hay selector de idioma ni diccionarios de traducción.
+- **Mi biblioteca (personas lectoras):** no hay registro público: cada lector o
+  lectora entra con su número de carné y un PIN de 4 a 6 dígitos guardado con
+  bcrypt. El PIN inicial es compartido (`INITIAL_READER_PIN` en
+  `src/lib/constants.ts`) y el primer acceso obliga a elegir el propio. Las
+  sesiones del lector/a viven en la tabla `ReaderSession` (token hasheado,
+  cookie aparte `biblio_reader`, caducidad de 30 días); la persona responsable
+  puede restablecer el PIN desde la ficha, lo que revoca sus sesiones. Puede
+  prorrogar como máximo `READER_MAX_RENEWALS` veces y no si hay reservas de
+  otras personas; puede reservar cualquier libro en cualquier momento.
+- **Novedades (changelog):** el dueño o una cuenta ADMIN publican novedades en
+  Markdown desde `/panel/changelog`. Cada publicación aparece una sola vez a
+  cada cuenta de personal (se cierra con el aviso y ya no vuelve a aparecer
+  hasta la siguiente publicación); quien publica queda marcada como leída. Solo
+  afecta a cuentas de personal, nunca al área del lector/a.
+- **Idiomas:** la interfaz está disponible en castellano, catalán y aragonés
+  (diccionarios en `src/lib/i18n/messages/`, con paridad de claves verificada en
+  compilación).
 - **Sanciones:** un lector o lectora puede quedar suspendido hasta una fecha. No
   se le pueden registrar préstamos (ni servir reservas) mientras la suspensión
   esté vigente.

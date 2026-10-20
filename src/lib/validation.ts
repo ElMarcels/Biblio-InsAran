@@ -129,6 +129,49 @@ export const loginSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Acceso del lector/a («Mi biblioteca»)
+// ---------------------------------------------------------------------------
+
+/** Un PIN son de 4 a 6 dígitos, sin letras ni espacios. */
+const pinSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{4,6}$/, msg("validation.pinInvalid"))
+  .max(6);
+
+/** Acceso con número de carné y PIN. */
+export const readerLoginSchema = z.object({
+  cardNumber: z
+    .string()
+    .trim()
+    .min(1, msg("validation.readerCardRequired"))
+    .max(32, msg("validation.textTooLong")),
+  pin: pinSchema,
+});
+
+/**
+ * Cambio del PIN. `currentPin` solo es obligatorio cuando la persona ya tenía
+ * PIN propio: en el primer acceso basta con elegir el nuevo (la sesión acaba
+ * de validar el PIN inicial).
+ */
+export const changeReaderPinSchema = z
+  .object({
+    currentPin: pinSchema.optional(),
+    newPin: pinSchema,
+    confirmPin: z.string().trim().max(6),
+    /** «1» si es el cambio obligatorio del primer acceso. */
+    forced: z.literal("1").optional(),
+  })
+  .refine((data) => data.newPin === data.confirmPin, {
+    message: msg("validation.pinMismatch"),
+    path: ["confirmPin"],
+  })
+  .refine((data) => data.forced === "1" || Boolean(data.currentPin), {
+    message: msg("validation.currentPinRequired"),
+    path: ["currentPin"],
+  });
+
+// ---------------------------------------------------------------------------
 // Libros
 // ---------------------------------------------------------------------------
 
@@ -400,6 +443,25 @@ export const collectionSchema = z.object({
 });
 
 export type CollectionInput = z.infer<typeof collectionSchema>;
+
+// ---------------------------------------------------------------------------
+// Novedades de la plataforma (changelog)
+// ---------------------------------------------------------------------------
+
+export const changelogSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(2, msg("validation.changelogTitleRequired"))
+    .max(120, msg("validation.changelogTitleTooLong")),
+  body: z
+    .string()
+    .trim()
+    .min(1, msg("validation.changelogBodyRequired"))
+    .max(20000, msg("validation.changelogBodyTooLong")),
+});
+
+export type ChangelogInput = z.infer<typeof changelogSchema>;
 
 /**
  * Convierte un nombre en un identificador de URL: "Club de lectura" ->

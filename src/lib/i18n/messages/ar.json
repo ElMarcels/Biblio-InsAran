@@ -625,6 +625,8 @@
   "panel.mail.passwordSet": "Configurada",
   "panel.mail.send": "Enviar correu",
   "panel.mail.sendFailed": "No s'a pogut enviar eth correu: {error}",
+  "panel.mail.sendFailedAuth": "No s'a pogut enviar eth correu: {error}. Google Workspace exigís ua contrasenha d'aplicacion: activa-la en myaccount.google.com/apppasswords e utiliza aguestes 16 letres en SMTP_PASSWORD.",
+  "panel.mail.sendFailedSocket": "No s'a pogut connectar damb eth servidor de correu: {error}. Comprova que eth host e eth pòrt siguen corrèctes e que era ret permete era sortida SMTP.",
   "panel.mail.sendTest": "Enviar correu de prova",
   "panel.mail.sendTestDesc": "S'enviarà un messatge de prova a l'adreça que indiquis. Si el reps, l'envi de correus està fonctionant.",
   "panel.mail.sending": "Enviant…",

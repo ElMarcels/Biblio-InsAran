@@ -1,6 +1,7 @@
 "use server";
 
 import { assertManager, AuthError } from "../auth";
+import type { TranslationKey } from "../i18n/messages";
 import { isMailConfigured, sendMail } from "../mailer";
 import { type ActionState } from "../validation";
 
@@ -12,6 +13,22 @@ const UNAUTHORIZED: ActionState = {
 function text(formData: FormData, key: string): string {
   const value = formData.get(key);
   return typeof value === "string" ? value : "";
+}
+
+/**
+ * Traduce el fallo del servidor de correo a un mensaje con una pista útil: los
+ * dos errores habituales (credenciales y conexión) no significan lo mismo y
+ * conviene distinguirlos en el panel.
+ */
+function failureMessage(error: string | undefined): TranslationKey {
+  const detail = error ?? "";
+  if (/(534|535|EAUTH|Application-specific password|Invalid login)/i.test(detail)) {
+    return "panel.mail.sendFailedAuth";
+  }
+  if (/(ESOCKET|ETIMEDOUT|ECONNECTION|ECONNRESET|ENOTFOUND|Unexpected socket close)/i.test(detail)) {
+    return "panel.mail.sendFailedSocket";
+  }
+  return "panel.mail.sendFailed";
 }
 
 export async function sendTestEmailAction(
@@ -56,7 +73,7 @@ export async function sendTestEmailAction(
   if (!result.sent) {
     return {
       status: "error",
-      message: "panel.mail.sendFailed",
+      message: failureMessage(result.error),
       messageParams: { error: result.error ?? "unknown" },
     };
   }

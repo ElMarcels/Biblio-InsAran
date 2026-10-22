@@ -625,6 +625,8 @@
   "panel.mail.passwordSet": "Configurada",
   "panel.mail.send": "Enviar correu",
   "panel.mail.sendFailed": "No s'ha pogut enviar el correu: {error}",
+  "panel.mail.sendFailedAuth": "No s'ha pogut enviar el correu: {error}. Google Workspace exigeix una contrasenya d'aplicació: activa-la a myaccount.google.com/apppasswords i fes servir aquestes 16 lletres a SMTP_PASSWORD.",
+  "panel.mail.sendFailedSocket": "No s'ha pogut connectar amb el servidor de correu: {error}. Comprova que l'host i el port siguin correctes i que la xarxa permeti la sortida SMTP.",
   "panel.mail.sendTest": "Enviar correu de prova",
   "panel.mail.sendTestDesc": "S'enviarà un missatge de prova a l'adreça que indiquis. Si el reps, l'envi de correus està funcionant.",
   "panel.mail.sending": "Enviant…",

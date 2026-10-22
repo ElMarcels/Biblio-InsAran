@@ -56,9 +56,20 @@ export default async function MailTestPage() {
                   <p className="text-ink-faint">SMTP_FROM</p>
                   <p className="font-mono text-[13px]">{settings.from}</p>
                 </div>
+                <div>
+                  <p className="text-ink-faint">{t("panel.mail.password")}</p>
+                  <p className="font-semibold">
+                    {settings.pass
+                      ? t("panel.mail.passwordSet")
+                      : t("panel.mail.passwordMissing")}
+                  </p>
+                </div>
               </>
             ) : null}
           </div>
+          <p className="border-t-2 border-line px-4 py-3 text-[12.5px] text-ink-faint">
+            {t("panel.mail.hint")}
+          </p>
         </section>
 
         <section className="border-2 border-line bg-surface p-6">

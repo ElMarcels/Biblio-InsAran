@@ -209,6 +209,15 @@ export default async function CatalogPage({
         </div>
       </form>
 
+      <p className="-mt-4 mb-8 text-[13.5px] text-ink-faint">
+        <Link
+          href="/solicitar"
+          className="font-semibold text-accent underline underline-offset-2 hover:text-ink"
+        >
+          {t("catalog.suggestTitle")}
+        </Link>
+      </p>
+
       {books.length === 0 ? (
         <EmptyState
           title={hasFilters ? t("catalog.sinResultados") : t("catalog.aunNoHayLibros")}

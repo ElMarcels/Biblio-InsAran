@@ -11,10 +11,13 @@ const TABS = [
   { href: "/mi-biblioteca/prestamos", label: "reader.tabLoans" },
   { href: "/mi-biblioteca/reservas", label: "reader.tabReservations" },
   { href: "/mi-biblioteca/historial", label: "reader.tabHistory" },
+  { href: "/mi-biblioteca/listas", label: "reader.tabLists" },
+  { href: "/mi-biblioteca/notificaciones", label: "reader.tabNotifications" },
+  { href: "/mi-biblioteca/solicitudes", label: "reader.tabSuggestions" },
   { href: "/mi-biblioteca/cuenta", label: "reader.tabAccount" },
 ] as const;
 
-/** Secciones del área del lector/a (préstamos, reservas, historial, cuenta). */
+/** Secciones del área del lector/a (préstamos, reservas, listas, cuenta). */
 export function ReaderNav() {
   const pathname = usePathname();
   const t = useT();

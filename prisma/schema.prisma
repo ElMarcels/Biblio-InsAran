@@ -38,9 +38,9 @@ model User {
   lastLoginAt        DateTime?
   createdAt          DateTime  @default(now())
 
-  createdById String?
-  createdBy   User?   @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
-  createdUsers User[] @relation("UserCreatedBy")
+  createdById  String?
+  createdBy    User?   @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdUsers User[]  @relation("UserCreatedBy")
 
   sessions     Session[]
   booksCreated Book[]     @relation("BookCreatedBy")
@@ -53,6 +53,9 @@ model User {
 
   changelogsCreated Changelog[]     @relation("ChangelogCreatedBy")
   changelogViews    ChangelogView[] @relation("ChangelogViewUser")
+
+  /// Solicitudes de compra propuestas desde el panel.
+  purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionUser")
 
   @@index([role])
   @@index([active])
@@ -75,19 +78,19 @@ model Session {
 
 /// Libro del catálogo.
 model Book {
-  id          String   @id @default(cuid())
-  title       String
-  author      String
-  isbn        String?
-  publisher   String?
-  year        Int?
-  category    String
-  language    String   @default("Español")
-  pages       Int?
-  copies      Int      @default(1)
-  location    String?
-  description String?
-  tags        String[] @default([])
+  id           String   @id @default(cuid())
+  title        String
+  author       String
+  isbn         String?
+  publisher    String?
+  year         Int?
+  category     String
+  language     String   @default("Español")
+  pages        Int?
+  copies       Int      @default(1)
+  location     String?
+  description  String?
+  tags         String[] @default([])
   /// Número de registro de inventario. Se usa en las cuentas anuales.
   recordNumber String?
   /// Clasificación Decimal Universal (p. ej. 821.134.2-3).
@@ -95,17 +98,19 @@ model Book {
   /// URL de la portada (Open Library u otra fuente permitida). Si falta,
   /// se dibuja la portada tipográfica generada a partir del título.
   coverUrl     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   createdById String?
   createdBy   User?   @relation("BookCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   updatedById String?
   updatedBy   User?   @relation("BookUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
 
-  loans        Loan[]
-  reservations Reservation[]
-  collections  BookCollection[]
+  loans               Loan[]
+  reservations        Reservation[]
+  collections         BookCollection[]
+  /// Solicitudes de compra que se aprobaron creando este libro.
+  purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionBook")
 
   @@index([title])
   @@index([author])
@@ -114,18 +119,25 @@ model Book {
   @@index([createdAt])
 }
 
-/// Lista curada de libros ("Novedades", "Recomendados", "Club de lectura"…).
+/// Lista de libros ("Novedades", "Recomendados", "Club de lectura"…).
 /// El orden dentro de la lista lo decide el personal a mano.
+///
+/// Si `ownerReaderId` está informado, la lista es privada y pertenece a esa
+/// persona lectora: no aparece en el catálogo público ni en las listas curadas
+/// del panel, solo en su área «Mi biblioteca».
 model Collection {
-  id          String   @id @default(cuid())
+  id            String   @id @default(cuid())
   /// Identificador para la URL pública (`/colecciones/<slug>`).
-  slug        String   @unique
-  name        String
-  description String?
+  slug          String   @unique
+  name          String
+  description   String?
   /// Orden de la lista entre las demás colecciones.
-  position    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  position      Int      @default(0)
+  /// Persona lectora propietaria de la lista (si es privada).
+  ownerReaderId String?
+  ownerReader   Reader?  @relation("CollectionOwnerReader", fields: [ownerReaderId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   createdById String?
   createdBy   User?   @relation("CollectionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
@@ -133,6 +145,7 @@ model Collection {
   books BookCollection[]
 
   @@index([position])
+  @@index([ownerReaderId])
 }
 
 /// Pertenencia de un libro a una colección, con su posición manual.
@@ -154,32 +167,38 @@ model BookCollection {
 /// préstamos y reservas. Sí puede entrar en «Mi biblioteca» con su carné y un
 /// PIN (ver `reader-auth.ts`).
 model Reader {
-  id         String   @id @default(cuid())
-  cardNumber String?  @unique
-  fullName   String
-  groupName  String?
-  email      String?
-  phone      String?
-  active     Boolean  @default(true)
+  id                String    @id @default(cuid())
+  cardNumber        String?   @unique
+  fullName          String
+  groupName         String?
+  email             String?
+  phone             String?
+  active            Boolean   @default(true)
   /// PIN de acceso a «Mi biblioteca», guardado con bcrypt. `null` significa
   /// que sigue vigente el PIN inicial compartido: la primera vez que entra,
   /// la persona debe elegir el suyo (`pinMustChange`).
-  pinHash       String?
-  pinMustChange Boolean   @default(true)
+  pinHash           String?
+  pinMustChange     Boolean   @default(true)
   /// Última vez que inició sesión en «Mi biblioteca».
   lastReaderLoginAt DateTime?
   /// Fecha hasta la que el lector/a tiene el préstamo suspendido por retrasos
   /// u otras incidencias. Si es nula o ya ha pasado, no hay sanción vigente.
-  suspendedUntil DateTime?
+  suspendedUntil    DateTime?
   /// Motivo de la suspensión vigente.
-  suspensionReason String?
-  notes      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  suspensionReason  String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  loans        Loan[]
-  reservations Reservation[]
-  sessions     ReaderSession[]
+  loans               Loan[]
+  reservations        Reservation[]
+  sessions            ReaderSession[]
+  /// Listas de lectura privadas de esta persona.
+  collections         Collection[]         @relation("CollectionOwnerReader")
+  /// Solicitudes de compra que ha propuesto.
+  purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionReader")
+  /// Avisos recibidos (correo y bandeja de «Mi biblioteca»).
+  notifications       Notification[]
 
   @@index([fullName])
   @@index([active])
@@ -304,4 +323,76 @@ model ChangelogView {
 
   @@id([changelogId, userId])
   @@index([userId])
+}
+
+/// Estado de una solicitud de compra.
+enum PurchaseSuggestionStatus {
+  /// PENDIENTE  -> en espera de que el personal la revise.
+  /// APROBADA   -> se ha incorporado el título al catálogo.
+  /// DESCARTADA -> no se va a incorporar.
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Solicitud de compra de un título que todavía no está en el catálogo.
+/// La propone el alumnado, el profesorado o el propio personal; la resuelve
+/// el personal, que al aprobarla genera el libro en el catálogo.
+model PurchaseSuggestion {
+  id     String                   @id @default(cuid())
+  title  String
+  author String
+  isbn   String?
+  /// Motivo de la petición (para qué lo quiere, para qué curso…).
+  reason String?
+  status PurchaseSuggestionStatus @default(PENDING)
+
+  /// Persona lectora que propone (cuando está identificada).
+  readerId String?
+  reader   Reader? @relation("PurchaseSuggestionReader", fields: [readerId], references: [id], onDelete: SetNull)
+
+  /// Cuenta de personal que propone (cuando la propuesta sale del panel).
+  userId String?
+  user   User?   @relation("PurchaseSuggestionUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Nombre y correo de quien propone sin cuenta (formulario público).
+  proposerName  String?
+  proposerEmail String?
+
+  /// Libro creado en el catálogo al aprobar la solicitud.
+  bookId String?
+  book   Book?   @relation("PurchaseSuggestionBook", fields: [bookId], references: [id], onDelete: SetNull)
+
+  /// Nota del personal al resolver la solicitud.
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  /// Momento en que se resolvió (aprobada o descartada).
+  resolvedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([readerId])
+  @@index([userId])
+}
+
+/// Aviso dirigido a una persona lectora. Vive en su bandeja de «Mi biblioteca»
+/// y, si tiene correo, se envía también por email.
+model Notification {
+  id        String    @id @default(cuid())
+  readerId  String
+  reader    Reader    @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  /// Tipo de aviso: "loan", "reservation", "overdue", "suspension".
+  kind      String
+  /// Destinatario del correo (vacío si la persona no tiene correo).
+  to        String
+  subject   String
+  body      String
+  /// Cuándo se envió el correo (nulo si no se ha enviado o ha fallado).
+  sentAt    DateTime?
+  /// Cuándo lo ha leído la persona en «Mi biblioteca».
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([readerId, readAt])
+  @@index([kind])
 }

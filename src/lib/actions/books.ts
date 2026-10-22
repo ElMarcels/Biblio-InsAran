@@ -1,19 +1,18 @@
 "use server";
 
-import type { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { findCoverUrl } from "../covers";
+import { findDuplicate } from "../duplicates";
 import { prisma } from "../prisma";
 import {
   bookSchema,
   duplicateMessage,
   fieldErrors,
   type ActionState,
-  type DuplicateMatch,
 } from "../validation";
 
 const UNAUTHORIZED: ActionState = {
@@ -58,49 +57,6 @@ async function resolveCover(
   if (data.coverUrl) return data.coverUrl;
   if (text(formData, "searchCover") !== "1") return null;
   return findCoverUrl({ isbn: data.isbn, title: data.title, author: data.author });
-}
-
-/**
- * Busca un libro que probablemente sea el mismo que se está guardando:
- * por ISBN exacto o por título y autoría idénticos (sin distinguir mayúsculas).
- */
-async function findDuplicate(input: {
-  title: string;
-  author: string;
-  isbn?: string;
-  excludeId?: string;
-}): Promise<DuplicateMatch | null> {
-  const or: Prisma.BookWhereInput[] = [];
-  if (input.isbn) {
-    or.push({ isbn: { equals: input.isbn, mode: "insensitive" } });
-  }
-  or.push({
-    AND: [
-      { title: { equals: input.title, mode: "insensitive" } },
-      { author: { equals: input.author, mode: "insensitive" } },
-    ],
-  });
-
-  const where: Prisma.BookWhereInput = { OR: or };
-  if (input.excludeId) where.id = { not: input.excludeId };
-
-  const match = await prisma.book.findFirst({
-    where,
-    select: { id: true, title: true, author: true, isbn: true },
-  });
-  if (!match) return null;
-
-  const sameIsbn =
-    Boolean(input.isbn) &&
-    Boolean(match.isbn) &&
-    match.isbn!.toLowerCase() === input.isbn!.toLowerCase();
-
-  return {
-    id: match.id,
-    title: match.title,
-    author: match.author,
-    reason: sameIsbn ? "isbn" : "title",
-  };
 }
 
 /** Revalida las vistas afectadas por un cambio en el catálogo. */

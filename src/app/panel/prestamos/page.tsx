@@ -6,6 +6,7 @@ import { Notice } from "@/components/Notice";
 import { PageTransition } from "@/components/PageTransition";
 import { Pagination } from "@/components/Pagination";
 import { RenewLoanButton, ReturnLoanButton } from "@/components/panel/LoanRowActions";
+import { SendOverdueRemindersButton } from "@/components/panel/SendOverdueRemindersButton";
 import { requireUser } from "@/lib/auth";
 import { CIRCULATION_PAGE_SIZE, DEFAULT_LOAN_DAYS } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
@@ -112,10 +113,22 @@ export default async function LoansPage({
             {overdueCount > 0 ? t("panel.loans.nVencidos", { n: overdueCount }) : ""}
           </p>
         </div>
-        <Link href="/panel/prestamos/nuevo" className="btn-primary">
-          {t("panel.loans.registrarPrestamo")}
-        </Link>
+        <div className="flex flex-wrap items-end gap-2">
+          <SendOverdueRemindersButton />
+          <Link href="/panel/prestamos/nuevo" className="btn-primary">
+            {t("panel.loans.registrarPrestamo")}
+          </Link>
+        </div>
       </div>
+
+      <section className="border-2 border-line bg-surface px-4 py-3">
+        <h3 className="font-display text-[16px] font-bold">
+          {t("panel.loans.avisosDeRetraso")}
+        </h3>
+        <p className="mt-0.5 text-[13px] text-ink-soft">
+          {t("panel.loans.avisosDeRetrasoDesc")}
+        </p>
+      </section>
 
       {FLASH[aviso] ? <Notice tone="success">{t(FLASH[aviso])}</Notice> : null}
 

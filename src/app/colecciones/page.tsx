@@ -15,6 +15,7 @@ export default async function CollectionsPage() {
   const t = await getT();
 
   const collections = await prisma.collection.findMany({
+    where: { ownerReaderId: null },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
     include: {
       _count: { select: { books: true } },

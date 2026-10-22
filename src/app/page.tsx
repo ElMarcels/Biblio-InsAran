@@ -17,7 +17,7 @@ export default async function HomePage() {
       prisma.book.groupBy({ by: ["category"], _count: { _all: true } }),
       prisma.book.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
       prisma.collection.findMany({
-        where: { books: { some: {} } },
+        where: { ownerReaderId: null, books: { some: {} } },
         orderBy: [{ position: "asc" }, { createdAt: "asc" }],
         take: 3,
         include: { _count: { select: { books: true } } },

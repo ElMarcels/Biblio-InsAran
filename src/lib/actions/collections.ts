@@ -61,6 +61,16 @@ function readCollection(formData: FormData) {
   });
 }
 
+/**
+ * Busca una lista curada gestionable por el personal. Las listas privadas de
+ * las personas lectoras (`ownerReaderId`) quedan fuera: son suyas.
+ */
+function staffCollection(collectionId: string) {
+  return prisma.collection.findFirst({
+    where: { id: collectionId, ownerReaderId: null },
+  });
+}
+
 export async function createCollectionAction(
   _prev: ActionState,
   formData: FormData,
@@ -120,7 +130,7 @@ export async function updateCollectionAction(
     return { status: "error", message: "actions.collectionNoIdEdit" };
   }
 
-  const existing = await prisma.collection.findUnique({ where: { id: collectionId } });
+  const existing = await staffCollection(collectionId);
   if (!existing) {
     return { status: "error", message: "actions.collectionGone" };
   }
@@ -185,7 +195,7 @@ export async function deleteCollectionAction(
     return { status: "error", message: "actions.collectionNoIdDelete" };
   }
 
-  const collection = await prisma.collection.findUnique({ where: { id: collectionId } });
+  const collection = await staffCollection(collectionId);
   if (!collection) {
     return { status: "error", message: "actions.collectionGone" };
   }
@@ -211,6 +221,8 @@ export async function addBookToCollectionAction(formData: FormData): Promise<voi
   const bookId = text(formData, "bookId");
   if (!collectionId || !bookId) return;
 
+  if (!(await staffCollection(collectionId))) return;
+
   const last = await prisma.bookCollection.findFirst({
     where: { collectionId },
     orderBy: { position: "desc" },
@@ -234,6 +246,8 @@ export async function removeBookFromCollectionAction(formData: FormData): Promis
   const bookId = text(formData, "bookId");
   if (!collectionId || !bookId) return;
 
+  if (!(await staffCollection(collectionId))) return;
+
   await prisma.bookCollection.deleteMany({ where: { collectionId, bookId } });
   revalidateCollections(collectionId);
 }
@@ -249,6 +263,8 @@ export async function moveBookInCollectionAction(formData: FormData): Promise<vo
   const bookId = text(formData, "bookId");
   const direction = text(formData, "direction");
   if (!collectionId || !bookId || (direction !== "up" && direction !== "down")) return;
+
+  if (!(await staffCollection(collectionId))) return;
 
   const items = await prisma.bookCollection.findMany({
     where: { collectionId },

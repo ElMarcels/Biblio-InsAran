@@ -7,6 +7,10 @@ import { BookCover } from "@/components/BookCover";
 import { DeleteBookButton } from "@/components/DeleteBookButton";
 import { PageTransition } from "@/components/PageTransition";
 import { ReserveBookButton } from "@/components/reader/ReaderActions";
+import {
+  AddToListButton,
+  RemoveFromListButton,
+} from "@/components/reader/ReaderListActions";
 import { Reveal } from "@/components/Reveal";
 import { getCurrentUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
@@ -66,6 +70,21 @@ export default async function BookPage({ params }: { params: Params }) {
           select: { id: true },
         })
       : null;
+
+  // Listas de lectura de la persona lectora y cuáles contienen este libro.
+  const readerLists =
+    reader && !reader.pinMustChange
+      ? await prisma.collection.findMany({
+          where: { ownerReaderId: reader.id },
+          orderBy: { createdAt: "asc" },
+          select: {
+            id: true,
+            name: true,
+            books: { where: { bookId: book.id }, select: { bookId: true } },
+          },
+        })
+      : [];
+  const listsWithBook = readerLists.filter((list) => list.books.length > 0);
 
   const [onLoan, reserved] = await Promise.all([
     onLoanCounts([book.id]),
@@ -220,6 +239,40 @@ export default async function BookPage({ params }: { params: Params }) {
               ) : (
                 <Link href="/mi-biblioteca" className="btn-outline btn-sm">
                   {t("reader.reserveFromLibrary")}
+                </Link>
+              )}
+            </div>
+
+            <div
+              className="mt-3 flex animate-fade-in-up flex-wrap items-center gap-2"
+              style={{ animationDelay: "300ms" }}
+            >
+              {reader && !reader.pinMustChange ? (
+                <>
+                  <AddToListButton
+                    bookId={book.id}
+                    lists={readerLists.map((list) => ({
+                      id: list.id,
+                      name: list.name,
+                    }))}
+                  />
+                  {listsWithBook.map((list) => (
+                    <span
+                      key={list.id}
+                      className="flex items-center gap-1 border-2 border-line bg-surface px-2 py-1 text-[12.5px] font-semibold"
+                    >
+                      {t("reader.inYourList", { list: list.name })}
+                      <RemoveFromListButton
+                        listId={list.id}
+                        bookId={book.id}
+                        compact
+                      />
+                    </span>
+                  ))}
+                </>
+              ) : (
+                <Link href="/mi-biblioteca" className="btn-outline btn-sm">
+                  {t("reader.addToListLogin")}
                 </Link>
               )}
             </div>

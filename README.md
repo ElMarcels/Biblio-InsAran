@@ -5,12 +5,16 @@ Biblioteca Institut d'Aran. El catálogo es de consulta pública; la gestión de
 fondo está restringida a las cuentas de la plataforma.
 
 - **Visitante** (sin cuenta): consulta el catálogo, busca y filtra por
-  categoría, idioma o año, y ve la ficha de cada libro.
+  categoría, idioma o año, ve la ficha de cada libro y puede **pedir un título**
+  que todavía no está en el catálogo.
 - **Lector/a** (sin cuenta de personal): entra en «Mi biblioteca» con su número
   de carné y un PIN, consulta sus préstamos y reservas, prorroga y reserva
-  libros. El primer acceso obliga a elegir PIN propio.
+  libros, mantiene sus **listas de lectura**, recibe **avisos** (préstamo,
+  reserva, retraso, sanción) y puede pedir títulos. El primer acceso obliga a
+  elegir PIN propio.
 - **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
-  gestiona préstamos, reservas, lectores y listas curadas.
+  gestiona préstamos, reservas, lectores, listas curadas y **solicitudes de
+  compra** (al aprobar una, el título entra en el catálogo).
 - **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la
   plataforma, consulta el registro de actividad y publica las novedades de la
   plataforma (changelog), que cada cuenta de personal ve una sola vez.
@@ -59,6 +63,12 @@ npm run dev             # http://localhost:3000
 | `DATABASE_URL` | Cadena de conexión a PostgreSQL. La usa la aplicación. |
 | `DIRECT_URL` | Conexión **directa** (sin pooling). La usan las migraciones. En local puede ser igual que `DATABASE_URL`. |
 | `SESSION_SECRET` | Clave (mínimo 32 caracteres) con la que se firma la cookie de sesión. Genera una con `openssl rand -hex 32`. |
+| `SMTP_HOST` | Servidor SMTP para enviar avisos por correo (opcional). |
+| `SMTP_PORT` | Puerto SMTP (por defecto `587`). |
+| `SMTP_SECURE` | `true` para TLS directo en el puerto `465`. |
+| `SMTP_USER` | Usuario de autenticación SMTP (opcional). |
+| `SMTP_PASSWORD` | Contraseña de autenticación SMTP (opcional). |
+| `SMTP_FROM` | Remitente visible en los correos (obligatorio si hay `SMTP_HOST`). |
 
 > **Neon / proveedores con pooling:** la URL agrupada incluye el sufijo
 > `-pooler` en el host. Esa conexión no admite los bloqueos que Prisma necesita
@@ -102,18 +112,21 @@ antes de sembrar, o cambiarla luego desde **Panel → Mi cuenta**.
 prisma/
   schema.prisma          Modelo de datos (User, Session, Book, Reader,
                          ReaderSession, Loan, Reservation, Collection,
-                         Changelog, ChangelogView, AuditLog)
+                         Changelog, ChangelogView, AuditLog, PurchaseSuggestion,
+                         Notification)
   seed.ts                Datos iniciales
 src/
   app/
     page.tsx             Portada
     catalogo/            Catálogo público (búsqueda, filtros, paginación)
-    libro/[id]/          Ficha de un libro (con reserva para lectoras y lectores)
+    solicitar/           Pedir un título que no está en el catálogo
+    libro/[id]/          Ficha de un libro (con reserva y listas para lectoras y lectores)
     login/               Acceso del personal
     mi-biblioteca/       Área del lector/a (acceso con carné y PIN, préstamos,
-                         reservas, historial, cuenta, cambio de PIN)
+                         reservas, historial, listas, avisos, solicitudes, cuenta,
+                         cambio de PIN)
     panel/               Área privada (resumen, tareas, libros, colecciones,
-                         lectores, préstamos, reservas, estadísticas, usuarios,
+                         lectores, préstamos, reservas, solicitudes, estadísticas, usuarios,
                          actividad, changelog, cuenta)
   components/            Componentes de la interfaz
   lib/
@@ -122,7 +135,10 @@ src/
     session-cookie.ts    Cookie de sesión firmada (personal)
     reader-session-cookie.ts  Cookie de sesión del lector/a
     changelog.ts         Novedades pendientes por cuenta
-    actions/             Server Actions (auth, books, users, reader, changelog…)
+    mailer.ts            Envío opcional de correo por SMTP
+    notifications.ts     Avisos a la bandeja del lector/a y plantillas de correo
+    actions/             Server Actions (auth, books, users, reader, changelog,
+                         purchases, reader-lists, notifications…)
     validation.ts        Esquemas de Zod
     ...
   proxy.ts               Redirección optimista del panel y del área del lector/a
@@ -216,7 +232,17 @@ docker compose --profile selfhost-db up -d --build
   cookie aparte `biblio_reader`, caducidad de 30 días); la persona responsable
   puede restablecer el PIN desde la ficha, lo que revoca sus sesiones. Puede
   prorrogar como máximo `READER_MAX_RENEWALS` veces y no si hay reservas de
-  otras personas; puede reservar cualquier libro en cualquier momento.
+  otras personas; puede reservar cualquier libro en cualquier momento. También
+  puede **crear listas de lectura privadas**, **recibir avisos** en la bandeja (y
+  por correo si está configurado), **pedir títulos** y guardarlos en sus listas.
+- **Pedir un título:** desde `/solicitar` o desde «Mi biblioteca» cualquiera
+  puede pedir un título que no esté en el catálogo. Las solicitudes aparecen en
+  **Panel → Solicitudes** y en la **Bandeja de tareas**; al aprobarlas el libro
+  entra en el catálogo automáticamente (se evita duplicar si ya existe).
+- **Avisos y correo:** los avisos (préstamo, reserva lista para recoger, retraso
+  y sanción) se guardan siempre en la bandeja de «Mi biblioteca». Si hay
+  configuración SMTP (`SMTP_HOST` / `SMTP_FROM`), también se envían por correo;
+  si falta la configuración, la plataforma sigue funcionando sin él.
 - **Novedades (changelog):** el dueño o una cuenta ADMIN publican novedades en
   Markdown desde `/panel/changelog`. Cada publicación aparece una sola vez a
   cada cuenta de personal (se cierra con el aviso y ya no vuelve a aparecer

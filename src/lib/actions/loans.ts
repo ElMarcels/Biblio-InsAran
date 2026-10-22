@@ -7,6 +7,7 @@ import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { DEFAULT_LOAN_DAYS } from "../constants";
 import { daysLate } from "../format";
+import { NOTIFICATION_TEXTS, notifyReader } from "../notifications";
 import { prisma } from "../prisma";
 import {
   fieldErrors,
@@ -131,6 +132,23 @@ export async function createLoanAction(
     entityId: loan.id,
     summary: `Prestado «${book.title}» a ${reader.fullName}`,
     userId: user.id,
+  });
+
+  // Aviso a la persona lectora: qué libro se lleva y hasta cuándo.
+  const loanTexts = NOTIFICATION_TEXTS.loan({
+    name: reader.fullName,
+    title: book.title,
+    dueAt,
+  });
+  await notifyReader({
+    reader: {
+      id: reader.id,
+      fullName: reader.fullName,
+      email: reader.email,
+    },
+    kind: "loan",
+    subject: loanTexts.subject,
+    body: loanTexts.body,
   });
 
   revalidateLoans(book.id);
@@ -424,6 +442,22 @@ export async function fulfillReservationAction(
     entityId: id,
     summary: `Servida la reserva de «${reservation.book.title}» a ${reservation.reader.fullName}`,
     userId: user.id,
+  });
+
+  // Aviso a la persona lectora: su libro ya está disponible.
+  const reservationTexts = NOTIFICATION_TEXTS.reservation({
+    name: reservation.reader.fullName,
+    title: reservation.book.title,
+  });
+  await notifyReader({
+    reader: {
+      id: reservation.reader.id,
+      fullName: reservation.reader.fullName,
+      email: reservation.reader.email,
+    },
+    kind: "reservation",
+    subject: reservationTexts.subject,
+    body: reservationTexts.body,
   });
 
   revalidateLoans(reservation.bookId);

@@ -73,6 +73,8 @@ export default async function TasksPage() {
     expiredSuspensionsTotal,
     neverLoaned,
     neverLoanedTotal,
+    suggestions,
+    suggestionsTotal,
   ] = await Promise.all([
     prisma.loan.findMany({
       where: { returnedAt: null, dueAt: { lt: now } },
@@ -126,6 +128,23 @@ export default async function TasksPage() {
       },
     }),
     prisma.book.count({ where: { loans: { none: {} } } }),
+    // Títulos pedidos por el alumnado o el profesorado que todavía no están
+    // en el catálogo: al aprobarlos, el libro entra solo.
+    prisma.purchaseSuggestion.findMany({
+      where: { status: "PENDING" },
+      orderBy: { createdAt: "asc" },
+      take: LIMIT,
+      select: {
+        id: true,
+        title: true,
+        author: true,
+        createdAt: true,
+        reader: READER_SELECT,
+        user: { select: { id: true, displayName: true } },
+        proposerName: true,
+      },
+    }),
+    prisma.purchaseSuggestion.count({ where: { status: "PENDING" } }),
   ]);
 
   const onLoan = new Map(grouped.map((row) => [row.bookId, row._count._all]));
@@ -151,7 +170,8 @@ export default async function TasksPage() {
     reservations.length +
     noCopies.length +
     expiredSuspensionsTotal +
-    neverLoanedTotal;
+    neverLoanedTotal +
+    suggestionsTotal;
 
   return (
     <PageTransition>
@@ -304,6 +324,69 @@ export default async function TasksPage() {
               </li>
             ))}
           </ul>
+        )}
+      </Block>
+
+      <Block
+        title={t("panel.tasks.solicitudesDeCompra")}
+        count={suggestionsTotal}
+        description={t("panel.tasks.solicitudesDeCompraDesc")}
+      >
+        {suggestions.length === 0 ? (
+          <EmptyBlock text={t("panel.tasks.noHaySolicitudes")} />
+        ) : (
+          <>
+            <ul className="divide-y divide-hairline">
+              {suggestions.map((suggestion) => (
+                <li
+                  key={suggestion.id}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3"
+                >
+                  <div className="min-w-[180px] flex-1">
+                    <span className="font-semibold">{suggestion.title}</span>
+                    <p className="text-[13px] text-ink-faint">{suggestion.author}</p>
+                  </div>
+                  <div className="min-w-[140px]">
+                    {suggestion.reader ? (
+                      <Link
+                        href={`/panel/lectores/${suggestion.reader.id}`}
+                        className="text-[13.5px] font-semibold hover:text-accent"
+                      >
+                        {suggestion.reader.fullName}
+                      </Link>
+                    ) : suggestion.user ? (
+                      <span className="text-[13.5px] font-semibold">
+                        {suggestion.user.displayName}
+                      </span>
+                    ) : (
+                      <span className="text-[13.5px] font-semibold">
+                        {suggestion.proposerName || t("panel.suggestions.sinCuenta")}
+                      </span>
+                    )}
+                    {suggestion.reader?.groupName ? (
+                      <p className="text-[12px] text-ink-faint">
+                        {suggestion.reader.groupName}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="text-[13px] tabular-nums text-ink-faint">
+                    {formatDate(suggestion.createdAt)}
+                  </span>
+                  <Link href="/panel/solicitudes" className="btn-outline btn-sm">
+                    {t("panel.suggestions.aprobar")}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {suggestionsTotal > LIMIT ? (
+              <p className="border-t border-hairline px-4 py-2.5 text-[13px] text-ink-faint">
+                {t("panel.tasks.mostrandoNDeTotal", {
+                  n: suggestions.length,
+                  total: suggestionsTotal,
+                })}
+              </p>
+            ) : null}
+          </>
         )}
       </Block>
 

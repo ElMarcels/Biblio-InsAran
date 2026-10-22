@@ -66,4 +66,13 @@ export const AUDIT_LABELS: Record<string, TranslationKey> = {
   RESERVATION_CREATE: "audit.reservationCreate",
   RESERVATION_CANCEL: "audit.reservationCancel",
   RESERVATION_FULFILL: "audit.reservationFulfill",
+  PURCHASE_SUGGESTION_CREATE: "audit.purchaseSuggestionCreate",
+  PURCHASE_SUGGESTION_APPROVE: "audit.purchaseSuggestionApprove",
+  PURCHASE_SUGGESTION_REJECT: "audit.purchaseSuggestionReject",
+  READER_PURCHASE_SUGGESTION_CREATE: "audit.purchaseSuggestionCreate",
+  READER_LIST_CREATE: "audit.readerListCreate",
+  READER_LIST_DELETE: "audit.readerListDelete",
+  READER_LIST_ADD_BOOK: "audit.readerListAddBook",
+  READER_LIST_REMOVE_BOOK: "audit.readerListRemoveBook",
+  NOTIFICATION_OVERDUE_REMINDERS: "audit.overdueReminders",
 };

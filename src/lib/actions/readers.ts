@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { assertUser, AuthError } from "../auth";
 import { recordAudit } from "../audit";
 import { addSuspensionDuration, PERMANENT_SUSPENSION_DATE } from "../format";
+import { NOTIFICATION_TEXTS, notifyReader } from "../notifications";
 import { prisma } from "../prisma";
 import { revokeReaderSessions } from "../reader-auth";
 import { CARD_PREFIX, nextCardNumber } from "../reader-card";
@@ -298,6 +299,23 @@ export async function setReaderSuspensionAction(
           parsed.data.unit
         } (hasta el ${suspendedUntil.toISOString().slice(0, 10)})`,
     userId: user.id,
+  });
+
+  // Aviso a la persona lectora: por qué y hasta cuándo queda suspendida.
+  const suspensionTexts = NOTIFICATION_TEXTS.suspension({
+    name: reader.fullName,
+    until: suspendedUntil,
+    reason: parsed.data.reason ?? null,
+  });
+  await notifyReader({
+    reader: {
+      id: reader.id,
+      fullName: reader.fullName,
+      email: reader.email,
+    },
+    kind: "suspension",
+    subject: suspensionTexts.subject,
+    body: suspensionTexts.body,
   });
 
   revalidateReaders(reader.id);

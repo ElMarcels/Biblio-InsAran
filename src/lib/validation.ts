@@ -445,6 +445,63 @@ export const collectionSchema = z.object({
 export type CollectionInput = z.infer<typeof collectionSchema>;
 
 // ---------------------------------------------------------------------------
+// Solicitudes de compra
+// ---------------------------------------------------------------------------
+
+/**
+ * Solicitud de compra de un título que no está en el catálogo. La pueden
+ * enviar las personas lectoras, el profesorado (sin cuenta, con su nombre y
+ * correo) o el propio personal.
+ */
+export const purchaseSuggestionSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(2, msg("validation.purchaseTitleRequired"))
+    .max(220, msg("validation.purchaseTitleTooLong")),
+  author: z
+    .string()
+    .trim()
+    .min(2, msg("validation.purchaseAuthorRequired"))
+    .max(180, msg("validation.purchaseAuthorTooLong")),
+  isbn: optionalText(32),
+  reason: optionalText(600),
+  /** Nombre de quien propone (solo en el formulario público). */
+  proposerName: optionalText(120),
+  /** Correo de quien propone (solo en el formulario público). */
+  proposerEmail: z
+    .union([
+      z.literal(""),
+      z.string().trim().email(msg("validation.emailInvalid")).max(160),
+    ])
+    .optional()
+    .transform((value) => (value === "" || value === undefined ? value : value)),
+});
+
+export type PurchaseSuggestionInput = z.infer<typeof purchaseSuggestionSchema>;
+
+// ---------------------------------------------------------------------------
+// Listas de lectura de la persona lectora
+// ---------------------------------------------------------------------------
+
+/** Nombre de la lista que crea la persona lectora. */
+export const readerListSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, msg("validation.readerListNameRequired"))
+    .max(60, msg("validation.readerListNameTooLong")),
+});
+
+export type ReaderListInput = z.infer<typeof readerListSchema>;
+
+/** Listas que puede tener una persona lectora. */
+export const MAX_READER_LISTS = 10;
+
+/** Libros que puede tener en cada lista. */
+export const MAX_READER_LIST_BOOKS = 100;
+
+// ---------------------------------------------------------------------------
 // Novedades de la plataforma (changelog)
 // ---------------------------------------------------------------------------
 

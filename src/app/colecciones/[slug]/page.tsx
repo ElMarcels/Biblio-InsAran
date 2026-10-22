@@ -12,8 +12,8 @@ type Params = Promise<{ slug: string }>;
 
 export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params;
-  const collection = await prisma.collection.findUnique({
-    where: { slug },
+  const collection = await prisma.collection.findFirst({
+    where: { slug, ownerReaderId: null },
     select: { name: true },
   });
   const t = await getT();
@@ -24,8 +24,8 @@ export default async function CollectionPage({ params }: { params: Params }) {
   const { slug } = await params;
   const t = await getT();
 
-  const collection = await prisma.collection.findUnique({
-    where: { slug },
+  const collection = await prisma.collection.findFirst({
+    where: { slug, ownerReaderId: null },
     include: {
       books: {
         orderBy: [{ position: "asc" }, { createdAt: "asc" }],

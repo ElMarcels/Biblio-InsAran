@@ -75,4 +75,7 @@ export const AUDIT_LABELS: Record<string, TranslationKey> = {
   READER_LIST_ADD_BOOK: "audit.readerListAddBook",
   READER_LIST_REMOVE_BOOK: "audit.readerListRemoveBook",
   NOTIFICATION_OVERDUE_REMINDERS: "audit.overdueReminders",
+  NOTIFICATION_OVERDUE_CRON: "audit.overdueCron",
+  NOTIFICATION_RESEND: "audit.notificationResend",
+  NOTIFICATION_RETRY_FAILED: "audit.notificationRetry",
 };

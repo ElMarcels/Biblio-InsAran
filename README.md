@@ -69,6 +69,8 @@ npm run dev             # http://localhost:3000
 | `SMTP_USER` | Usuario de autenticación SMTP (opcional). |
 | `SMTP_PASSWORD` | Contraseña de autenticación SMTP (opcional). |
 | `SMTP_FROM` | Remitente visible en los correos (obligatorio si hay `SMTP_HOST`). |
+| `SMTP_DEBUG` | `true` para imprimir la conversación SMTP en los registros (diagnóstico). |
+| `CRON_SECRET` | Secreto que protege la ruta de los recordatorios automáticos. Sin él, el cron queda cerrado. |
 
 > **Neon / proveedores con pooling:** la URL agrupada incluye el sufijo
 > `-pooler` en el host. Esa conexión no admite los bloqueos que Prisma necesita
@@ -127,7 +129,8 @@ src/
                          cambio de PIN)
     panel/               Área privada (resumen, tareas, libros, colecciones,
                          lectores, préstamos, reservas, solicitudes, estadísticas, usuarios,
-                         actividad, changelog, cuenta)
+                         actividad, changelog, correo y bandeja de salida, cuenta)
+    api/cron/            Recordatorios automáticos de retraso (protegidos por CRON_SECRET)
   components/            Componentes de la interfaz
   lib/
     auth.ts              Sesiones y comprobaciones de permisos (personal)
@@ -136,7 +139,8 @@ src/
     reader-session-cookie.ts  Cookie de sesión del lector/a
     changelog.ts         Novedades pendientes por cuenta
     mailer.ts            Envío opcional de correo por SMTP
-    notifications.ts     Avisos a la bandeja del lector/a y plantillas de correo
+    notifications.ts     Avisos a la bandeja del lector/a, entrega y plantillas de correo
+    reminders.ts         Recordatorios de retraso (cron diario y envío manual)
     actions/             Server Actions (auth, books, users, reader, changelog,
                          purchases, reader-lists, notifications…)
     validation.ts        Esquemas de Zod
@@ -191,6 +195,33 @@ docker compose --profile selfhost-db up -d --build
 > de Prisma para Linux. El contenedor **no** incluye secretos: las credenciales
 > se pasan en tiempo de ejecución desde `.env`.
 
+### Recordatorios automáticos (cron)
+
+La ruta `GET /api/cron/recordatorios` avisa por correo a quien tenga un
+préstamo vencido a los **3, 7 y 14 días**, sin repetir el mismo aviso (y como
+mucho uno al día por préstamo, aunque se ejecute el cron y se pulse el botón
+manual).
+
+- **Vercel:** `vercel.json` ya declara el cron diario a las `07:00` UTC. Solo hay
+  que definir `CRON_SECRET` en las variables de entorno; Vercel lo envía como
+  `Authorization: Bearer <CRON_SECRET>`.
+- **VPS o cualquier otro alojamiento:** añade una línea al `crontab` (o un
+  temporizador de systemd):
+
+  ```cron
+  0 7 * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://tu-dominio/api/cron/recordatorios
+  ```
+
+- **Prueba manual:**
+
+  ```bash
+  curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/recordatorios
+  ```
+
+La respuesta es un JSON con el recuento (`overdue`, `sent`, `queued`,
+`duplicates`, `withoutEmail`, `errors`). Si falta `CRON_SECRET`, la ruta
+responde `503` y no envía nada.
+
 ### Copias de seguridad
 
 `deploy/backup-db.sh` vuelca la base de datos con `pg_dump`. Prográmalo con
@@ -243,6 +274,16 @@ docker compose --profile selfhost-db up -d --build
   y sanción) se guardan siempre en la bandeja de «Mi biblioteca». Si hay
   configuración SMTP (`SMTP_HOST` / `SMTP_FROM`), también se envían por correo;
   si falta la configuración, la plataforma sigue funcionando sin él.
+- **Bandeja de salida:** en **Panel → Correo → Bandeja de salida** se ve cada
+  aviso con correo junto a su estado (enviado, pendiente o fallido), el número
+  de intentos y el último error. Los fallos se pueden reintentar de uno en uno o
+  por lotes de 10; los pendientes quedan así hasta que haya SMTP configurado, de
+  modo que ningún aviso se pierde.
+- **Recordatorios de retraso:** el cron diario (`/api/cron/recordatorios`,
+  protegido con `CRON_SECRET`) avisa a los 3, 7 y 14 días de retraso. El botón
+  «Enviar avisos de retraso» del panel hace lo mismo a petición. En ambos casos
+  se manda como mucho un aviso por préstamo y día, y cada aviso queda vinculado
+  a su préstamo.
 - **Novedades (changelog):** el dueño o una cuenta ADMIN publican novedades en
   Markdown desde `/panel/changelog`. Cada publicación aparece una sola vez a
   cada cuenta de personal (se cierra con el aviso y ya no vuelve a aparecer

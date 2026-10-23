@@ -1,7 +1,9 @@
 import "server-only";
 
+import { Prisma } from "@prisma/client";
+
 import { formatDate, isPermanentSuspension } from "./format";
-import { sendMail } from "./mailer";
+import { isMailConfigured, sendMail } from "./mailer";
 import { prisma } from "./prisma";
 
 // ---------------------------------------------------------------------------
@@ -88,7 +90,70 @@ export const NOTIFICATION_TEXTS = {
 };
 
 // ---------------------------------------------------------------------------
-// Envío
+// Entrega
+// ---------------------------------------------------------------------------
+
+export type DeliveryResult =
+  | { status: "sent" }
+  | { status: "already-sent" }
+  | { status: "missing" }
+  | { status: "no-recipient" }
+  | { status: "not-configured" }
+  | { status: "failed"; error: string };
+
+/**
+ * Intenta enviar un aviso ya guardado y deja constancia del resultado.
+ *
+ * Es la única puerta de salida del correo: la usan el alta del aviso, los
+ * reintentos de la bandeja de salida y el envío de recordatorios. Si el
+ * servidor de correo no está configurado no toca el aviso: queda pendiente.
+ */
+export async function deliverNotification(id: string): Promise<DeliveryResult> {
+  const notification = await prisma.notification.findUnique({
+    where: { id },
+    select: { to: true, subject: true, body: true, sentAt: true },
+  });
+  if (!notification) return { status: "missing" };
+  if (notification.sentAt) return { status: "already-sent" };
+
+  const to = notification.to.trim();
+  if (!to) return { status: "no-recipient" };
+  if (!isMailConfigured()) return { status: "not-configured" };
+
+  const result = await sendMail({
+    to,
+    subject: notification.subject,
+    text: notification.body,
+  });
+  const now = new Date();
+
+  if (result.sent) {
+    await prisma.notification.update({
+      where: { id },
+      data: {
+        sentAt: now,
+        lastAttemptAt: now,
+        attempts: { increment: 1 },
+        error: null,
+      },
+    });
+    return { status: "sent" };
+  }
+
+  const error = result.error ?? "unknown-error";
+  await prisma.notification.update({
+    where: { id },
+    data: {
+      lastAttemptAt: now,
+      attempts: { increment: 1 },
+      error,
+    },
+  });
+  return { status: "failed", error };
+}
+
+// ---------------------------------------------------------------------------
+// Alta del aviso
 // ---------------------------------------------------------------------------
 
 export type NotifyInput = {
@@ -96,38 +161,70 @@ export type NotifyInput = {
   kind: NotificationKind;
   subject: string;
   body: string;
+  /** Préstamo que origina el aviso, si lo hay. */
+  loanId?: string | null;
+  /** Clave única para no repetir avisos automáticos (ver `reminders.ts`). */
+  dedupeKey?: string | null;
 };
+
+export type NotifyOutcome =
+  | { status: "sent" }
+  | { status: "queued"; reason: "no-recipient" | "not-configured" | "failed" }
+  | { status: "duplicate" }
+  | { status: "error" };
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
+  );
+}
 
 /**
  * Guarda un aviso en la bandeja de «Mi biblioteca» y, si la persona tiene
- * correo, lo envía también por email.
+ * correo, intenta enviarlo también por email.
  *
  * NUNCA hace fallar la operación principal: si la base de datos o el servidor
- * de correo fallan, se registra el error y se sigue.
+ * de correo fallan, se registra el error y se sigue. Los envíos fallidos o
+ * pendientes quedan en la bandeja de salida para reintentarlos.
  */
-export async function notifyReader(input: NotifyInput): Promise<void> {
+export async function notifyReader(input: NotifyInput): Promise<NotifyOutcome> {
   try {
     const to = input.reader.email?.trim() ?? "";
-    const notification = await prisma.notification.create({
-      data: {
-        readerId: input.reader.id,
-        kind: input.kind,
-        to,
-        subject: input.subject,
-        body: input.body,
-      },
-    });
 
-    if (!to) return;
-
-    const result = await sendMail({ to, subject: input.subject, text: input.body });
-    if (result.sent) {
-      await prisma.notification.update({
-        where: { id: notification.id },
-        data: { sentAt: new Date() },
+    let id: string;
+    try {
+      const created = await prisma.notification.create({
+        data: {
+          readerId: input.reader.id,
+          kind: input.kind,
+          to,
+          subject: input.subject,
+          body: input.body,
+          loanId: input.loanId ?? null,
+          dedupeKey: input.dedupeKey ?? null,
+        },
+        select: { id: true },
       });
+      id = created.id;
+    } catch (error) {
+      // Ya existe un aviso con esa clave: no se repite.
+      if (isUniqueViolation(error)) return { status: "duplicate" };
+      throw error;
+    }
+
+    const delivery = await deliverNotification(id);
+    switch (delivery.status) {
+      case "sent":
+        return { status: "sent" };
+      case "no-recipient":
+        return { status: "queued", reason: "no-recipient" };
+      case "not-configured":
+        return { status: "queued", reason: "not-configured" };
+      default:
+        return { status: "queued", reason: "failed" };
     }
   } catch (error) {
     console.error("No se pudo registrar el aviso:", error);
+    return { status: "error" };
   }
 }

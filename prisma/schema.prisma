@@ -242,6 +242,9 @@ model Loan {
   createdById String?
   createdBy   User?   @relation("LoanCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
 
+  /// Avisos generados por este préstamo (recordatorios de retraso, etc.).
+  notifications Notification[]
+
   @@index([bookId])
   @@index([readerId])
   @@index([returnedAt])
@@ -393,6 +396,24 @@ model Notification {
   readAt    DateTime?
   createdAt DateTime  @default(now())
 
+  /// Préstamo que originó el aviso (sirve para no repetir recordatorios).
+  loanId String?
+  loan   Loan?   @relation(fields: [loanId], references: [id], onDelete: SetNull)
+
+  /// Clave única de los avisos automáticos: evita duplicar el mismo
+  /// recordatorio (por ejemplo, "overdue:<loanId>:7").
+  dedupeKey String? @unique
+
+  /// Intentos de envío realizados, contando los fallidos.
+  attempts Int @default(0)
+  /// Último error de envío; se limpia al conseguir enviarlo.
+  error String?
+  /// Momento del último intento de envío.
+  lastAttemptAt DateTime?
+
   @@index([readerId, readAt])
   @@index([kind])
+  @@index([loanId])
+  @@index([sentAt])
+  @@index([createdAt])
 }

@@ -9,12 +9,14 @@ fondo está restringida a las cuentas de la plataforma.
   que todavía no está en el catálogo.
 - **Lector/a** (sin cuenta de personal): entra en «Mi biblioteca» con su número
   de carné y un PIN, consulta sus préstamos y reservas, prorroga y reserva
-  libros, mantiene sus **listas de lectura**, recibe **avisos** (préstamo,
-  reserva, retraso, sanción) y puede pedir títulos. El primer acceso obliga a
-  elegir PIN propio.
+  libros, mantiene sus **listas de lectura**, valora y reseña los libros,
+  recibe **avisos** (préstamo, reserva, retraso, sanción) y puede pedir
+  títulos. El primer acceso obliga a elegir PIN propio.
 - **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
   gestiona préstamos, reservas, lectores, listas curadas y **solicitudes de
-  compra** (al aprobar una, el título entra en el catálogo).
+  compra** (al aprobar una, el título entra en el catálogo). Cuenta con un
+  **calendario de vencimientos** para ver de un vistazo qué devoluciones tocan
+  cada día del mes.
 - **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la
   plataforma, consulta el registro de actividad y publica las novedades de la
   plataforma (changelog), que cada cuenta de personal ve una sola vez.
@@ -115,7 +117,7 @@ prisma/
   schema.prisma          Modelo de datos (User, Session, Book, Reader,
                          ReaderSession, Loan, Reservation, Collection,
                          Changelog, ChangelogView, AuditLog, PurchaseSuggestion,
-                         Notification)
+                         Notification, Review)
   seed.ts                Datos iniciales
 src/
   app/
@@ -128,7 +130,8 @@ src/
                          reservas, historial, listas, avisos, solicitudes, cuenta,
                          cambio de PIN)
     panel/               Área privada (resumen, tareas, libros, colecciones,
-                         lectores, préstamos, reservas, solicitudes, estadísticas, usuarios,
+                         lectores, préstamos, calendario de vencimientos,
+                         reservas, solicitudes, estadísticas, usuarios,
                          actividad, changelog, correo y bandeja de salida, cuenta)
     api/cron/            Recordatorios automáticos de retraso (protegidos por CRON_SECRET)
   components/            Componentes de la interfaz
@@ -142,7 +145,7 @@ src/
     notifications.ts     Avisos a la bandeja del lector/a, entrega y plantillas de correo
     reminders.ts         Recordatorios de retraso (cron diario y envío manual)
     actions/             Server Actions (auth, books, users, reader, changelog,
-                         purchases, reader-lists, notifications…)
+                         purchases, reader-lists, reviews, notifications…)
     validation.ts        Esquemas de Zod
     ...
   proxy.ts               Redirección optimista del panel y del área del lector/a
@@ -298,3 +301,12 @@ responde `503` y no envía nada.
 - **Estadísticas:** el panel incluye una página con los libros y autorías más
   prestados, la rotación del fondo y los títulos que nunca se han prestado
   (candidatos al expurgo).
+- **Calendario de vencimientos:** en **Panel → Calendario** (`/panel/calendario`)
+  se ven, mes a mes, todos los préstamos sin devolver agrupados por su fecha de
+  vencimiento. Los días ya pasados se resaltan en rojo y cada vencimiento
+  enlaza con la ficha del lector/a para gestionarlo.
+- **Valoraciones y reseñas:** cada lector/a puede puntuar un libro de 1 a 5
+  estrellas y dejar un comentario opcional. Solo se permite una valoración por
+  persona y libro (se puede actualizar o eliminar). La ficha del libro muestra
+  la media, el total y las reseñas más recientes; para valorar hay que haber
+  entrado en «Mi biblioteca» y tener el PIN propio elegido.

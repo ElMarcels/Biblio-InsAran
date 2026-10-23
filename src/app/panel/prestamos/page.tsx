@@ -114,6 +114,9 @@ export default async function LoansPage({
           </p>
         </div>
         <div className="flex flex-wrap items-end gap-2">
+          <Link href="/panel/calendario" className="btn-outline">
+            {t("panel.loans.calendarioDeVencimientos")}
+          </Link>
           <SendOverdueRemindersButton />
           <Link href="/panel/prestamos/nuevo" className="btn-primary">
             {t("panel.loans.registrarPrestamo")}

@@ -119,6 +119,9 @@ export default async function PanelHomePage() {
         <Link href="/panel/tareas" className="btn-outline btn-sm">
           {t("panel.home.bandejaDeTareas")}
         </Link>
+        <Link href="/panel/calendario" className="btn-outline btn-sm">
+          {t("panel.home.calendario")}
+        </Link>
         <Link href="/panel/colecciones" className="btn-outline btn-sm">
           {t("panel.home.listasCuradas")}
         </Link>

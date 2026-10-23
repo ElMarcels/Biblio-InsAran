@@ -520,6 +520,18 @@ export const changelogSchema = z.object({
 
 export type ChangelogInput = z.infer<typeof changelogSchema>;
 
+export const reviewSchema = z.object({
+  bookId: z.string().min(1, "actions.bookNoId"),
+  rating: z.coerce
+    .number()
+    .int()
+    .min(1, "review.ratingRequired")
+    .max(5, "review.ratingInvalid"),
+  comment: z.string().max(1000).optional().or(z.literal("")),
+});
+
+export type ReviewInput = z.infer<typeof reviewSchema>;
+
 /**
  * Convierte un nombre en un identificador de URL: "Club de lectura" ->
  * "club-de-lectura". Sin acentos ni signos, para que el enlace sea legible.

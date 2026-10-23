@@ -78,4 +78,5 @@ export const AUDIT_LABELS: Record<string, TranslationKey> = {
   NOTIFICATION_OVERDUE_CRON: "audit.overdueCron",
   NOTIFICATION_RESEND: "audit.notificationResend",
   NOTIFICATION_RETRY_FAILED: "audit.notificationRetry",
+  REVIEW_DELETE: "audit.reviewDelete",
 };

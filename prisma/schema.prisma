@@ -111,6 +111,7 @@ model Book {
   collections         BookCollection[]
   /// Solicitudes de compra que se aprobaron creando este libro.
   purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionBook")
+  reviews             Review[]
 
   @@index([title])
   @@index([author])
@@ -199,6 +200,7 @@ model Reader {
   purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionReader")
   /// Avisos recibidos (correo y bandeja de «Mi biblioteca»).
   notifications       Notification[]
+  reviews             Review[]
 
   @@index([fullName])
   @@index([active])
@@ -416,4 +418,25 @@ model Notification {
   @@index([loanId])
   @@index([sentAt])
   @@index([createdAt])
+}
+
+/// Valoración y reseña de un libro por un lector/a.
+model Review {
+  id        String   @id @default(cuid())
+  bookId    String
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  readerId  String
+  reader    Reader   @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  /// Puntuación de 1 a 5 estrellas.
+  rating    Int
+  /// Comentario opcional.
+  comment   String?
+  /// Moderación opcional: aprobado por el personal.
+  approved  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookId, readerId])
+  @@index([bookId])
+  @@index([approved])
 }

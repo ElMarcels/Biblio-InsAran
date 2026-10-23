@@ -12,6 +12,7 @@ import {
   RemoveFromListButton,
 } from "@/components/reader/ReaderListActions";
 import { Reveal } from "@/components/Reveal";
+import { ReviewSection } from "@/components/ReviewSection";
 import { getCurrentUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -86,13 +87,30 @@ export default async function BookPage({ params }: { params: Params }) {
       : [];
   const listsWithBook = readerLists.filter((list) => list.books.length > 0);
 
-  const [onLoan, reserved] = await Promise.all([
+  const [onLoan, reserved, reviews, myReview] = await Promise.all([
     onLoanCounts([book.id]),
     activeReservationCounts([book.id]),
+    prisma.review.findMany({
+      where: { bookId: book.id, approved: true },
+      include: { reader: { select: { fullName: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+    reader && !reader.pinMustChange
+      ? prisma.review.findUnique({
+          where: { bookId_readerId: { bookId: book.id, readerId: reader.id } },
+          include: { reader: { select: { fullName: true } } },
+        })
+      : Promise.resolve(null),
   ]);
   const loaned = onLoan.get(book.id) ?? 0;
   const available = Math.max(0, book.copies - loaned);
   const reservedCount = reserved.get(book.id) ?? 0;
+  const reviewCount = reviews.length;
+  const averageRating =
+    reviewCount === 0
+      ? 0
+      : reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount;
 
   const details: Array<{ label: string; value: string }> = [
     { label: t("book.categoria"), value: book.category },
@@ -285,6 +303,17 @@ export default async function BookPage({ params }: { params: Params }) {
                 </p>
               </section>
             ) : null}
+
+            <div className="mt-9 animate-fade-in-up" style={{ animationDelay: "320ms" }}>
+              <ReviewSection
+                bookId={book.id}
+                reviews={reviews}
+                average={averageRating}
+                count={reviewCount}
+                canReview={Boolean(reader && !reader.pinMustChange)}
+                myReview={myReview}
+              />
+            </div>
 
             <section className="mt-9">
               <h2 className="micro mb-3">{t("book.ficha")}</h2>

@@ -126,7 +126,7 @@
   "assistant.messageCount": "{count} mensaje(s)",
   "assistant.name": "Aran",
   "assistant.newChat": "Nueva conversación",
-  "assistant.notConfigured": "El asistente todavía no está configurado. La dirección de la biblioteca debe definir GEMINI_API_KEY en el servidor para activarlo.",
+  "assistant.notConfigured": "El asistente todavía no está configurado. La dirección de la biblioteca debe definir GROQ_API_KEY en el servidor para activarlo.",
   "assistant.open": "Abrir Aran",
   "assistant.pageIntro": "Pregunta por el catálogo, tus préstamos o el día a día de la biblioteca. Aran consulta datos reales y te pide confirmación antes de cambiar nada.",
   "assistant.pageTitle": "Asistente Aran",

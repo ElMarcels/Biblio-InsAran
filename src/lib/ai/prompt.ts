@@ -8,7 +8,6 @@ import type { AssistantActor } from "./types";
 const LANGUAGE: Record<Locale, string> = {
   es: "castellano",
   ca: "catalán",
-  ar: "aranés (occitano)",
 };
 
 /**

@@ -1,12 +1,12 @@
 import "server-only";
 
-import type { Content, FunctionCall, Part } from "@google/genai";
+import type { ChatCompletionMessageParam, ChatCompletionTool } from "groq-sdk/resources/chat/completions";
 
 import {
   MAX_TOOL_ROUNDS,
   maxOutputTokens,
 } from "./config";
-import { assistantModel, getGemini } from "./gemini";
+import { assistantModel, getGroq } from "./groq";
 import { systemInstruction } from "./prompt";
 import { toolDeclarations, toolsForActor } from "./tools/registry";
 import type {
@@ -15,10 +15,6 @@ import type {
   RunAssistantInput,
   RunAssistantResult,
 } from "./types";
-
-function asPart(call: FunctionCall): Part {
-  return { functionCall: call };
-}
 
 /**
  * Claves que nunca deben viajar al modelo. Las herramientas de personal
@@ -61,7 +57,7 @@ function sanitizeForModel(value: unknown, depth = 0): unknown {
 }
 
 /**
- * Ejecuta una conversación completa con Gemini:
+ * Ejecuta una conversación completa con Groq:
  * - mantiene el bucle de llamadas a herramientas (máximo 5 vueltas),
  * - emite el texto en streaming según llega,
  * - acumula tarjetas de libros y acciones para la interfaz.
@@ -70,15 +66,30 @@ export async function runAssistant(
   input: RunAssistantInput,
 ): Promise<RunAssistantResult> {
   const { actor, locale, conversationId, history, message, emit, signal } = input;
-  const ai = getGemini();
+  const ai = getGroq();
   const tools = toolsForActor(actor, conversationId);
   const declarations = toolDeclarations(tools);
 
-  const contents: Content[] = history.map((item) => ({
-    role: item.role === "assistant" ? "model" : "user",
-    parts: [{ text: item.content }],
-  }));
-  contents.push({ role: "user", parts: [{ text: message }] });
+  const messages: ChatCompletionMessageParam[] = [
+    { role: "system", content: systemInstruction(actor, locale) },
+    ...history.map((item) => ({
+      role: item.role === "assistant" ? ("assistant" as const) : ("user" as const),
+      content: item.content,
+    })),
+    { role: "user", content: message },
+  ];
+
+  const openaiTools: ChatCompletionTool[] = declarations.map((d) => {
+    const fn = (d as { function: { name: string; description: string; parameters: unknown } }).function;
+    return {
+      type: "function" as const,
+      function: {
+        name: fn.name,
+        description: fn.description,
+        parameters: fn.parameters as Record<string, unknown>,
+      },
+    };
+  });
 
   const books = new Map<string, AssistantBook>();
   const actions = new Map<string, ProposedActionView>();
@@ -88,24 +99,19 @@ export async function runAssistant(
   let tokensOut = 0;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
-    // Reintento con espera exponencial si Gemini devuelve 429 (cuota agotada).
-    let stream: Awaited<ReturnType<typeof ai.models.generateContentStream>> | undefined;
+    // Reintento con espera exponencial si Groq devuelve 429.
+    let completion: any;
     let lastError: unknown;
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
-        stream = await ai.models.generateContentStream({
+        completion = await ai.chat.completions.create({
           model: assistantModel(),
-          contents,
-          config: {
-            systemInstruction: systemInstruction(actor, locale),
-            temperature: 0.45,
-            maxOutputTokens: maxOutputTokens(),
-            ...(declarations.length > 0
-              ? { tools: [{ functionDeclarations: declarations }] }
-              : {}),
-            ...(signal ? { abortSignal: signal } : {}),
-          },
-        });
+          messages,
+          temperature: 0.45,
+          max_tokens: maxOutputTokens(),
+          ...(openaiTools.length > 0 ? { tools: openaiTools } : {}),
+          stream: true,
+        }) as any;
         lastError = null;
         break;
       } catch (error) {
@@ -125,40 +131,62 @@ export async function runAssistant(
         }
       }
     }
-    if (lastError || !stream) throw lastError ?? new Error("No se ha podido conectar con Gemini.");
+    if (lastError || !completion) {
+      throw lastError ?? new Error("No se ha podido conectar con Groq.");
+    }
 
-    const calls: FunctionCall[] = [];
-    const modelParts: Part[] = [];
+    // Procesar el stream
+    const toolCallsAccumulator: Map<number, { id: string; name: string; arguments: string }> = new Map();
+    let roundText = "";
 
-    for await (const chunk of stream) {
-      const chunkText = chunk.text;
-      if (chunkText) {
-        text += chunkText;
-        emit({ type: "text", text: chunkText });
+    for await (const chunk of completion) {
+      const delta = chunk.choices?.[0]?.delta;
+      if (!delta) continue;
+
+      if (delta.content) {
+        roundText += delta.content;
+        text += delta.content;
+        emit({ type: "text", text: delta.content });
       }
-      for (const part of chunk.candidates?.[0]?.content?.parts ?? []) {
-        modelParts.push(part);
+
+      if (delta.tool_calls) {
+        for (const tc of delta.tool_calls) {
+          const idx = tc.index ?? 0;
+          if (!toolCallsAccumulator.has(idx)) {
+            toolCallsAccumulator.set(idx, { id: tc.id ?? "", name: "", arguments: "" });
+          }
+          const acc = toolCallsAccumulator.get(idx)!;
+          if (tc.id) acc.id = tc.id;
+          if (tc.function?.name) acc.name = tc.function.name;
+          if (tc.function?.arguments) acc.arguments += tc.function.arguments;
+        }
       }
-      for (const call of chunk.functionCalls ?? []) {
-        calls.push(call);
-      }
-      const usage = chunk.usageMetadata;
+
+      const usage = chunk.usage;
       if (usage) {
-        tokensIn = usage.promptTokenCount ?? tokensIn;
-        tokensOut = usage.candidatesTokenCount ?? tokensOut;
+        tokensIn = usage.prompt_tokens ?? tokensIn;
+        tokensOut = usage.completion_tokens ?? tokensOut;
       }
     }
 
-    if (calls.length === 0) break;
+    const toolCalls = Array.from(toolCallsAccumulator.values()).filter((tc) => tc.name);
 
-    contents.push({
-      role: "model",
-      parts: modelParts.length > 0 ? modelParts : calls.map(asPart),
+    if (toolCalls.length === 0) break;
+
+    // Añadir el mensaje del asistente con las tool calls
+    messages.push({
+      role: "assistant",
+      content: roundText || null,
+      tool_calls: toolCalls.map((tc) => ({
+        id: tc.id,
+        type: "function" as const,
+        function: { name: tc.name, arguments: tc.arguments },
+      })),
     });
 
-    const responses: Part[] = [];
-    for (const call of calls) {
-      const name = call.name ?? "";
+    // Ejecutar las herramientas
+    for (const tc of toolCalls) {
+      const name = tc.name;
       const tool = tools.find((candidate) => candidate.name === name);
       let output: unknown;
       if (!tool) {
@@ -166,7 +194,8 @@ export async function runAssistant(
       } else {
         toolNames.push(name);
         try {
-          const outcome = await tool.execute(call.args ?? {});
+          const args = tc.arguments ? JSON.parse(tc.arguments) : {};
+          const outcome = await tool.execute(args);
           output = sanitizeForModel(outcome.result);
           if (outcome.books) {
             const fresh: AssistantBook[] = [];
@@ -193,19 +222,12 @@ export async function runAssistant(
           };
         }
       }
-      responses.push({
-        functionResponse: {
-          name,
-          ...(call.id ? { id: call.id } : {}),
-          response:
-            typeof output === "object" && output !== null
-              ? { output }
-              : { output: { value: output } },
-        },
+      messages.push({
+        role: "tool",
+        tool_call_id: tc.id,
+        content: JSON.stringify(output),
       });
     }
-
-    contents.push({ role: "user", parts: responses });
   }
 
   if (!text.trim()) {

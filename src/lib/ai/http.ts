@@ -8,7 +8,7 @@ import { cancelAction, executeAction } from "./actions";
 import { AssistantAuthError, canPersist, resolveActor } from "./auth";
 import { runAssistant } from "./chat";
 import { dailyMessageLimit, isAssistantEnabled } from "./config";
-import { assistantError } from "./gemini";
+import { assistantError } from "./groq";
 import {
   appendMessage,
   cleanupOldConversations,
@@ -56,7 +56,7 @@ export async function chatResponse(
 ): Promise<Response> {
   if (!isAssistantEnabled()) {
     return jsonError(
-      "El asistente no está configurado en esta instalación (falta GEMINI_API_KEY).",
+      "El asistente no está configurado en esta instalación (falta GROQ_API_KEY).",
       503,
     );
   }
@@ -199,7 +199,7 @@ export async function chatResponse(
       }
     },
     cancel() {
-      // La señal de la petición se propaga al SDK de Gemini.
+      // La señal de la petición se propaga al SDK de Groq.
     },
   });
 

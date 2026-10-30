@@ -35,7 +35,7 @@ fondo está restringida a las cuentas de la plataforma.
 | Autenticación | Sesiones propias (cookie firmada `httpOnly` + tabla `Session`) |
 | Contraseñas | bcrypt (coste 12) |
 | Validación | Zod 4 |
-| Asistente IA | Gemini (`@google/genai`), solo en el servidor |
+| Asistente IA | Groq (Llama 3.3), solo en el servidor |
 
 ---
 
@@ -74,8 +74,8 @@ npm run dev             # http://localhost:3000
 | `SMTP_FROM` | Remitente visible en los correos (obligatorio si hay `SMTP_HOST`). |
 | `SMTP_DEBUG` | `true` para imprimir la conversación SMTP en los registros (diagnóstico). |
 | `CRON_SECRET` | Secreto que protege la ruta de los recordatorios automáticos. Sin él, el cron queda cerrado. |
-| `GEMINI_API_KEY` | Clave de Gemini para el asistente Aran. **Solo se lee en el servidor.** Sin ella, el orbe no se muestra y la página `/asistente` explica que falta configurarlo. |
-| `GEMINI_MODEL` | Modelo de Gemini (por defecto `gemini-2.5-flash`). |
+| `GROQ_API_KEY` | Clave de Groq para el asistente Aran. **Solo se lee en el servidor.** Sin ella, el orbe no se muestra y la página `/asistente` explica que falta configurarlo. |
+| `GROQ_MODEL` | Modelo de Groq (por defecto `llama-3.3-70b-versatile`). |
 | `ASSISTANT_ENABLED` | `false` desactiva el asistente sin borrar la clave. |
 | `ASSISTANT_DAILY_LIMIT` | Mensajes por identidad y día (por defecto `300`). |
 | `ASSISTANT_HISTORY_DAYS` | Días de retención del historial (por defecto `90`). |
@@ -105,7 +105,7 @@ antes de sembrar, o cambiarla luego desde **Panel → Mi cuenta**.
 
 Aran es un asistente de IA integrado en la biblioteca. Aparece como un **orbe
 flotante** en todas las páginas (y también en `/asistente`) y responde en el
-idioma activo: castellano, catalán o aranés.
+idioma activo: castellano o catalán.
 
 ### Qué puede hacer según quién seas
 
@@ -121,7 +121,7 @@ endpoint `/api/panel/asistente` exige una cuenta de personal activa.
 
 ### Seguridad y privacidad
 
-- La clave de Gemini vive solo en el servidor (`GEMINI_API_KEY`); el navegador
+- La clave de Groq vive solo en el servidor (`GROQ_API_KEY`); el navegador
   únicamente habla con las rutas internas de la aplicación.
 - **Ninguna escritura se ejecuta directamente.** El modelo solo puede *proponer*
   una acción; el servidor valida permisos y datos, guarda la propuesta en
@@ -146,15 +146,13 @@ endpoint `/api/panel/asistente` exige una cuenta de personal activa.
 
 ```bash
 # 1. Añade la clave al .env del servidor
-GEMINI_API_KEY="tu-clave-de-gemini"
-# Opcional: GEMINI_MODEL="gemini-2.5-flash"
+GROQ_API_KEY="tu-clave-de-groq"
+# Opcional: GROQ_MODEL="llama-3.3-70b-versatile"
 
-> **Nota sobre límites de Gemini:** El nivel gratuito de la API de Gemini tiene
-> límites muy bajos (≈10 peticiones/minuto). Si Aran muestra el mensaje
-> "Aran ha alcanzado el límite de peticiones", espera unos segundos e inténtalo
-> de nuevo. Para uso en producción con varios usuarios simultáneos, considera
-> activar el nivel de pago en Google AI Studio. El código incluye reintentos
-> automáticos con espera exponencial para mitigar los picos de demanda.
+> **Nota sobre límites de Groq:** El nivel gratuito de Groq tiene límites
+> generosos (30 peticiones/minuto, 14.400/día). Para uso en producción con
+> varios usuarios simultáneos, considera el plan de pago. El código incluye
+> reintentos automáticos con espera exponencial para mitigar los picos de demanda.
 
 # 2. Aplica la migración del asistente
 npm run db:deploy        # producción
@@ -243,7 +241,7 @@ src/
   components/
     assistant/           Orbe flotante, chat, tarjetas de libros y de acciones
   lib/
-    ai/                  Asistente Aran: Gemini, herramientas, permisos,
+    ai/                  Asistente Aran: Groq, herramientas, permisos,
                          historial y acciones con confirmación
     auth.ts              Sesiones y comprobaciones de permisos (personal)
     reader-auth.ts       Sesiones y PIN del área del lector/a

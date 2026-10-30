@@ -1,7 +1,6 @@
 import "server-only";
 
-import type { FunctionDeclaration, Schema } from "@google/genai";
-import { Type } from "@google/genai";
+import type { ChatCompletionTool } from "groq-sdk/resources/chat/completions";
 import { z } from "zod";
 
 import { actionDefinitionsFor, proposeAction } from "../actions";
@@ -10,53 +9,14 @@ import { catalogTools } from "./catalog";
 import { readerTools } from "./reader";
 import { staffTools } from "./staff";
 
-/**
- * Convierte el JSON Schema que genera Zod al esquema que espera Gemini
- * (tipos en mayúsculas y campos en camelCase).
- */
-function toGeminiSchema(input: unknown): Schema {
-  const value = (input ?? {}) as Record<string, unknown>;
-  const type =
-    typeof value.type === "string"
-      ? (value.type.toUpperCase() as Type)
-      : undefined;
-
-  const schema: Schema = {};
-  if (type) schema.type = type;
-  if (typeof value.description === "string") schema.description = value.description;
-  if (typeof value.format === "string") schema.format = value.format;
-  if (typeof value.pattern === "string") schema.pattern = value.pattern;
-  if (typeof value.minimum === "number") schema.minimum = value.minimum;
-  if (typeof value.maximum === "number") schema.maximum = value.maximum;
-  if (typeof value.minLength === "number") schema.minLength = String(value.minLength);
-  if (typeof value.maxLength === "number") schema.maxLength = String(value.maxLength);
-  if (Array.isArray(value.enum)) {
-    schema.enum = value.enum.map((item) => String(item));
-    schema.format = "enum";
-  }
-  if (Array.isArray(value.required)) {
-    schema.required = value.required.map((item) => String(item));
-  }
-  if (value.properties && typeof value.properties === "object") {
-    schema.properties = Object.fromEntries(
-      Object.entries(value.properties as Record<string, unknown>).map(
-        ([key, child]) => [key, toGeminiSchema(child)],
-      ),
-    );
-    schema.propertyOrdering = Object.keys(schema.properties);
-  }
-  if (value.items) schema.items = toGeminiSchema(value.items);
-  if (Array.isArray(value.anyOf)) {
-    schema.anyOf = value.anyOf.map((child) => toGeminiSchema(child));
-  }
-  return schema;
-}
-
-export function toolDeclarations(tools: AssistantTool[]): FunctionDeclaration[] {
+export function toolDeclarations(tools: AssistantTool[]): ChatCompletionTool[] {
   return tools.map((tool) => ({
-    name: tool.name,
-    description: tool.description,
-    parameters: toGeminiSchema(z.toJSONSchema(tool.parameters)),
+    type: "function" as const,
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: z.toJSONSchema(tool.parameters) as Record<string, unknown>,
+    },
   }));
 }
 

@@ -3,13 +3,13 @@ import "server-only";
 /** Nombre visible del asistente. */
 export const ASSISTANT_NAME = "Aran";
 
-/** Modelo de Gemini. Se puede cambiar sin tocar código con `GEMINI_MODEL`. */
-export const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
+/** Modelo de Groq. Se puede cambiar sin tocar código con `GROQ_MODEL`. */
+export const GROQ_MODEL = process.env.GROQ_MODEL?.trim() || "llama-3.3-70b-versatile";
 
 /** ¿Está el asistente disponible en esta instalación? */
 export function isAssistantEnabled(): boolean {
   if (process.env.ASSISTANT_ENABLED === "false") return false;
-  return Boolean(process.env.GEMINI_API_KEY?.trim());
+  return Boolean(process.env.GROQ_API_KEY?.trim());
 }
 
 export function maxOutputTokens(): number {

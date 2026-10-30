@@ -154,7 +154,7 @@ export function AssistantOrb({
         className={`aran-launcher fixed right-5 bottom-5 z-[90] ${open ? "aran-launcher--open" : ""}`}
         aria-label={open ? t("assistant.close") : t("assistant.open")}
         aria-expanded={open}
-        title={open ? t("assistant.close") : t("assistant.open")}
+        title={open ? t("assistant.close") : `${t("assistant.open")} (Ctrl+K)`}
         onClick={() => setOpen((value) => !value)}
       >
         <span className="aran-orb" aria-hidden="true">

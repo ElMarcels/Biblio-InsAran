@@ -233,6 +233,10 @@ export function AssistantChat({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [actionStates, setActionStates] = useState<Record<string, ActionState>>({});
+  const [alerts, setAlerts] = useState<{ type: string; message: string; icon: string }[]>([]);
+  const [alertsLoaded, setAlertsLoaded] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [quickReplies, setQuickReplies] = useState<string[]>([]);
 
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -274,6 +278,57 @@ export function AssistantChat({
       setHistoryLoading(false);
     }
   }, [base, canPersist]);
+
+  // Cargar alertas proactivas al montar
+  useEffect(() => {
+    if (alertsLoaded) return;
+    const loadAlerts = async () => {
+      try {
+        const response = await fetch(`${base}/alertas`, {
+          headers: { Accept: "application/json" },
+        });
+        if (!response.ok) return;
+        const data = (await response.json()) as { alerts?: { type: string; message: string; icon: string }[] };
+        setAlerts(data.alerts ?? []);
+      } catch {
+        // Las alertas son secundarias
+      } finally {
+        setAlertsLoaded(true);
+      }
+    };
+    void loadAlerts();
+  }, [base, alertsLoaded]);
+
+  // Generar quick replies basados en el último mensaje del asistente
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant" && m.content);
+      if (!lastAssistant || busy) {
+        setQuickReplies([]);
+        return;
+      }
+      const content = lastAssistant.content.toLowerCase();
+      const replies: string[] = [];
+      if (content.includes("libro") || content.includes("catálogo") || content.includes("disponible")) {
+        replies.push("Más detalles de este libro");
+        replies.push("Libros similares");
+      }
+      if (content.includes("préstamo") || content.includes("vence") || content.includes("renovar")) {
+        replies.push("¿Puedo prorrogar?");
+        replies.push("Ver mis préstamos");
+      }
+      if (content.includes("reserva")) {
+        replies.push("¿Cómo cancelo una reserva?");
+        replies.push("Ver mis reservas");
+      }
+      if (replies.length === 0 && lastAssistant.books.length > 0) {
+        replies.push("Más detalles");
+        replies.push("Libros similares");
+      }
+      setQuickReplies(replies.slice(0, 3));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [messages, busy]);
 
   useEffect(() => {
     const element = scrollRef.current;
@@ -464,6 +519,48 @@ export function AssistantChat({
     setBusy(false);
   };
 
+  // Búsqueda por voz (Web Speech API)
+  const startVoice = () => {
+    const SpeechRecognition =
+      (window as unknown as { SpeechRecognition?: new () => unknown; webkitSpeechRecognition?: new () => unknown })
+        .SpeechRecognition ||
+      (window as unknown as { webkitSpeechRecognition?: new () => unknown }).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setError(t("assistant.voiceNotSupported"));
+      return;
+    }
+    const recognition = new (SpeechRecognition as new () => {
+      lang: string;
+      interimResults: boolean;
+      maxAlternatives: number;
+      start: () => void;
+      stop: () => void;
+      onresult: ((event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => void) | null;
+      onerror: ((event: { error: string }) => void) | null;
+      onend: (() => void) | null;
+    })();
+    recognition.lang = locale === "ca" ? "ca-ES" : "es-ES";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    setIsListening(true);
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript;
+      if (transcript) {
+        setInput((prev) => (prev ? `${prev} ${transcript}` : transcript));
+      }
+    };
+    recognition.onerror = (event) => {
+      if (event.error !== "aborted") {
+        setError(t("assistant.voiceError"));
+      }
+      setIsListening(false);
+    };
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    recognition.start();
+  };
+
   const newChat = () => {
     abortRef.current?.abort();
     setBusy(false);
@@ -594,6 +691,11 @@ export function AssistantChat({
             {t("assistant.name")}
           </p>
           <p className="truncate text-[11px] text-ink-faint">{tagline}</p>
+          {scope === "PUBLIC" ? (
+            <span className="mt-0.5 inline-block border border-line bg-paper px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-faint">
+              {t("assistant.readOnlyMode")}
+            </span>
+          ) : null}
         </div>
         {canPersist ? (
           <button
@@ -662,6 +764,21 @@ export function AssistantChat({
           </button>
         ) : null}
       </header>
+
+      {/* Alertas proactivas */}
+      {alerts.length > 0 && messages.length === 0 ? (
+        <div className="border-b border-hairline bg-accent-soft px-4 py-2.5">
+          <p className="micro mb-1.5">{t("assistant.alertsTitle")}</p>
+          <ul className="flex flex-col gap-1">
+            {alerts.map((alert, i) => (
+              <li key={i} className="flex items-center gap-2 text-[12px] text-ink-soft">
+                <span aria-hidden="true">{alert.icon}</span>
+                <span>{alert.message}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="relative min-h-0 flex-1">
         {historyOpen ? (
@@ -831,6 +948,22 @@ export function AssistantChat({
         </div>
       ) : null}
 
+      {/* Respuestas rápidas */}
+      {quickReplies.length > 0 && !busy ? (
+        <div className="flex flex-wrap gap-1.5 border-t border-hairline bg-paper px-3 py-2">
+          {quickReplies.map((reply) => (
+            <button
+              key={reply}
+              type="button"
+              className="border border-line bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-soft transition-colors hover:border-accent hover:text-accent"
+              onClick={() => void send(reply)}
+            >
+              {reply}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       <form
         onSubmit={handleSubmit}
         className="border-t-2 border-line bg-surface p-3"
@@ -847,6 +980,35 @@ export function AssistantChat({
             aria-label={t("assistant.placeholder")}
             className="input max-h-32 min-h-[44px] flex-1 resize-none !py-2.5 text-[14px]"
           />
+          {/* Búsqueda por voz */}
+          <button
+            type="button"
+            className={`btn-ghost btn-sm h-[44px] shrink-0 ${isListening ? "text-danger" : ""}`}
+            aria-label={t("assistant.voiceSearch")}
+            title={t("assistant.voiceSearch")}
+            onClick={startVoice}
+            disabled={isListening}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              {isListening ? (
+                <circle cx="12" cy="12" r="4" fill="currentColor" />
+              ) : (
+                <>
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="23" />
+                  <line x1="8" y1="23" x2="16" y2="23" />
+                </>
+              )}
+            </svg>
+          </button>
           {busy ? (
             <button
               type="button"

@@ -130,6 +130,7 @@ export async function chatResponse(
   }
 
   const locale = isLocale(body.locale) ? body.locale : DEFAULT_LOCALE;
+  const pagePath = typeof body.pagePath === "string" ? body.pagePath.trim().slice(0, 200) : undefined;
   const history = await conversationHistory(actor, conversationId);
 
   if (!conversationId && canPersist(actor)) {
@@ -166,6 +167,7 @@ export async function chatResponse(
           conversationId,
           history,
           message,
+          pagePath,
           signal,
           emit: send,
         });

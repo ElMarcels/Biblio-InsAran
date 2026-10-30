@@ -212,12 +212,15 @@ export function AssistantChat({
   variant = "panel",
   onClose,
   contextSuggestions,
+  pagePath,
 }: {
   scope: AssistantScope;
   variant?: "panel" | "page";
   onClose?: () => void;
   /** Sugerencias contextuales según la página actual. */
   contextSuggestions?: string[];
+  /** Ruta actual para que Aran sepa en qué pantalla está el usuario. */
+  pagePath?: string;
 }) {
   const t = useT();
   const locale = useLocale();
@@ -446,6 +449,7 @@ export function AssistantChat({
             conversationId,
             locale,
             scope,
+            pagePath: pagePath ?? (typeof window !== "undefined" ? window.location.pathname : undefined),
           }),
           signal: controller.signal,
         });
@@ -499,7 +503,7 @@ export function AssistantChat({
         );
       }
     },
-    [base, busy, conversationId, handleEvent, locale, scope, t],
+    [base, busy, conversationId, handleEvent, locale, scope, t, pagePath],
   );
 
   const handleSubmit = (event: FormEvent) => {

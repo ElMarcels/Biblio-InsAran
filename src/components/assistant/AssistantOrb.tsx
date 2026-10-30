@@ -145,6 +145,7 @@ export function AssistantOrb({
             variant="panel"
             onClose={() => setOpen(false)}
             contextSuggestions={contextualSuggestions(pathname, scope)}
+            pagePath={pathname}
           />
         </section>
       ) : null}

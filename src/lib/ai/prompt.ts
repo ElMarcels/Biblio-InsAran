@@ -15,9 +15,48 @@ const LANGUAGE: Record<Locale, string> = {
  * trabaja con menores y con datos reales de la biblioteca, así que no puede
  * inventar disponibilidad ni saltarse los permisos.
  */
-export function systemInstruction(actor: AssistantActor, locale: Locale): string {
+export function systemInstruction(actor: AssistantActor, locale: Locale, pagePath?: string): string {
   const today = new Date().toISOString().slice(0, 10);
   const actions = actionCatalogForPrompt(actor);
+
+  // Contexto de la página actual
+  let pageContext = "";
+  if (pagePath) {
+    if (pagePath.startsWith("/libro/")) {
+      const bookId = pagePath.replace("/libro/", "").split("/")[0];
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está viendo la ficha del libro con ID "${bookId}". Si pregunta sobre "este libro", "el libro", "esta ficha", etc., se refiere a ese libro. Puedes usar ficha_libro para obtener sus datos.`;
+    } else if (pagePath.startsWith("/catalogo")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en el catálogo público. Si pregunta por libros, usa buscar_catalogo.`;
+    } else if (pagePath.startsWith("/panel/libros")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en la gestión de libros del panel.`;
+    } else if (pagePath.startsWith("/panel/lectores")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en la gestión de lectores del panel.`;
+    } else if (pagePath.startsWith("/panel/prestamos")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en la gestión de préstamos del panel.`;
+    } else if (pagePath.startsWith("/panel/reservas")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en la gestión de reservas del panel.`;
+    } else if (pagePath.startsWith("/panel/solicitudes")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en las solicitudes de compra del panel.`;
+    } else if (pagePath.startsWith("/panel/estadisticas")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en las estadísticas del panel.`;
+    } else if (pagePath.startsWith("/mi-biblioteca/prestamos")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en sus préstamos de «Mi biblioteca».`;
+    } else if (pagePath.startsWith("/mi-biblioteca/reservas")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en sus reservas de «Mi biblioteca».`;
+    } else if (pagePath.startsWith("/mi-biblioteca/historial")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en su historial de «Mi biblioteca».`;
+    } else if (pagePath.startsWith("/mi-biblioteca/listas")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en sus listas de «Mi biblioteca».`;
+    } else if (pagePath.startsWith("/mi-biblioteca/notificaciones")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está en sus avisos de «Mi biblioteca».`;
+    } else if (pagePath.startsWith("/colecciones")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está viendo colecciones.`;
+    } else if (pagePath.startsWith("/autores") || pagePath.startsWith("/autor")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está viendo autores.`;
+    } else if (pagePath.startsWith("/etiquetas")) {
+      pageContext = `\n\nCONTEXTO DE PÁGINA: El usuario está viendo etiquetas.`;
+    }
+  }
 
   const common = `Eres Aran, el asistente de IA de la ${SITE_NAME}. Hoy es ${today}.
 Responde siempre en ${LANGUAGE[locale]}, con un tono cercano, claro y adecuado para un centro educativo con menores.
@@ -42,7 +81,7 @@ REGLAS DE ORO
 MODO: BIBLIOTECA PÚBLICA.
 Ayudas a visitantes, alumnado y familias a explorar el catálogo. Puedes buscar, explicar fichas, recomendar títulos reales, decir si hay ejemplares y cómo reservar o pedir un libro.
 También puedes generar resúmenes breves de libros con la herramienta resumir_libro.
-No tienes acceso a datos personales, préstamos de nadie ni herramientas de gestión. Si piden algo de «Mi biblioteca», invítales a entrar con su carné y PIN. Si piden un libro que no existe, ofréceles pedirlo en /solicitar.`;
+No tienes acceso a datos personales, préstamos de nadie ni herramientas de gestión. Si piden algo de «Mi biblioteca», invítales a entrar con su carné y PIN. Si piden un libro que no existe, ofréceles pedirlo en /solicitar.${pageContext}`;
   }
 
   if (actor.scope === "READER") {
@@ -55,7 +94,7 @@ También puedes generar resúmenes de libros con resumir_libro y dar recomendaci
 Si detectas una sanción o un problema que no puedes resolver, explícalo y deriva al personal.
 
 ACCIONES DISPONIBLES:
-${actions || "(ninguna)"}`;
+${actions || "(ninguna)"}${pageContext}`;
   }
 
   return `${common}
@@ -68,5 +107,5 @@ No muestres contraseñas ni PIN en el texto; si una acción genera una contrase�
 Cuando redactes correos o avisos, indícalo claramente en la tarjeta de confirmación.
 
 ACCIONES DISPONIBLES:
-${actions || "(ninguna)"}`;
+${actions || "(ninguna)"}${pageContext}`;
 }

@@ -65,13 +65,13 @@ function sanitizeForModel(value: unknown, depth = 0): unknown {
 export async function runAssistant(
   input: RunAssistantInput,
 ): Promise<RunAssistantResult> {
-  const { actor, locale, conversationId, history, message, emit } = input;
+  const { actor, locale, conversationId, history, message, pagePath, emit } = input;
   const ai = getGroq();
   const tools = toolsForActor(actor, conversationId);
   const declarations = toolDeclarations(tools);
 
   const messages: ChatCompletionMessageParam[] = [
-    { role: "system", content: systemInstruction(actor, locale) },
+    { role: "system", content: systemInstruction(actor, locale, pagePath) },
     ...history.map((item) => ({
       role: item.role === "assistant" ? ("assistant" as const) : ("user" as const),
       content: item.content,

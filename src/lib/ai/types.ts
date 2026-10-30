@@ -80,6 +80,7 @@ export type RunAssistantInput = {
   conversationId: string | null;
   history: AssistantMessageInput[];
   message: string;
+  pagePath?: string;
   signal?: AbortSignal;
   emit: (event: AssistantEvent) => void;
 };

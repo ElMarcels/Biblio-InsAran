@@ -4,7 +4,7 @@ import "server-only";
 export const ASSISTANT_NAME = "Aran";
 
 /** Modelo de Groq. Se puede cambiar sin tocar código con `GROQ_MODEL`. */
-export const GROQ_MODEL = process.env.GROQ_MODEL?.trim() || "llama-3.3-70b-versatile";
+export const GROQ_MODEL = process.env.GROQ_MODEL?.trim() || "openai/gpt-oss-120b";
 
 /** ¿Está el asistente disponible en esta instalación? */
 export function isAssistantEnabled(): boolean {

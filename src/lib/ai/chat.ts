@@ -65,7 +65,7 @@ function sanitizeForModel(value: unknown, depth = 0): unknown {
 export async function runAssistant(
   input: RunAssistantInput,
 ): Promise<RunAssistantResult> {
-  const { actor, locale, conversationId, history, message, emit, signal } = input;
+  const { actor, locale, conversationId, history, message, emit } = input;
   const ai = getGroq();
   const tools = toolsForActor(actor, conversationId);
   const declarations = toolDeclarations(tools);
@@ -100,6 +100,7 @@ export async function runAssistant(
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     // Reintento con espera exponencial si Groq devuelve 429.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let completion: any;
     let lastError: unknown;
     for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -111,7 +112,7 @@ export async function runAssistant(
           max_tokens: maxOutputTokens(),
           ...(openaiTools.length > 0 ? { tools: openaiTools } : {}),
           stream: true,
-        }) as any;
+        }) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
         lastError = null;
         break;
       } catch (error) {

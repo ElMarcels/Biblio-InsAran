@@ -75,7 +75,7 @@ npm run dev             # http://localhost:3000
 | `SMTP_DEBUG` | `true` para imprimir la conversación SMTP en los registros (diagnóstico). |
 | `CRON_SECRET` | Secreto que protege la ruta de los recordatorios automáticos. Sin él, el cron queda cerrado. |
 | `GROQ_API_KEY` | Clave de Groq para el asistente Aran. **Solo se lee en el servidor.** Sin ella, el orbe no se muestra y la página `/asistente` explica que falta configurarlo. |
-| `GROQ_MODEL` | Modelo de Groq (por defecto `llama-3.3-70b-versatile`). |
+| `GROQ_MODEL` | Modelo de Groq (por defecto `openai/gpt-oss-120b`). |
 | `ASSISTANT_ENABLED` | `false` desactiva el asistente sin borrar la clave. |
 | `ASSISTANT_DAILY_LIMIT` | Mensajes por identidad y día (por defecto `300`). |
 | `ASSISTANT_HISTORY_DAYS` | Días de retención del historial (por defecto `90`). |

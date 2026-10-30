@@ -57,6 +57,10 @@ model User {
   /// Solicitudes de compra propuestas desde el panel.
   purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionUser")
 
+  /// Conversaciones y acciones propuestas por Aran (asistente de IA).
+  assistantConversations AssistantConversation[]
+  assistantActions       AssistantAction[]
+
   @@index([role])
   @@index([active])
 }
@@ -201,6 +205,10 @@ model Reader {
   /// Avisos recibidos (correo y bandeja de «Mi biblioteca»).
   notifications       Notification[]
   reviews             Review[]
+
+  /// Conversaciones y acciones propuestas por Aran (asistente de IA).
+  assistantConversations AssistantConversation[]
+  assistantActions       AssistantAction[]
 
   @@index([fullName])
   @@index([active])
@@ -407,9 +415,9 @@ model Notification {
   dedupeKey String? @unique
 
   /// Intentos de envío realizados, contando los fallidos.
-  attempts Int @default(0)
+  attempts      Int       @default(0)
   /// Último error de envío; se limpia al conseguir enviarlo.
-  error String?
+  error         String?
   /// Momento del último intento de envío.
   lastAttemptAt DateTime?
 
@@ -439,4 +447,95 @@ model Review {
   @@unique([bookId, readerId])
   @@index([bookId])
   @@index([approved])
+}
+
+// ---------------------------------------------------------------------------
+// Asistente de IA («Aran»)
+// ---------------------------------------------------------------------------
+
+/// Ámbito en el que se usa el asistente. El ámbito de personal solo se acepta
+/// dentro del panel de gestión y con una cuenta de personal autenticada.
+enum AssistantScope {
+  PUBLIC
+  READER
+  STAFF
+}
+
+enum AssistantActionStatus {
+  PENDING
+  EXECUTED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+/// Conversación guardada de Aran. Los visitantes no tienen historial: sus
+/// conversaciones son efímeras y nunca se escriben en la base de datos.
+model AssistantConversation {
+  id        String         @id @default(cuid())
+  scope     AssistantScope
+  title     String?
+  userId    String?
+  user      User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readerId  String?
+  reader    Reader?        @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  messages AssistantMessage[]
+  actions  AssistantAction[]
+
+  @@index([userId, updatedAt])
+  @@index([readerId, updatedAt])
+  @@index([updatedAt])
+}
+
+/// Mensaje de una conversación. Solo se guarda el texto final y los datos
+/// necesarios para repintar tarjetas; nunca resultados crudos con datos
+/// personales de terceros.
+model AssistantMessage {
+  id             String                @id @default(cuid())
+  conversationId String
+  conversation   AssistantConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  /// "user" | "assistant"
+  role           String
+  content        String
+  /// Tarjetas de libros y acciones pendientes asociadas al mensaje.
+  attachments    Json?
+  /// Resumen técnico de las herramientas usadas (sin datos sensibles).
+  toolCalls      Json?
+  tokensIn       Int?
+  tokensOut      Int?
+  createdAt      DateTime              @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+/// Acción que Aran propone y que la persona debe confirmar antes de ejecutar.
+/// Queda ligada a la identidad y al ámbito que la propuso para que ninguna
+/// otra sesión pueda confirmarla.
+model AssistantAction {
+  id             String                 @id @default(cuid())
+  conversationId String?
+  conversation   AssistantConversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  scope          AssistantScope
+  userId         String?
+  user           User?                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readerId       String?
+  reader         Reader?                @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  /// Identificador de la acción (p. ej. "staff.create_loan").
+  type           String
+  payload        Json
+  /// Texto legible que se muestra en la tarjeta de confirmación.
+  summary        String
+  status         AssistantActionStatus  @default(PENDING)
+  expiresAt      DateTime
+  createdAt      DateTime               @default(now())
+  executedAt     DateTime?
+  error          String?
+
+  @@index([status, expiresAt])
+  @@index([userId])
+  @@index([readerId])
+  @@index([conversationId])
 }

@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+  },
   // Salida autocontenida para la imagen de Docker (ver Dockerfile).
   output: "standalone",
   // `bwip-js` (códigos de barras y QR de los carnés) trae builds separados para

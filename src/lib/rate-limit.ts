@@ -30,17 +30,22 @@ export type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
-export function checkRateLimit(key: string): RateLimitResult {
+export function checkRateLimit(
+  key: string,
+  options: { max?: number; windowMs?: number } = {},
+): RateLimitResult {
   const now = Date.now();
+  const max = options.max ?? MAX_ATTEMPTS;
+  const windowMs = options.windowMs ?? WINDOW_MS;
   prune(now);
 
   const bucket = buckets.get(key);
   if (!bucket || bucket.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
-    return { allowed: true, remaining: MAX_ATTEMPTS - 1, retryAfterSeconds: 0 };
+    buckets.set(key, { count: 1, resetAt: now + windowMs });
+    return { allowed: true, remaining: max - 1, retryAfterSeconds: 0 };
   }
 
-  if (bucket.count >= MAX_ATTEMPTS) {
+  if (bucket.count >= max) {
     return {
       allowed: false,
       remaining: 0,
@@ -49,7 +54,7 @@ export function checkRateLimit(key: string): RateLimitResult {
   }
 
   bucket.count += 1;
-  return { allowed: true, remaining: MAX_ATTEMPTS - bucket.count, retryAfterSeconds: 0 };
+  return { allowed: true, remaining: max - bucket.count, retryAfterSeconds: 0 };
 }
 
 export function resetRateLimit(key: string): void {

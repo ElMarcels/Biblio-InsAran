@@ -35,6 +35,7 @@ fondo está restringida a las cuentas de la plataforma.
 | Autenticación | Sesiones propias (cookie firmada `httpOnly` + tabla `Session`) |
 | Contraseñas | bcrypt (coste 12) |
 | Validación | Zod 4 |
+| Asistente IA | Gemini (`@google/genai`), solo en el servidor |
 
 ---
 
@@ -73,6 +74,12 @@ npm run dev             # http://localhost:3000
 | `SMTP_FROM` | Remitente visible en los correos (obligatorio si hay `SMTP_HOST`). |
 | `SMTP_DEBUG` | `true` para imprimir la conversación SMTP en los registros (diagnóstico). |
 | `CRON_SECRET` | Secreto que protege la ruta de los recordatorios automáticos. Sin él, el cron queda cerrado. |
+| `GEMINI_API_KEY` | Clave de Gemini para el asistente Aran. **Solo se lee en el servidor.** Sin ella, el orbe no se muestra y la página `/asistente` explica que falta configurarlo. |
+| `GEMINI_MODEL` | Modelo de Gemini (por defecto `gemini-3.8-flash`). |
+| `ASSISTANT_ENABLED` | `false` desactiva el asistente sin borrar la clave. |
+| `ASSISTANT_DAILY_LIMIT` | Mensajes por identidad y día (por defecto `300`). |
+| `ASSISTANT_HISTORY_DAYS` | Días de retención del historial (por defecto `90`). |
+| `ASSISTANT_MAX_OUTPUT_TOKENS` | Tope de tokens de cada respuesta (por defecto `2048`). |
 
 > **Neon / proveedores con pooling:** la URL agrupada incluye el sufijo
 > `-pooler` en el host. Esa conexión no admite los bloqueos que Prisma necesita
@@ -91,6 +98,94 @@ ejecutar `npm run db:seed` no modifica contraseñas ya cambiadas.
 
 La contraseña del dueño se define en `prisma/seed.ts`; puedes ajustarla ahí
 antes de sembrar, o cambiarla luego desde **Panel → Mi cuenta**.
+
+---
+
+## Asistente «Aran»
+
+Aran es un asistente de IA integrado en la biblioteca. Aparece como un **orbe
+flotante** en todas las páginas (y también en `/asistente`) y responde en el
+idioma activo: castellano, catalán o aranés.
+
+### Qué puede hacer según quién seas
+
+| Ámbito | Dónde | Herramientas |
+| --- | --- | --- |
+| Visitante | Cualquier página pública | Buscar en el catálogo, fichas, disponibilidad, novedades, similares y estadísticas públicas. **Sin historial** y sin datos personales. |
+| Lector/a | Con sesión de «Mi biblioteca» | Además, sus propios préstamos, reservas, avisos, listas, historial y estado de cuenta. Puede proponer prórrogas, reservas, listas y solicitudes. |
+| Personal | Solo dentro de `/panel` | Circulación, catalogación, lectores, solicitudes, reseñas, listas, estadísticas, avisos y cuentas (según rol). |
+
+El ámbito lo decide **siempre el servidor** a partir de las cookies de sesión.
+El endpoint público `/api/asistente` no concede nunca herramientas de panel; el
+endpoint `/api/panel/asistente` exige una cuenta de personal activa.
+
+### Seguridad y privacidad
+
+- La clave de Gemini vive solo en el servidor (`GEMINI_API_KEY`); el navegador
+  únicamente habla con las rutas internas de la aplicación.
+- **Ninguna escritura se ejecuta directamente.** El modelo solo puede *proponer*
+  una acción; el servidor valida permisos y datos, guarda la propuesta en
+  `AssistantAction` y la persona debe **confirmarla** en una tarjeta. Las
+  propuestas caducan a los 5 minutos y están ligadas a la identidad que las
+  creó.
+- No hay herramientas para borrar, ejecutar SQL libre, hacer envíos masivos ni
+  cambiar contraseñas/PIN directamente. Las acciones sensibles (suspender,
+  desactivar cuentas, cambiar roles, publicar novedades) tienen riesgo alto y
+  confirmación explícita.
+- Al modelo no se le envían nombres completos, correos, carnés, PIN, notas ni
+  datos personales de terceros. Las consultas de personal usan referencias
+  opacas y la interfaz es la que muestra los nombres.
+- Los textos de la base de datos (sinopsis, reseñas, títulos) se tratan como
+  **datos**, nunca como instrucciones.
+- El historial se guarda por cuenta (lector o personal) y se borra
+  automáticamente a los `ASSISTANT_HISTORY_DAYS` días. Los visitantes no tienen
+  historial persistente.
+- Hay límite de mensajes por minuto y límite diario por identidad.
+
+### Puesta en marcha
+
+```bash
+# 1. Añade la clave al .env del servidor
+GEMINI_API_KEY="tu-clave-de-gemini"
+# Opcional: GEMINI_MODEL="gemini-3.8-flash"
+
+# 2. Aplica la migración del asistente
+npm run db:deploy        # producción
+# o: npm run db:migrate   # desarrollo
+
+# 3. Reinicia la aplicación
+npm run build && npm run start
+```
+
+Si despliegas con Nginx, el bloque `location ~ ^/api/(panel/)?asistente(/|$)`
+de `deploy/nginx-biblio.conf` desactiva el buffering para que el streaming SSE
+llegue al navegador sin esperas. En Vercel no hace falta nada especial.
+
+### Rutas
+
+| Ruta | Uso |
+| --- | --- |
+| `POST /api/asistente` | Chat público o de lector (SSE). |
+| `GET /api/asistente/conversaciones` | Historial de la identidad actual. |
+| `GET/PATCH/DELETE /api/asistente/conversaciones/[id]` | Leer, renombrar o borrar una conversación. |
+| `POST /api/asistente/acciones/[id]` | Confirmar (`{"decision":"confirm"}`) o cancelar una acción. |
+| `POST /api/panel/asistente` | Chat del panel (exige personal). |
+| `GET /api/panel/asistente/conversaciones` | Historial del personal. |
+| `POST /api/panel/asistente/acciones/[id]` | Confirmar o cancelar acciones del panel. |
+
+### Comprobaciones rápidas
+
+```bash
+# Sin clave configurada debe responder 503
+curl -i -X POST http://localhost:3000/api/asistente \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"Hola"}'
+
+# Con clave, el flujo es SSE (text/event-stream)
+curl -N -X POST http://localhost:3000/api/asistente \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"¿Qué novedades hay?","locale":"es"}'
+```
 
 ---
 
@@ -117,7 +212,8 @@ prisma/
   schema.prisma          Modelo de datos (User, Session, Book, Reader,
                          ReaderSession, Loan, Reservation, Collection,
                          Changelog, ChangelogView, AuditLog, PurchaseSuggestion,
-                         Notification, Review)
+                         Notification, Review, AssistantConversation,
+                         AssistantMessage, AssistantAction)
   seed.ts                Datos iniciales
 src/
   app/
@@ -134,8 +230,14 @@ src/
                          reservas, solicitudes, estadísticas, usuarios,
                          actividad, changelog, correo y bandeja de salida, cuenta)
     api/cron/            Recordatorios automáticos de retraso (protegidos por CRON_SECRET)
-  components/            Componentes de la interfaz
+    api/asistente/       Chat e historial del asistente público y de lectores
+    api/panel/asistente/ Chat e historial del asistente del panel
+    asistente/           Página completa del asistente
+  components/
+    assistant/           Orbe flotante, chat, tarjetas de libros y de acciones
   lib/
+    ai/                  Asistente Aran: Gemini, herramientas, permisos,
+                         historial y acciones con confirmación
     auth.ts              Sesiones y comprobaciones de permisos (personal)
     reader-auth.ts       Sesiones y PIN del área del lector/a
     session-cookie.ts    Cookie de sesión firmada (personal)

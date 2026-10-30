@@ -1,14 +1,18 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 
+import { AssistantOrb } from "@/components/assistant/AssistantOrb";
 import { ChangelogGate } from "@/components/ChangelogGate";
+import { isAssistantEnabled } from "@/lib/ai/config";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { getCurrentUser } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/constants";
 import { LOCALE_TAGS, OG_LOCALES } from "@/lib/i18n/config";
 import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { createTranslator } from "@/lib/i18n/translate";
+import { getCurrentReader } from "@/lib/reader-auth";
 import { DARK_CLASS, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { getThemePreference } from "@/lib/theme-server";
 
@@ -66,9 +70,11 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [{ locale, messages, fallback }, theme] = await Promise.all([
+  const [{ locale, messages, fallback }, theme, user, reader] = await Promise.all([
     getTranslations(),
     getThemePreference(),
+    getCurrentUser(),
+    getCurrentReader(),
   ]);
   const t = createTranslator(messages, fallback);
 
@@ -96,6 +102,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <SiteFooter />
           <ChangelogGate />
+          {isAssistantEnabled() ? (
+            <AssistantOrb hasStaff={Boolean(user)} hasReader={Boolean(reader)} />
+          ) : null}
         </LocaleProvider>
       </body>
     </html>

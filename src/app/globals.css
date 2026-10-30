@@ -630,6 +630,8 @@
   letter-spacing: 0.01em;
 }
 
+/* ---- Orbe estilo Siri AI ------------------------------------------------- */
+
 .aran-orb {
   position: relative;
   display: grid;
@@ -640,50 +642,126 @@
   border-radius: 9999px;
   background: conic-gradient(
     from 0deg,
-    #e0401d,
-    #f2a900,
-    #6d4aff,
-    #0ea5a5,
-    #e0401d
+    #ff375f,
+    #ff9f0a,
+    #ffd60a,
+    #30d158,
+    #64d2ff,
+    #5e5ce6,
+    #bf5af2,
+    #ff375f
   );
   box-shadow:
-    0 0 0 1px rgb(14 14 17 / 0.35),
-    0 0 22px rgb(224 64 29 / 0.45);
+    0 0 0 1px rgb(255 255 255 / 0.15),
+    0 0 20px rgb(94 92 230 / 0.5),
+    0 0 40px rgb(255 55 95 / 0.25);
+  animation: aran-orb-glow 3s ease-in-out infinite alternate;
+}
+
+.aran-orb::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from 180deg,
+    #ff375f,
+    #bf5af2,
+    #5e5ce6,
+    #64d2ff,
+    #30d158,
+    #ffd60a,
+    #ff9f0a,
+    #ff375f
+  );
+  filter: blur(8px);
+  opacity: 0.6;
+  z-index: -1;
+  animation: aran-spin 6s linear infinite;
 }
 
 .aran-orb__ring {
   position: absolute;
   inset: 2px;
   border-radius: 9999px;
-  border: 1px solid rgb(255 255 255 / 0.5);
+  border: 1px solid rgb(255 255 255 / 0.3);
   background: conic-gradient(
     from 90deg,
-    transparent,
-    rgb(255 255 255 / 0.75),
-    transparent 38%
+    transparent 0%,
+    rgb(255 255 255 / 0.6) 15%,
+    transparent 30%,
+    transparent 70%,
+    rgb(255 255 255 / 0.4) 85%,
+    transparent 100%
   );
-  animation: aran-spin 8s linear infinite;
+  animation: aran-spin 4s linear infinite;
 }
 
 .aran-orb__core {
-  width: 58%;
-  height: 58%;
+  width: 52%;
+  height: 52%;
   border-radius: 9999px;
   background: radial-gradient(
-    circle at 32% 28%,
-    #ffffff,
-    #ffd9c9 35%,
-    #e0401d 78%
+    circle at 35% 30%,
+    #ffffff 0%,
+    #f0e6ff 20%,
+    #bf5af2 50%,
+    #5e5ce6 80%,
+    #1a1a2e 100%
   );
   box-shadow:
-    inset -2px -3px 8px rgb(0 0 0 / 0.28),
-    0 0 16px rgb(224 64 29 / 0.6);
-  animation: aran-pulse 4s ease-in-out infinite;
+    inset -3px -4px 10px rgb(0 0 0 / 0.35),
+    inset 2px 2px 6px rgb(255 255 255 / 0.3),
+    0 0 20px rgb(94 92 230 / 0.7);
+  animation: aran-pulse 3s ease-in-out infinite;
 }
 
 .aran-orb--mini {
   width: 34px;
   height: 34px;
+}
+
+/* Modo oscuro: orbe más vibrante */
+.dark .aran-orb {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.2),
+    0 0 24px rgb(94 92 230 / 0.7),
+    0 0 50px rgb(255 55 95 / 0.35);
+}
+
+.dark .aran-orb::before {
+  opacity: 0.75;
+  filter: blur(10px);
+}
+
+.dark .aran-orb__core {
+  background: radial-gradient(
+    circle at 35% 30%,
+    #ffffff 0%,
+    #e0d4ff 15%,
+    #bf5af2 45%,
+    #5e5ce6 75%,
+    #0f0f1a 100%
+  );
+  box-shadow:
+    inset -3px -4px 10px rgb(0 0 0 / 0.4),
+    inset 2px 2px 6px rgb(255 255 255 / 0.25),
+    0 0 24px rgb(94 92 230 / 0.8);
+}
+
+@keyframes aran-orb-glow {
+  0% {
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.15),
+      0 0 20px rgb(94 92 230 / 0.5),
+      0 0 40px rgb(255 55 95 / 0.25);
+  }
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.2),
+      0 0 28px rgb(191 90 242 / 0.6),
+      0 0 55px rgb(100 210 255 / 0.3);
+  }
 }
 
 .assistant-dots {

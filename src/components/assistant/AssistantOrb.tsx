@@ -7,6 +7,74 @@ import { useT } from "../i18n/LocaleProvider";
 import { AssistantChat } from "./AssistantChat";
 import type { AssistantScope } from "./types";
 
+/** Sugerencias contextuales según la ruta actual. */
+function contextualSuggestions(pathname: string, scope: AssistantScope): string[] | undefined {
+  if (pathname.startsWith("/panel/libros")) {
+    return [
+      "¿Qué libros tienen datos incompletos?",
+      "¿Hay posibles duplicados en el catálogo?",
+      "Dame un resumen del panel",
+    ];
+  }
+  if (pathname.startsWith("/panel/lectores")) {
+    return [
+      "Busca lectores del grupo 3r ESO",
+      "¿Qué lectores están suspendidos?",
+      "¿Qué préstamos están vencidos?",
+    ];
+  }
+  if (pathname.startsWith("/panel/prestamos")) {
+    return [
+      "¿Qué préstamos están vencidos?",
+      "¿Qué préstamos vencen esta semana?",
+      "Dame un resumen del panel",
+    ];
+  }
+  if (pathname.startsWith("/panel/reservas")) {
+    return [
+      "¿Qué reservas están pendientes?",
+      "¿Qué libros tienen reservas sin servir?",
+      "Dame un resumen del panel",
+    ];
+  }
+  if (pathname.startsWith("/panel/solicitudes")) {
+    return [
+      "¿Qué solicitudes de compra están pendientes?",
+      "Aprueba la última solicitud pendiente",
+      "Dame un resumen del panel",
+    ];
+  }
+  if (pathname.startsWith("/panel/estadisticas")) {
+    return [
+      "¿Cuáles son los libros más prestados?",
+      "Dame las estadísticas del panel",
+      "¿Qué categorías tienen más títulos?",
+    ];
+  }
+  if (pathname.startsWith("/catalogo") || pathname.startsWith("/libro")) {
+    if (scope === "READER") {
+      return [
+        "¿Qué tengo prestado ahora?",
+        "Recomiéndame un libro disponible",
+        "¿Puedo prorrogar algún préstamo?",
+      ];
+    }
+    return [
+      "¿Qué novedades hay en el catálogo?",
+      "Recomiéndame una novela disponible",
+      "¿Cuáles son los libros más prestados?",
+    ];
+  }
+  if (pathname.startsWith("/mi-biblioteca")) {
+    return [
+      "¿Qué tengo prestado ahora?",
+      "¿Tengo avisos sin leer?",
+      "¿Puedo prorrogar algún préstamo?",
+    ];
+  }
+  return undefined;
+}
+
 /**
  * Orbe flotante de Aran. Decide el ámbito en el cliente a partir de la ruta y
  * de las sesiones que ha resuelto el servidor; el endpoint vuelve a validar
@@ -36,14 +104,20 @@ export function AssistantOrb({
         ? "READER"
         : "PUBLIC";
 
+  // Atajo de teclado: Ctrl+K / Cmd+K para abrir/cerrar, Escape para cerrar
   useEffect(() => {
-    if (!open) return;
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (!hidden) setOpen((v) => !v);
+      }
+      if (event.key === "Escape" && open) {
+        setOpen(false);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
+  }, [open, hidden]);
 
   if (hidden) return null;
 
@@ -70,6 +144,7 @@ export function AssistantOrb({
             scope={scope}
             variant="panel"
             onClose={() => setOpen(false)}
+            contextSuggestions={contextualSuggestions(pathname, scope)}
           />
         </section>
       ) : null}

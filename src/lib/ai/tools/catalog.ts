@@ -8,6 +8,7 @@ import {
   availabilityFor,
   bookForModel,
   cleanQuery,
+  clip,
   toAssistantBook,
 } from "./helpers";
 
@@ -302,6 +303,49 @@ export const catalogTools: AssistantTool[] = [
             titles: row._count.category,
           })),
         },
+      };
+    },
+  },
+  {
+    name: "resumir_libro",
+    description:
+      "Genera un resumen breve de un libro a partir de su descripción, reseñas y datos bibliográficos. Úsala cuando pidan un resumen o quieran saber de qué trata un libro.",
+    parameters: z.object({ bookId: z.string().max(60) }),
+    async execute(args) {
+      const book = await prisma.book.findUnique({
+        where: { id: String(args.bookId ?? "") },
+        include: {
+          reviews: {
+            where: { approved: true },
+            select: { rating: true, comment: true },
+            take: 5,
+            orderBy: { createdAt: "desc" },
+          },
+        },
+      });
+      if (!book) return { result: { found: false, message: "Libro no encontrado." } };
+
+      const reviewsSummary = book.reviews
+        .map((r) => `${r.rating}/5: ${r.comment ?? "(sin comentario)"}`)
+        .join(" | ");
+
+      return {
+        result: {
+          found: true,
+          bookId: book.id,
+          title: book.title,
+          author: book.author,
+          category: book.category,
+          year: book.year,
+          pages: book.pages,
+          description: clip(book.description, 1200),
+          tags: book.tags,
+          totalReviews: book.reviews.length,
+          reviewsSummary: reviewsSummary || "Sin reseñas publicadas.",
+          instruction:
+            "Genera un resumen breve (3-4 frases) del libro basándote en la descripción y las reseñas. No inventes información que no esté en los datos proporcionados.",
+        },
+        books: [toAssistantBook(book)],
       };
     },
   },

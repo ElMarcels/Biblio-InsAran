@@ -211,10 +211,13 @@ export function AssistantChat({
   scope,
   variant = "panel",
   onClose,
+  contextSuggestions,
 }: {
   scope: AssistantScope;
   variant?: "panel" | "page";
   onClose?: () => void;
+  /** Sugerencias contextuales según la página actual. */
+  contextSuggestions?: string[];
 }) {
   const t = useT();
   const locale = useLocale();
@@ -235,7 +238,12 @@ export function AssistantChat({
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const suggestions = useMemo(() => suggestionsFor(scope), [scope]);
+  const suggestions = useMemo(() => {
+    if (contextSuggestions && contextSuggestions.length > 0) {
+      return contextSuggestions as SuggestionKey[];
+    }
+    return suggestionsFor(scope);
+  }, [contextSuggestions, scope]);
   const tagline =
     scope === "STAFF"
       ? t("assistant.taglineStaff")

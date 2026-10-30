@@ -64,10 +64,19 @@ export async function conversationHistory(
   return conversation.messages
     .filter((message) => message.role === "user" || message.role === "assistant")
     .reverse()
-    .map((message) => ({
-      role: message.role as "user" | "assistant",
-      content: message.content,
-    }));
+    .map((message) => {
+      let content = message.content;
+      // Incluir contexto de herramientas usadas para mantener la memoria multi-turno.
+      const toolCalls = message.toolCalls as string[] | null;
+      if (toolCalls && toolCalls.length > 0 && message.role === "assistant") {
+        const tools = toolCalls.join(", ");
+        content = `${content}\n\n[Herramientas consultadas: ${tools}]`;
+      }
+      return {
+        role: message.role as "user" | "assistant",
+        content,
+      };
+    });
 }
 
 export async function appendMessage(input: {

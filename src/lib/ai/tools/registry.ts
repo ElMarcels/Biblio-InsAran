@@ -4,7 +4,7 @@ import type { FunctionDeclaration, Schema } from "@google/genai";
 import { Type } from "@google/genai";
 import { z } from "zod";
 
-import { proposeAction } from "../actions";
+import { actionDefinitionsFor, proposeAction } from "../actions";
 import type { AssistantActor, AssistantTool } from "../types";
 import { catalogTools } from "./catalog";
 import { readerTools } from "./reader";
@@ -74,6 +74,7 @@ export function toolsForActor(
   }
 
   if (actor.scope !== "PUBLIC") {
+    const allowedTypes = actionDefinitionsFor(actor).map((d) => d.type);
     tools.push({
       name: "proponer_accion",
       description:
@@ -82,9 +83,9 @@ export function toolsForActor(
         "Después de proponerla, explica en una frase qué va a pasar y pide confirmación.",
       parameters: z.object({
         type: z
-          .string()
+          .enum(allowedTypes as [string, ...string[]])
           .describe(
-            "Tipo de acción permitido. Usa exactamente uno de los identificadores del sistema.",
+            "Tipo de acción permitido. Debe ser EXACTAMENTE uno de los identificadores listados.",
           ),
         payload: z
           .string()

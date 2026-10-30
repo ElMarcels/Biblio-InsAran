@@ -4,7 +4,7 @@ import "server-only";
 export const ASSISTANT_NAME = "Aran";
 
 /** Modelo de Gemini. Se puede cambiar sin tocar código con `GEMINI_MODEL`. */
-export const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-3.8-flash";
+export const GEMINI_MODEL = process.env.GEMINI_MODEL?.trim() || "gemini-2.5-flash";
 
 /** ¿Está el asistente disponible en esta instalación? */
 export function isAssistantEnabled(): boolean {

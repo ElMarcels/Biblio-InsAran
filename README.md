@@ -75,7 +75,7 @@ npm run dev             # http://localhost:3000
 | `SMTP_DEBUG` | `true` para imprimir la conversación SMTP en los registros (diagnóstico). |
 | `CRON_SECRET` | Secreto que protege la ruta de los recordatorios automáticos. Sin él, el cron queda cerrado. |
 | `GEMINI_API_KEY` | Clave de Gemini para el asistente Aran. **Solo se lee en el servidor.** Sin ella, el orbe no se muestra y la página `/asistente` explica que falta configurarlo. |
-| `GEMINI_MODEL` | Modelo de Gemini (por defecto `gemini-3.8-flash`). |
+| `GEMINI_MODEL` | Modelo de Gemini (por defecto `gemini-2.5-flash`). |
 | `ASSISTANT_ENABLED` | `false` desactiva el asistente sin borrar la clave. |
 | `ASSISTANT_DAILY_LIMIT` | Mensajes por identidad y día (por defecto `300`). |
 | `ASSISTANT_HISTORY_DAYS` | Días de retención del historial (por defecto `90`). |
@@ -147,7 +147,7 @@ endpoint `/api/panel/asistente` exige una cuenta de personal activa.
 ```bash
 # 1. Añade la clave al .env del servidor
 GEMINI_API_KEY="tu-clave-de-gemini"
-# Opcional: GEMINI_MODEL="gemini-3.8-flash"
+# Opcional: GEMINI_MODEL="gemini-2.5-flash"
 
 # 2. Aplica la migración del asistente
 npm run db:deploy        # producción

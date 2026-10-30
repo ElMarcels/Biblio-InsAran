@@ -37,7 +37,6 @@ export function assistantError(error: unknown): string {
       return "La respuesta se ha cancelado.";
     }
   }
-  const msg = error instanceof Error ? error.message : String(error);
-  console.error("Error de Aran:", msg);
-  return `Error: ${msg.slice(0, 300)}`;
+  console.error("Error de Aran:", error);
+  return "Aran no ha podido responder. Inténtalo de nuevo en un momento.";
 }

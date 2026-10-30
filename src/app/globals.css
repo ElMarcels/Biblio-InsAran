@@ -641,112 +641,94 @@
   height: 52px;
   flex: none;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle at 50% 50%,
-    #1a1035 0%,
-    #0d0d1a 100%
-  );
-  box-shadow:
-    0 0 0 0.5px rgb(255 255 255 / 0.08),
-    0 0 12px rgb(139 92 246 / 0.3),
-    0 0 30px rgb(139 92 246 / 0.15);
-  overflow: hidden;
-  animation: aran-orb-breathe 4s ease-in-out infinite;
-}
-
-/* Capa de color fluido (aurora) - la que da el efecto Siri */
-.aran-orb::before {
-  content: "";
-  position: absolute;
-  inset: -40%;
-  border-radius: 40%;
   background: conic-gradient(
     from 0deg,
     #ff2d55 0%,
-    #ff9500 12%,
-    #ffcc00 22%,
-    #34c759 32%,
-    #00c7be 42%,
-    #32ade6 52%,
-    #007aff 62%,
-    #5856d6 72%,
-    #af52de 82%,
+    #ff9500 10%,
+    #ffcc00 20%,
+    #34c759 30%,
+    #00c7be 40%,
+    #32ade6 50%,
+    #007aff 60%,
+    #5856d6 70%,
+    #af52de 80%,
     #ff2d55 100%
   );
-  filter: blur(14px) saturate(1.4);
-  opacity: 0.85;
-  z-index: 0;
-  animation: aran-orb-flow 8s linear infinite;
-  mix-blend-mode: screen;
+  box-shadow:
+    0 0 0 0.5px rgb(255 255 255 / 0.1),
+    0 0 15px rgb(139 92 246 / 0.5),
+    0 0 35px rgb(139 92 246 / 0.25),
+    0 0 60px rgb(255 45 85 / 0.15);
+  animation: aran-orb-spin 6s linear infinite, aran-orb-breathe 4s ease-in-out infinite;
 }
 
-/* Segunda capa de color con rotación inversa para profundidad */
-.aran-orb::after {
+/* Capa de blur para suavizar los colores (efecto Siri) */
+.aran-orb::before {
   content: "";
   position: absolute;
-  inset: -30%;
-  border-radius: 45%;
+  inset: 0;
+  border-radius: 9999px;
   background: conic-gradient(
     from 180deg,
     #af52de 0%,
-    #007aff 18%,
-    #32ade6 32%,
+    #007aff 15%,
+    #32ade6 30%,
     #00c7be 45%,
-    #34c759 58%,
-    #ffcc00 70%,
-    #ff9500 82%,
-    #ff2d55 92%,
+    #34c759 55%,
+    #ffcc00 68%,
+    #ff9500 80%,
+    #ff2d55 90%,
     #af52de 100%
   );
-  filter: blur(18px) saturate(1.2);
-  opacity: 0.5;
+  filter: blur(8px) saturate(1.3);
+  opacity: 0.7;
   z-index: 0;
-  animation: aran-orb-flow-reverse 12s linear infinite;
-  mix-blend-mode: screen;
+  animation: aran-orb-spin-reverse 10s linear infinite;
 }
 
 /* Núcleo brillante (el "centro" luminoso de Siri) */
 .aran-orb__core {
   position: relative;
   z-index: 1;
-  width: 40%;
-  height: 40%;
+  width: 44%;
+  height: 44%;
   border-radius: 9999px;
   background: radial-gradient(
     circle at 40% 35%,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(200, 180, 255, 0.6) 25%,
-    rgba(139, 92, 246, 0.3) 55%,
-    transparent 75%
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(220, 200, 255, 0.7) 20%,
+    rgba(139, 92, 246, 0.4) 50%,
+    rgba(139, 92, 246, 0.1) 75%,
+    transparent 100%
   );
   box-shadow:
-    0 0 12px rgb(139 92 246 / 0.6),
-    0 0 24px rgb(139 92 246 / 0.3);
+    0 0 10px rgb(139 92 246 / 0.6),
+    0 0 20px rgb(139 92 246 / 0.3);
   animation: aran-core-pulse 3s ease-in-out infinite;
 }
 
 /* Anillo de luz (efecto Siri de borde) */
 .aran-orb__ring {
   position: absolute;
-  inset: 1px;
+  inset: 0;
   border-radius: 9999px;
   border: 1.5px solid transparent;
   background:
-    linear-gradient(#0d0d1a, #0d0d1a) padding-box,
+    linear-gradient(transparent, transparent) padding-box,
     conic-gradient(
       from 0deg,
-      rgb(255 45 85 / 0.6),
-      rgb(255 149 0 / 0.4),
-      rgb(255 204 0 / 0.3),
-      rgb(52 199 89 / 0.4),
-      rgb(0 199 190 / 0.5),
-      rgb(0 122 255 / 0.6),
-      rgb(88 86 214 / 0.7),
-      rgb(175 82 222 / 0.6),
-      rgb(255 45 85 / 0.6)
+      rgb(255 45 85 / 0.7),
+      rgb(255 149 0 / 0.5),
+      rgb(255 204 0 / 0.4),
+      rgb(52 199 89 / 0.5),
+      rgb(0 199 190 / 0.6),
+      rgb(0 122 255 / 0.7),
+      rgb(88 86 214 / 0.8),
+      rgb(175 82 222 / 0.7),
+      rgb(255 45 85 / 0.7)
     ) border-box;
   z-index: 2;
-  animation: aran-ring-spin 5s linear infinite;
+  animation: aran-ring-spin 4s linear infinite;
   pointer-events: none;
 }
 
@@ -758,60 +740,58 @@
 /* Modo oscuro: más intenso */
 .dark .aran-orb {
   box-shadow:
-    0 0 0 0.5px rgb(255 255 255 / 0.12),
-    0 0 16px rgb(139 92 246 / 0.4),
-    0 0 40px rgb(139 92 246 / 0.2);
+    0 0 0 0.5px rgb(255 255 255 / 0.15),
+    0 0 20px rgb(139 92 246 / 0.5),
+    0 0 45px rgb(139 92 246 / 0.3),
+    0 0 70px rgb(255 45 85 / 0.15);
 }
 
 .dark .aran-orb::before {
-  opacity: 0.9;
-  filter: blur(16px) saturate(1.5);
-}
-
-.dark .aran-orb::after {
-  opacity: 0.6;
+  opacity: 0.85;
+  filter: blur(10px) saturate(1.6);
 }
 
 .dark .aran-orb__core {
   background: radial-gradient(
     circle at 40% 35%,
     rgba(255, 255, 255, 0.98) 0%,
-    rgba(220, 200, 255, 0.7) 25%,
-    rgba(139, 92, 246, 0.4) 55%,
-    transparent 75%
+    rgba(220, 200, 255, 0.75) 20%,
+    rgba(139, 92, 246, 0.45) 50%,
+    rgba(139, 92, 246, 0.1) 75%,
+    transparent 100%
   );
   box-shadow:
-    0 0 16px rgb(139 92 246 / 0.7),
-    0 0 32px rgb(139 92 246 / 0.4);
+    0 0 14px rgb(139 92 246 / 0.7),
+    0 0 28px rgb(139 92 246 / 0.4);
 }
 
 /* Animaciones Siri-like */
-@keyframes aran-orb-flow {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.05); }
-  100% { transform: rotate(360deg) scale(1); }
+@keyframes aran-orb-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-@keyframes aran-orb-flow-reverse {
-  0% { transform: rotate(360deg) scale(1.02); }
-  50% { transform: rotate(180deg) scale(0.98); }
-  100% { transform: rotate(0deg) scale(1.02); }
+@keyframes aran-orb-spin-reverse {
+  0% { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
 }
 
 @keyframes aran-orb-breathe {
   0%, 100% {
     transform: scale(1);
     box-shadow:
-      0 0 0 0.5px rgb(255 255 255 / 0.08),
-      0 0 12px rgb(139 92 246 / 0.3),
-      0 0 30px rgb(139 92 246 / 0.15);
+      0 0 0 0.5px rgb(255 255 255 / 0.1),
+      0 0 15px rgb(139 92 246 / 0.4),
+      0 0 35px rgb(139 92 246 / 0.2),
+      0 0 60px rgb(255 45 85 / 0.1);
   }
   50% {
-    transform: scale(1.03);
+    transform: scale(1.04);
     box-shadow:
-      0 0 0 0.5px rgb(255 255 255 / 0.12),
-      0 0 18px rgb(139 92 246 / 0.45),
-      0 0 45px rgb(139 92 246 / 0.25);
+      0 0 0 0.5px rgb(255 255 255 / 0.15),
+      0 0 22px rgb(139 92 246 / 0.55),
+      0 0 50px rgb(139 92 246 / 0.3),
+      0 0 75px rgb(255 45 85 / 0.18);
   }
 }
 

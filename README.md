@@ -149,6 +149,13 @@ endpoint `/api/panel/asistente` exige una cuenta de personal activa.
 GEMINI_API_KEY="tu-clave-de-gemini"
 # Opcional: GEMINI_MODEL="gemini-2.5-flash"
 
+> **Nota sobre límites de Gemini:** El nivel gratuito de la API de Gemini tiene
+> límites muy bajos (≈10 peticiones/minuto). Si Aran muestra el mensaje
+> "Aran ha alcanzado el límite de peticiones", espera unos segundos e inténtalo
+> de nuevo. Para uso en producción con varios usuarios simultáneos, considera
+> activar el nivel de pago en Google AI Studio. El código incluye reintentos
+> automáticos con espera exponencial para mitigar los picos de demanda.
+
 # 2. Aplica la migración del asistente
 npm run db:deploy        # producción
 # o: npm run db:migrate   # desarrollo

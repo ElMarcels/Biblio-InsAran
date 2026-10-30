@@ -27,8 +27,8 @@ export function assistantError(error: unknown): string {
     if (message.includes("api key") || message.includes("permission")) {
       return "La clave de Gemini no es válida o no tiene permisos.";
     }
-    if (message.includes("quota") || message.includes("rate limit")) {
-      return "Aran ha recibido demasiadas peticiones. Inténtalo de nuevo en un minuto.";
+    if (message.includes("quota") || message.includes("rate limit") || message.includes("resource exhausted")) {
+      return "Aran ha alcanzado el límite de peticiones de Gemini. Espera unos segundos e inténtalo de nuevo. Si el problema persiste, la clave puede estar en el nivel gratuito con límites muy bajos.";
     }
     if (message.includes("safety") || message.includes("blocked")) {
       return "No puedo responder a esa petición. Prueba a formularla de otra manera.";

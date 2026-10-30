@@ -88,19 +88,44 @@ export async function runAssistant(
   let tokensOut = 0;
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
-    const stream = await ai.models.generateContentStream({
-      model: assistantModel(),
-      contents,
-      config: {
-        systemInstruction: systemInstruction(actor, locale),
-        temperature: 0.45,
-        maxOutputTokens: maxOutputTokens(),
-        ...(declarations.length > 0
-          ? { tools: [{ functionDeclarations: declarations }] }
-          : {}),
-        ...(signal ? { abortSignal: signal } : {}),
-      },
-    });
+    // Reintento con espera exponencial si Gemini devuelve 429 (cuota agotada).
+    let stream: Awaited<ReturnType<typeof ai.models.generateContentStream>> | undefined;
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        stream = await ai.models.generateContentStream({
+          model: assistantModel(),
+          contents,
+          config: {
+            systemInstruction: systemInstruction(actor, locale),
+            temperature: 0.45,
+            maxOutputTokens: maxOutputTokens(),
+            ...(declarations.length > 0
+              ? { tools: [{ functionDeclarations: declarations }] }
+              : {}),
+            ...(signal ? { abortSignal: signal } : {}),
+          },
+        });
+        lastError = null;
+        break;
+      } catch (error) {
+        lastError = error;
+        const msg = error instanceof Error ? error.message.toLowerCase() : "";
+        if (
+          !msg.includes("quota") &&
+          !msg.includes("rate limit") &&
+          !msg.includes("429") &&
+          !msg.includes("resource exhausted")
+        ) {
+          throw error;
+        }
+        if (attempt < 2) {
+          const waitMs = (attempt + 1) * 2000;
+          await new Promise((resolve) => setTimeout(resolve, waitMs));
+        }
+      }
+    }
+    if (lastError || !stream) throw lastError ?? new Error("No se ha podido conectar con Gemini.");
 
     const calls: FunctionCall[] = [];
     const modelParts: Part[] = [];

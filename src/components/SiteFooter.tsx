@@ -1,3 +1,4 @@
+import { LicenseAttribution } from "@/components/LicenseAttribution";
 import { SITE_NAME } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
 
@@ -9,13 +10,20 @@ export async function SiteFooter() {
   const t = await getT();
   return (
     <footer className="mt-auto border-t-2 border-line bg-surface">
-      <div className="shell flex flex-col gap-2 py-8 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-[13px] font-medium">
-          {SITE_NAME} · {t("footer.gestionDelFondoBibliografico")}
-        </p>
-        <p className="text-[12px] text-ink-faint">
-          {t("footer.plataformaInternaYear", { year: YEAR })}
-        </p>
+      <div className="shell flex flex-col py-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] font-medium">
+            {SITE_NAME} · {t("footer.gestionDelFondoBibliografico")}
+          </p>
+          <p className="text-[12px] text-ink-faint">
+            {t("footer.plataformaInternaYear", { year: YEAR })}
+          </p>
+        </div>
+        <div className="mt-5 border-t border-hairline pt-4">
+          <p className="text-[12px] leading-relaxed text-ink-faint">
+            <LicenseAttribution />
+          </p>
+        </div>
       </div>
     </footer>
   );

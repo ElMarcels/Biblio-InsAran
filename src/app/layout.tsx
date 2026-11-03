@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { AssistantOrb } from "@/components/assistant/AssistantOrb";
 import { ChangelogGate } from "@/components/ChangelogGate";
 import { isAssistantEnabled } from "@/lib/ai/config";
+import { LicenseGate } from "@/components/LicenseGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
@@ -102,6 +103,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <SiteFooter />
           <ChangelogGate />
+          <LicenseGate />
           {isAssistantEnabled() ? (
             <AssistantOrb hasStaff={Boolean(user)} hasReader={Boolean(reader)} />
           ) : null}

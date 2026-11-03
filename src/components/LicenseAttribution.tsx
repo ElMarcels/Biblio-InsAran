@@ -35,7 +35,7 @@ export function LicenseAttribution({ className }: { className?: string }) {
         target="_blank"
         rel="noreferrer"
       >
-        Marcel Nart Vilche
+        Marcel Nart Vilches
       </a>{" "}
       is licensed under{" "}
       <a

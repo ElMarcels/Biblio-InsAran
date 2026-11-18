@@ -12,10 +12,17 @@ import {
 } from "../reader-auth";
 import { prisma } from "../prisma";
 import { checkRateLimit, clientKey, resetRateLimit } from "../rate-limit";
+import { decryptTwoFactorSecret, verifySecondFactor } from "../two-factor";
+import {
+  clearPendingTwoFactorLogin,
+  readPendingTwoFactorLogin,
+  setPendingTwoFactorLogin,
+} from "../two-factor-cookie";
 import {
   changeReaderPinSchema,
   fieldErrors,
   readerLoginSchema,
+  twoFactorCodeSchema,
   type ActionState,
 } from "../validation";
 
@@ -83,6 +90,14 @@ export async function readerLoginAction(
   }
 
   resetRateLimit(key);
+
+  // Verificación en dos pasos: la sesión de «Mi biblioteca» se crea solo
+  // después de validar el código.
+  if (reader.twoFactorEnabled && reader.twoFactorSecret) {
+    await setPendingTwoFactorLogin("reader", reader.id);
+    return { status: "idle", twoFactorRequired: true };
+  }
+
   await prisma.reader.update({
     where: { id: reader.id },
     data: { lastReaderLoginAt: new Date() },
@@ -96,6 +111,101 @@ export async function readerLoginAction(
   });
 
   redirect(safeReaderNext(formData.get("next")));
+}
+
+/**
+ * Segundo paso del acceso a «Mi biblioteca»: código TOTP o de recuperación.
+ */
+export async function readerLoginTwoFactorAction(
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const pending = await readPendingTwoFactorLogin("reader");
+  if (!pending) {
+    return { status: "error", message: "twoFactor.expiredLogin" };
+  }
+
+  const parsed = twoFactorCodeSchema.safeParse({
+    code: formData.get("code"),
+  });
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "actions.reviewData",
+      fieldErrors: fieldErrors(parsed.error),
+    };
+  }
+
+  const key = await clientKey("reader-login-2fa");
+  const limit = checkRateLimit(key);
+  if (!limit.allowed) {
+    const minutes = Math.max(1, Math.ceil(limit.retryAfterSeconds / 60));
+    return {
+      status: "error",
+      message: "actions.tooManyAttempts",
+      messageParams: { minutes },
+    };
+  }
+
+  const reader = await prisma.reader.findUnique({ where: { id: pending.id } });
+  if (
+    !reader ||
+    !reader.active ||
+    !reader.twoFactorEnabled ||
+    !reader.twoFactorSecret
+  ) {
+    await clearPendingTwoFactorLogin("reader");
+    return { status: "error", message: "twoFactor.expiredLogin" };
+  }
+
+  const secret = decryptTwoFactorSecret(reader.twoFactorSecret);
+  if (!secret) {
+    return { status: "error", message: "twoFactor.configurationError" };
+  }
+
+  const result = verifySecondFactor({
+    secret,
+    recoveryCodeHashes: reader.twoFactorRecoveryCodes,
+    code: parsed.data.code,
+  });
+  if (!result.valid) {
+    return { status: "error", message: "twoFactor.invalidCode" };
+  }
+
+  if (result.usedRecoveryCode) {
+    await prisma.reader.update({
+      where: { id: reader.id },
+      data: { twoFactorRecoveryCodes: result.remainingRecoveryCodes },
+    });
+    await recordAudit({
+      action: "TWO_FACTOR_RECOVERY_USED",
+      entityType: "Reader",
+      entityId: reader.id,
+      summary: `${reader.fullName} ha usado un código de recuperación en «Mi biblioteca»`,
+    });
+  }
+
+  resetRateLimit(key);
+  await clearPendingTwoFactorLogin("reader");
+  await prisma.reader.update({
+    where: { id: reader.id },
+    data: { lastReaderLoginAt: new Date() },
+  });
+  await createReaderSession(reader.id);
+  await recordAudit({
+    action: "READER_LOGIN",
+    entityType: "Reader",
+    entityId: reader.id,
+    summary: `${reader.fullName} ha iniciado sesión en «Mi biblioteca» con verificación en dos pasos`,
+  });
+
+  redirect(safeReaderNext(formData.get("next")));
+}
+
+/** Cancela el segundo paso y vuelve al acceso de «Mi biblioteca». */
+export async function cancelReaderTwoFactorLoginAction(): Promise<void> {
+  await clearPendingTwoFactorLogin("reader");
+  redirect("/mi-biblioteca");
 }
 
 /** Cierra la sesión del lector/a. */

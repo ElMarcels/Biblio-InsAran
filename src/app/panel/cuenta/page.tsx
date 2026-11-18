@@ -1,5 +1,6 @@
 import { ChangePasswordForm } from "@/components/forms/ChangePasswordForm";
 import { PageTransition } from "@/components/PageTransition";
+import { TwoFactorSettings } from "@/components/security/TwoFactorSettings";
 import { requireUser } from "@/lib/auth";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -21,6 +22,8 @@ export default async function AccountPage() {
       createdAt: true,
       lastLoginAt: true,
       mustChangePassword: true,
+      twoFactorEnabled: true,
+      twoFactorEnabledAt: true,
     },
   });
 
@@ -85,6 +88,24 @@ export default async function AccountPage() {
           <ChangePasswordForm />
         </section>
       </div>
+
+      <section className="border-2 border-line bg-surface p-6">
+        <h3 className="font-display text-[19px] font-bold">
+          {t("twoFactor.title")}
+        </h3>
+        <p className="mt-1 mb-5 text-[13px] text-ink-faint">
+          {t("twoFactor.accountLead")}
+        </p>
+        <TwoFactorSettings
+          scope="staff"
+          enabled={Boolean(account?.twoFactorEnabled)}
+          enabledAt={
+            account?.twoFactorEnabledAt
+              ? formatDateTime(account.twoFactorEnabledAt)
+              : null
+          }
+        />
+      </section>
     </div>
     </PageTransition>
   );

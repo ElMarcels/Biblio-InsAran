@@ -52,6 +52,16 @@ export type ActionState = {
     readerName: string;
     days: number;
   };
+  /** El acceso ha superado el primer factor y pide el segundo. */
+  twoFactorRequired?: boolean;
+  /** Datos para configurar la aplicación de autenticación. */
+  twoFactorSetup?: {
+    secret: string;
+    otpauthUrl: string;
+    qrDataUrl: string;
+  };
+  /** Códigos de recuperación recién generados (se muestran una sola vez). */
+  recoveryCodes?: string[];
 };
 
 export const initialActionState: ActionState = { status: "idle" };
@@ -292,6 +302,31 @@ export const resetPasswordSchema = z.object({
     .string()
     .min(8, msg("validation.passwordMin"))
     .max(200, msg("validation.passwordMax")),
+});
+
+// ---------------------------------------------------------------------------
+// Verificación en dos pasos
+// ---------------------------------------------------------------------------
+
+/** Código TOTP o código de recuperación. La validación fina es del servidor. */
+const twoFactorCode = z
+  .string()
+  .trim()
+  .min(1, msg("validation.twoFactorCodeRequired"))
+  .max(32, msg("validation.twoFactorCodeInvalid"));
+
+export const twoFactorCodeSchema = z.object({
+  code: twoFactorCode,
+});
+
+export const twoFactorPasswordSchema = z.object({
+  currentPassword: z.string().min(1, msg("validation.currentPasswordRequired")),
+  code: twoFactorCode,
+});
+
+export const twoFactorPinSchema = z.object({
+  currentPin: pinSchema,
+  code: twoFactorCode,
 });
 
 // ---------------------------------------------------------------------------

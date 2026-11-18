@@ -79,4 +79,8 @@ export const AUDIT_LABELS: Record<string, TranslationKey> = {
   NOTIFICATION_RESEND: "audit.notificationResend",
   NOTIFICATION_RETRY_FAILED: "audit.notificationRetry",
   REVIEW_DELETE: "audit.reviewDelete",
+  TWO_FACTOR_ENABLE: "audit.twoFactorEnable",
+  TWO_FACTOR_DISABLE: "audit.twoFactorDisable",
+  TWO_FACTOR_RECOVERY_CODES: "audit.twoFactorRecoveryCodes",
+  TWO_FACTOR_RECOVERY_USED: "audit.twoFactorRecoveryUsed",
 };

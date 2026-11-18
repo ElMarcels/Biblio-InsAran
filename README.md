@@ -65,7 +65,7 @@ npm run dev             # http://localhost:3000
 | --- | --- |
 | `DATABASE_URL` | Cadena de conexión a PostgreSQL. La usa la aplicación. |
 | `DIRECT_URL` | Conexión **directa** (sin pooling). La usan las migraciones. En local puede ser igual que `DATABASE_URL`. |
-| `SESSION_SECRET` | Clave (mínimo 32 caracteres) con la que se firma la cookie de sesión. Genera una con `openssl rand -hex 32`. |
+| `SESSION_SECRET` | Clave (mínimo 32 caracteres) con la que se firman las cookies de sesión y se cifran los secretos del 2FA. Genera una con `openssl rand -hex 32`. No la cambies sin antes desactivar el 2FA: los secretos guardados dejarían de poder descifrarse. |
 | `SMTP_HOST` | Servidor SMTP para enviar avisos por correo (opcional). |
 | `SMTP_PORT` | Puerto SMTP (por defecto `587`). |
 | `SMTP_SECURE` | `true` para TLS directo en el puerto `465`. |
@@ -98,6 +98,23 @@ ejecutar `npm run db:seed` no modifica contraseñas ya cambiadas.
 
 La contraseña del dueño se define en `prisma/seed.ts`; puedes ajustarla ahí
 antes de sembrar, o cambiarla luego desde **Panel → Mi cuenta**.
+
+### Verificación en dos pasos
+
+Tanto el personal como las personas lectoras pueden activarla desde **Panel →
+Mi cuenta** y **Mi biblioteca → Mi cuenta**, respectivamente.
+
+- Usa TOTP (códigos de 6 dígitos, compatibles con Google Authenticator, Authy,
+  1Password, etc.). El código se pide después de la contraseña o el PIN.
+- Al activarla se generan **10 códigos de recuperación** de un solo uso. Se
+  muestran una sola vez: guárdalos en un lugar seguro.
+- Para desactivarla o regenerar los códigos hace falta la contraseña o el PIN
+  **y** un código válido.
+- `SESSION_SECRET` cifra los secretos TOTP y firma la cookie temporal del
+  segundo paso. Si cambia, habrá que desactivar y volver a configurar el 2FA
+  de todas las cuentas que lo tengan activado.
+- Los campos nuevos se añaden con la migración `20261111120000_two_factor_auth`;
+  aplícala con `npm run db:migrate` (o `npm run db:deploy` en producción).
 
 ---
 

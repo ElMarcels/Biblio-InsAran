@@ -38,6 +38,16 @@ model User {
   lastLoginAt        DateTime?
   createdAt          DateTime  @default(now())
 
+  /// Verificación en dos pasos (TOTP). El secreto se guarda cifrado con
+  /// AES-256-GCM y los códigos de recuperación, solo como hash SHA-256.
+  twoFactorEnabled       Boolean   @default(false)
+  twoFactorSecret        String?
+  twoFactorRecoveryCodes String[]  @default([])
+  /// Secreto temporal mientras la persona confirma la configuración.
+  twoFactorPendingSecret String?
+  twoFactorPendingAt     DateTime?
+  twoFactorEnabledAt     DateTime?
+
   createdById  String?
   createdBy    User?   @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
   createdUsers User[]  @relation("UserCreatedBy")
@@ -184,6 +194,14 @@ model Reader {
   /// la persona debe elegir el suyo (`pinMustChange`).
   pinHash           String?
   pinMustChange     Boolean   @default(true)
+  /// Verificación en dos pasos (TOTP) de «Mi biblioteca». Igual que en las
+  /// cuentas de personal: secreto cifrado y códigos de recuperación hasheados.
+  twoFactorEnabled       Boolean   @default(false)
+  twoFactorSecret        String?
+  twoFactorRecoveryCodes String[]  @default([])
+  twoFactorPendingSecret String?
+  twoFactorPendingAt     DateTime?
+  twoFactorEnabledAt     DateTime?
   /// Última vez que inició sesión en «Mi biblioteca».
   lastReaderLoginAt DateTime?
   /// Fecha hasta la que el lector/a tiene el préstamo suspendido por retrasos

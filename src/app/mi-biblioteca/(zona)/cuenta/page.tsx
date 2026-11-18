@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { PageTransition } from "@/components/PageTransition";
 import { Notice } from "@/components/Notice";
 import { ChangePinForm } from "@/components/reader/ChangePinForm";
+import { TwoFactorSettings } from "@/components/security/TwoFactorSettings";
 import { readerLogoutAction } from "@/lib/actions/reader-auth";
 import { formatDateTime, formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -71,6 +72,24 @@ export default async function ReaderAccountPage() {
             {t("reader.changePinLead")}
           </p>
           <ChangePinForm />
+        </section>
+
+        <section className="border-2 border-line bg-surface p-6">
+          <h3 className="font-display text-[18px] font-semibold">
+            {t("twoFactor.title")}
+          </h3>
+          <p className="mt-1 mb-5 text-[13px] text-ink-faint">
+            {t("twoFactor.accountLead")}
+          </p>
+          <TwoFactorSettings
+            scope="reader"
+            enabled={reader.twoFactorEnabled}
+            enabledAt={
+              reader.twoFactorEnabledAt
+                ? formatDateTime(reader.twoFactorEnabledAt)
+                : null
+            }
+          />
         </section>
 
         <section className="border-2 border-line bg-surface p-6">

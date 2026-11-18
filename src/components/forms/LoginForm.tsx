@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { loginAction } from "@/lib/actions/auth";
+import { cancelTwoFactorLoginAction, loginAction, loginTwoFactorAction } from "@/lib/actions/auth";
 import { initialActionState } from "@/lib/validation";
 
 import { Notice } from "../Notice";
@@ -12,8 +12,64 @@ import { Field, inputClass } from "./Field";
 
 export function LoginForm({ next }: { next?: string }) {
   const [state, formAction] = useActionState(loginAction, initialActionState);
+  const [twoFactorState, twoFactorAction] = useActionState(
+    loginTwoFactorAction,
+    initialActionState,
+  );
   const errors = state.fieldErrors ?? {};
+  const twoFactorErrors = twoFactorState.fieldErrors ?? {};
   const t = useT();
+
+  if (state.twoFactorRequired) {
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="text-[14px] text-ink-soft">{t("twoFactor.loginPrompt")}</p>
+
+        <form action={twoFactorAction} className="flex flex-col gap-4" noValidate>
+          {next ? <input type="hidden" name="next" value={next} /> : null}
+
+          {twoFactorState.status === "error" && twoFactorState.message ? (
+            <Notice tone="danger">
+              {t(twoFactorState.message, twoFactorState.messageParams)}
+            </Notice>
+          ) : null}
+
+          <Field
+            label="twoFactor.code"
+            htmlFor="code"
+            error={twoFactorErrors.code}
+            hint="twoFactor.codeHint"
+            required
+          >
+            <input
+              id="code"
+              name="code"
+              className={inputClass(Boolean(twoFactorErrors.code))}
+              autoComplete="one-time-code"
+              autoCapitalize="characters"
+              inputMode="text"
+              spellCheck={false}
+              aria-invalid={Boolean(twoFactorErrors.code)}
+              required
+            />
+          </Field>
+
+          <SubmitButton
+            className="btn-primary w-full"
+            pendingLabel="twoFactor.verifying"
+          >
+            {t("twoFactor.verify")}
+          </SubmitButton>
+        </form>
+
+        <form action={cancelTwoFactorLoginAction}>
+          <button type="submit" className="btn-outline w-full">
+            {t("twoFactor.backToLogin")}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <form action={formAction} className="flex flex-col gap-4" noValidate>

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Role } from "@prisma/client";
+import type { Prisma, Role } from "@prisma/client";
 import { z } from "zod";
 
 import { daysLate } from "../../format";
@@ -626,6 +626,392 @@ export function staffTools(role: Role): AssistantTool[] {
         };
       },
     },
+    {
+      name: "tareas_panel",
+      description:
+        "Bandeja de tareas del panel: préstamos vencidos, vencen hoy, reservas por servir, solicitudes pendientes, sanciones caducadas, libros sin prestar nunca y libros sin ejemplares libres.",
+      parameters: z.object({ limit: limitSchema }),
+      async execute(args) {
+        const take = Math.min(Number(args.limit) || 10, 40);
+        const now = new Date();
+        const dayStart = new Date(
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+        );
+        const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+        const [
+          overdue,
+          dueToday,
+          reservations,
+          suggestions,
+          expiredSuspensions,
+          neverLoaned,
+          grouped,
+          totals,
+        ] = await Promise.all([
+          prisma.loan.findMany({
+            where: { returnedAt: null, dueAt: { lt: now } },
+            orderBy: { dueAt: "asc" },
+            take,
+            include: { book: true },
+          }),
+          prisma.loan.findMany({
+            where: { returnedAt: null, dueAt: { gte: now, lt: dayEnd } },
+            orderBy: { dueAt: "asc" },
+            take,
+            include: { book: true },
+          }),
+          prisma.reservation.findMany({
+            where: { status: "ACTIVE" },
+            orderBy: { createdAt: "asc" },
+            take,
+            include: { book: true },
+          }),
+          prisma.purchaseSuggestion.findMany({
+            where: { status: "PENDING" },
+            orderBy: { createdAt: "asc" },
+            take,
+            select: { id: true, title: true, author: true, createdAt: true },
+          }),
+          prisma.reader.findMany({
+            where: { suspendedUntil: { lt: now } },
+            orderBy: { suspendedUntil: "asc" },
+            take,
+            select: { id: true, suspendedUntil: true, suspensionReason: true },
+          }),
+          prisma.book.findMany({
+            where: { loans: { none: {} } },
+            orderBy: { title: "asc" },
+            take,
+            select: { id: true, title: true, author: true, category: true },
+          }),
+          prisma.loan.groupBy({
+            by: ["bookId"],
+            where: { returnedAt: null },
+            _count: { _all: true },
+          }),
+          Promise.all([
+            prisma.loan.count({ where: { returnedAt: null, dueAt: { lt: now } } }),
+            prisma.loan.count({
+              where: { returnedAt: null, dueAt: { gte: now, lt: dayEnd } },
+            }),
+            prisma.reservation.count({ where: { status: "ACTIVE" } }),
+            prisma.purchaseSuggestion.count({ where: { status: "PENDING" } }),
+            prisma.reader.count({ where: { suspendedUntil: { lt: now } } }),
+            prisma.book.count({ where: { loans: { none: {} } } }),
+          ]),
+        ]);
+        const onLoan = new Map(grouped.map((row) => [row.bookId, row._count._all]));
+        const loanedBooks = await prisma.book.findMany({
+          where: { id: { in: Array.from(onLoan.keys()) } },
+          select: { id: true, title: true, author: true, copies: true },
+          orderBy: { title: "asc" },
+        });
+        const noCopies = loanedBooks.filter(
+          (book) => (onLoan.get(book.id) ?? 0) >= book.copies,
+        );
+        const [overdueCount, dueTodayCount, reservationsCount, suggestionsCount, expiredCount, neverLoanedCount] =
+          totals;
+        return {
+          result: {
+            overdue: {
+              count: overdueCount,
+              items: overdue.map((loan, index) => ({
+                loanId: loan.id,
+                readerRef: readerRef(index),
+                readerId: loan.readerId,
+                bookId: loan.bookId,
+                title: loan.book.title,
+                author: loan.book.author,
+                dueAt: isoDate(loan.dueAt),
+                daysLate: daysLate(loan.dueAt, now),
+              })),
+            },
+            dueToday: {
+              count: dueTodayCount,
+              items: dueToday.map((loan, index) => ({
+                loanId: loan.id,
+                readerRef: readerRef(index),
+                readerId: loan.readerId,
+                bookId: loan.bookId,
+                title: loan.book.title,
+                author: loan.book.author,
+                dueAt: isoDate(loan.dueAt),
+              })),
+            },
+            pendingReservations: {
+              count: reservationsCount,
+              items: reservations.map((reservation, index) => ({
+                reservationId: reservation.id,
+                readerRef: readerRef(index),
+                readerId: reservation.readerId,
+                bookId: reservation.bookId,
+                title: reservation.book.title,
+                author: reservation.book.author,
+                reservedAt: isoDate(reservation.createdAt),
+              })),
+            },
+            pendingSuggestions: {
+              count: suggestionsCount,
+              items: suggestions.map((suggestion) => ({
+                suggestionId: suggestion.id,
+                title: suggestion.title,
+                author: suggestion.author,
+                date: isoDate(suggestion.createdAt),
+              })),
+            },
+            expiredSuspensions: {
+              count: expiredCount,
+              items: expiredSuspensions.map((reader, index) => ({
+                readerRef: readerRef(index),
+                readerId: reader.id,
+                suspendedUntil: isoDate(reader.suspendedUntil),
+                reason: reader.suspensionReason,
+              })),
+            },
+            neverLoaned: {
+              count: neverLoanedCount,
+              items: neverLoaned,
+            },
+            noAvailableCopies: {
+              count: noCopies.length,
+              items: noCopies.map((book) => ({
+                bookId: book.id,
+                title: book.title,
+                author: book.author,
+                onLoan: onLoan.get(book.id) ?? book.copies,
+                copies: book.copies,
+              })),
+            },
+          },
+          books: [...overdue, ...dueToday].map((loan) =>
+            toAssistantBook(loan.book, onLoan.get(loan.bookId) ?? 0),
+          ),
+        };
+      },
+    },
+    {
+      name: "prestamos_lector",
+      description:
+        "Préstamos de un lector o lectora concreto, activos o también devueltos, ordenados por fecha de devolución.",
+      parameters: z.object({
+        readerId: z.string().max(60),
+        includeReturned: z.boolean().optional(),
+        limit: limitSchema,
+      }),
+      async execute(args) {
+        const readerId = String(args.readerId ?? "");
+        if (!readerId) return { result: [] };
+        const take = Math.min(Number(args.limit) || 20, 40);
+        const loans = await prisma.loan.findMany({
+          where: {
+            readerId,
+            ...(args.includeReturned ? {} : { returnedAt: null }),
+          },
+          orderBy: { dueAt: "asc" },
+          take,
+          include: { book: true },
+        });
+        const now = new Date();
+        return {
+          result: loans.map((loan) => ({
+            loanId: loan.id,
+            bookId: loan.bookId,
+            title: loan.book.title,
+            author: loan.book.author,
+            loanedAt: isoDate(loan.loanedAt),
+            dueAt: isoDate(loan.dueAt),
+            returnedAt: isoDate(loan.returnedAt),
+            overdue:
+              !loan.returnedAt && loan.dueAt.getTime() < now.getTime()
+                ? daysLate(loan.dueAt, now)
+                : 0,
+            renewals: loan.renewals,
+            notes: loan.notes,
+          })),
+          books: loans.map((loan) => toAssistantBook(loan.book)),
+        };
+      },
+    },
+    {
+      name: "reservas_lector",
+      description:
+        "Reservas de un lector o lectora concreto, con su estado y la disponibilidad actual del libro.",
+      parameters: z.object({
+        readerId: z.string().max(60),
+        status: z.enum(["ACTIVE", "FULFILLED", "CANCELLED", "ALL"]).optional(),
+        limit: limitSchema,
+      }),
+      async execute(args) {
+        const readerId = String(args.readerId ?? "");
+        if (!readerId) return { result: [] };
+        const take = Math.min(Number(args.limit) || 20, 40);
+        const status =
+          args.status && args.status !== "ALL"
+            ? (args.status as "ACTIVE" | "FULFILLED" | "CANCELLED")
+            : undefined;
+        const reservations = await prisma.reservation.findMany({
+          where: { readerId, ...(status ? { status } : {}) },
+          orderBy: { createdAt: "desc" },
+          take,
+          include: { book: true },
+        });
+        const availability = await availabilityFor(
+          reservations.map((reservation) => reservation.bookId),
+        );
+        return {
+          result: reservations.map((reservation) => ({
+            reservationId: reservation.id,
+            bookId: reservation.bookId,
+            title: reservation.book.title,
+            author: reservation.book.author,
+            status: reservation.status,
+            reservedAt: isoDate(reservation.createdAt),
+            resolvedAt: isoDate(reservation.resolvedAt),
+            available: Math.max(
+              0,
+              reservation.book.copies -
+                (availability.onLoan.get(reservation.bookId) ?? 0),
+            ),
+            notes: reservation.notes,
+          })),
+          books: reservations.map((reservation) =>
+            toAssistantBook(
+              reservation.book,
+              availability.onLoan.get(reservation.bookId) ?? 0,
+            ),
+          ),
+        };
+      },
+    },
+    {
+      name: "ficha_libro_panel",
+      description:
+        "Ficha completa de un libro para gestión: datos bibliográficos, ejemplares, préstamos activos, reservas, listas y reseñas.",
+      parameters: z.object({ bookId: z.string().max(60) }),
+      async execute(args) {
+        const bookId = String(args.bookId ?? "");
+        if (!bookId) return { result: { found: false } };
+        const book = await prisma.book.findUnique({
+          where: { id: bookId },
+          include: {
+            collections: { include: { collection: true } },
+            _count: { select: { loans: true, reservations: true, reviews: true } },
+          },
+        });
+        if (!book) {
+          return { result: { found: false, message: "No existe ese libro." } };
+        }
+        const availability = await availabilityFor([book.id]);
+        return {
+          result: {
+            found: true,
+            ...bookForModel(
+              book,
+              Math.max(0, book.copies - (availability.onLoan.get(book.id) ?? 0)),
+              availability.reserved.get(book.id) ?? 0,
+            ),
+            onLoan: availability.onLoan.get(book.id) ?? 0,
+            totalLoans: book._count.loans,
+            totalReservations: book._count.reservations,
+            totalReviews: book._count.reviews,
+            collections: book.collections
+              .filter((entry) => !entry.collection.ownerReaderId)
+              .map((entry) => ({
+                collectionId: entry.collectionId,
+                name: entry.collection.name,
+                position: entry.position,
+              })),
+          },
+          books: [toAssistantBook(book, availability.onLoan.get(book.id) ?? 0)],
+        };
+      },
+    },
+    {
+      name: "vencimientos_mes",
+      description:
+        "Calendario de vencimientos: préstamos sin devolver que vencen en un mes concreto (por defecto, el actual).",
+      parameters: z.object({
+        year: z.number().int().min(2000).max(2200).optional(),
+        month: z.number().int().min(1).max(12).optional(),
+        limit: limitSchema,
+      }),
+      async execute(args) {
+        const now = new Date();
+        const year = Number(args.year) || now.getUTCFullYear();
+        const month = Number(args.month) || now.getUTCMonth() + 1;
+        const take = Math.min(Number(args.limit) || 40, 40);
+        const start = new Date(Date.UTC(year, month - 1, 1));
+        const end = new Date(Date.UTC(year, month, 1));
+        const loans = await prisma.loan.findMany({
+          where: { returnedAt: null, dueAt: { gte: start, lt: end } },
+          orderBy: { dueAt: "asc" },
+          take,
+          include: { book: true },
+        });
+        return {
+          result: {
+            year,
+            month,
+            total: loans.length,
+            items: loans.map((loan, index) => ({
+              loanId: loan.id,
+              readerRef: readerRef(index),
+              readerId: loan.readerId,
+              bookId: loan.bookId,
+              title: loan.book.title,
+              author: loan.book.author,
+              dueAt: isoDate(loan.dueAt),
+            })),
+          },
+          books: loans.map((loan) => toAssistantBook(loan.book)),
+        };
+      },
+    },
+    {
+      name: "sanciones_lectores",
+      description:
+        "Lectores y lectoras con el préstamo suspendido: vigentes o ya caducadas.",
+      parameters: z.object({
+        status: z.enum(["ACTIVE", "EXPIRED", "ALL"]).optional(),
+        limit: limitSchema,
+      }),
+      async execute(args) {
+        const now = new Date();
+        const take = Math.min(Number(args.limit) || 20, 40);
+        const status = args.status ?? "ALL";
+        const where =
+          status === "ACTIVE"
+            ? { suspendedUntil: { gt: now } }
+            : status === "EXPIRED"
+              ? { suspendedUntil: { lt: now } }
+              : { suspendedUntil: { not: null } };
+        const readers = await prisma.reader.findMany({
+          where,
+          orderBy: { suspendedUntil: "asc" },
+          take,
+          select: {
+            id: true,
+            groupName: true,
+            active: true,
+            suspendedUntil: true,
+            suspensionReason: true,
+          },
+        });
+        return {
+          result: readers.map((reader, index) => ({
+            readerRef: readerRef(index),
+            readerId: reader.id,
+            groupName: reader.groupName,
+            active: reader.active,
+            suspended: Boolean(
+              reader.suspendedUntil && reader.suspendedUntil.getTime() > now.getTime(),
+            ),
+            suspendedUntil: isoDate(reader.suspendedUntil),
+            reason: reader.suspensionReason,
+          })),
+        };
+      },
+    },
   ];
 
   if (manager) {
@@ -656,6 +1042,65 @@ export function staffTools(role: Role): AssistantTool[] {
             active: user.active,
             lastLoginAt: isoDate(user.lastLoginAt),
             since: isoDate(user.createdAt),
+          })),
+        };
+      },
+    });
+    tools.push({
+      name: "bandeja_salida",
+      description:
+        "Bandeja de salida de correo: avisos enviados, pendientes o fallidos, con destinatario, asunto, intentos y error. Solo para dirección.",
+      parameters: z.object({
+        status: z.enum(["ALL", "PENDING", "FAILED", "SENT"]).optional(),
+        limit: limitSchema,
+      }),
+      async execute(args) {
+        const take = Math.min(Number(args.limit) || 15, 40);
+        const status = args.status ?? "ALL";
+        const where: Prisma.NotificationWhereInput = { to: { not: "" } };
+        if (status === "SENT") where.sentAt = { not: null };
+        if (status === "PENDING") {
+          where.sentAt = null;
+          where.error = null;
+        }
+        if (status === "FAILED") {
+          where.sentAt = null;
+          where.error = { not: null };
+        }
+        const notifications = await prisma.notification.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take,
+          select: {
+            id: true,
+            subject: true,
+            kind: true,
+            to: true,
+            sentAt: true,
+            lastAttemptAt: true,
+            attempts: true,
+            error: true,
+            createdAt: true,
+            reader: { select: { id: true } },
+          },
+        });
+        return {
+          result: notifications.map((notification, index) => ({
+            notificationId: notification.id,
+            readerRef: readerRef(index),
+            readerId: notification.reader?.id ?? null,
+            subject: notification.subject,
+            kind: notification.kind,
+            status: notification.sentAt
+              ? "sent"
+              : notification.error
+                ? "failed"
+                : "pending",
+            attempts: notification.attempts,
+            error: notification.error,
+            sentAt: isoDate(notification.sentAt),
+            lastAttemptAt: isoDate(notification.lastAttemptAt),
+            date: isoDate(notification.createdAt),
           })),
         };
       },

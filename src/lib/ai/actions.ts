@@ -18,9 +18,15 @@ import {
   addSuspensionDuration,
   PERMANENT_SUSPENSION_DATE,
 } from "../format";
-import { NOTIFICATION_TEXTS, notifyReader } from "../notifications";
+import { isMailConfigured, sendMail } from "../mailer";
+import {
+  deliverNotification,
+  NOTIFICATION_TEXTS,
+  notifyReader,
+} from "../notifications";
 import { prisma } from "../prisma";
 import { revokeReaderSessions } from "../reader-auth";
+import { runOverdueReminders } from "../reminders";
 import { nextCardNumber } from "../reader-card";
 import { slugify } from "../validation";
 import { ACTION_TTL_MINUTES } from "./config";
@@ -152,6 +158,10 @@ function revalidateAll() {
     "/panel/usuarios",
     "/panel/actividad",
     "/panel/changelog",
+    "/panel/correo",
+    "/panel/correo/salida",
+    "/panel/calendario",
+    "/panel/estadisticas",
     "/mi-biblioteca",
     "/mi-biblioteca/prestamos",
     "/mi-biblioteca/reservas",
@@ -1682,6 +1692,407 @@ const definitions: ActionDefinition[] = [
       };
     },
   },
+
+  // ----------------------- Eliminaciones y comunicación ----------------------
+  {
+    type: "staff.delete_book",
+    scope: "STAFF",
+    risk: "high",
+    schema: z.object({ bookId: id }),
+    async describe(payload) {
+      const book = await bookOrThrow(payload.bookId);
+      return `Eliminar del catálogo «${book.title}» de ${book.author} y todos sus datos asociados.`;
+    },
+    async execute(payload, actor) {
+      const user = staffOf(actor);
+      const book = await bookOrThrow(payload.bookId);
+      await prisma.book.delete({ where: { id: book.id } });
+      await recordAudit({
+        action: "ASSISTANT_BOOK_DELETE",
+        entityType: "Book",
+        entityId: book.id,
+        summary: `Eliminado «${book.title}» de ${book.author} desde Aran`,
+        userId: user.userId,
+      });
+      return { message: `«${book.title}» eliminado del catálogo.` };
+    },
+  },
+  {
+    type: "staff.delete_collection",
+    scope: "STAFF",
+    managerOnly: true,
+    risk: "high",
+    schema: z.object({ collectionId: id }),
+    async describe(payload) {
+      const collection = await prisma.collection.findUnique({
+        where: { id: payload.collectionId },
+      });
+      if (!collection || collection.ownerReaderId) {
+        throw new ActionError("Esa lista no existe o es privada.");
+      }
+      return `Eliminar la lista «${collection.name}».`;
+    },
+    async execute(payload, actor) {
+      const user = managerOf(actor);
+      const collection = await prisma.collection.findUnique({
+        where: { id: payload.collectionId },
+      });
+      if (!collection || collection.ownerReaderId) {
+        throw new ActionError("Esa lista no existe o es privada.");
+      }
+      await prisma.collection.delete({ where: { id: collection.id } });
+      await recordAudit({
+        action: "ASSISTANT_COLLECTION_DELETE",
+        entityType: "Collection",
+        entityId: collection.id,
+        summary: `Eliminada la lista «${collection.name}» desde Aran`,
+        userId: user.userId,
+      });
+      return { message: `Lista «${collection.name}» eliminada.` };
+    },
+  },
+  {
+    type: "staff.delete_review",
+    scope: "STAFF",
+    risk: "high",
+    schema: z.object({ reviewId: id }),
+    async describe(payload) {
+      const review = await prisma.review.findUnique({
+        where: { id: payload.reviewId },
+        include: { book: true },
+      });
+      if (!review) throw new ActionError("Esa reseña ya no existe.");
+      return `Eliminar la reseña de «${review.book.title}».`;
+    },
+    async execute(payload, actor) {
+      const user = staffOf(actor);
+      const review = await prisma.review.findUnique({
+        where: { id: payload.reviewId },
+        include: { book: true, reader: { select: { fullName: true } } },
+      });
+      if (!review) throw new ActionError("Esa reseña ya no existe.");
+      await prisma.review.delete({ where: { id: review.id } });
+      await recordAudit({
+        action: "ASSISTANT_REVIEW_DELETE",
+        entityType: "Review",
+        entityId: review.id,
+        summary: `Eliminada la reseña de ${review.reader.fullName} sobre «${review.book.title}» desde Aran`,
+        userId: user.userId,
+      });
+      return {
+        message: `Reseña de «${review.book.title}» eliminada.`,
+        bookIds: [review.bookId],
+      };
+    },
+  },
+  {
+    type: "staff.delete_changelog",
+    scope: "STAFF",
+    managerOnly: true,
+    risk: "high",
+    schema: z.object({ changelogId: id }),
+    async describe(payload) {
+      const changelog = await prisma.changelog.findUnique({
+        where: { id: payload.changelogId },
+      });
+      if (!changelog) throw new ActionError("Esa novedad ya no existe.");
+      return `Eliminar la novedad «${changelog.title}».`;
+    },
+    async execute(payload, actor) {
+      const user = managerOf(actor);
+      const changelog = await prisma.changelog.findUnique({
+        where: { id: payload.changelogId },
+      });
+      if (!changelog) throw new ActionError("Esa novedad ya no existe.");
+      await prisma.changelog.delete({ where: { id: changelog.id } });
+      await recordAudit({
+        action: "ASSISTANT_CHANGELOG_DELETE",
+        entityType: "Changelog",
+        entityId: changelog.id,
+        summary: `Eliminada la novedad «${changelog.title}» desde Aran`,
+        userId: user.userId,
+      });
+      return { message: `Novedad «${changelog.title}» eliminada.` };
+    },
+  },
+  {
+    type: "staff.delete_user",
+    scope: "STAFF",
+    managerOnly: true,
+    risk: "high",
+    schema: z.object({ userId: id }),
+    async describe(payload) {
+      const target = await prisma.user.findUnique({
+        where: { id: payload.userId },
+      });
+      if (!target) throw new ActionError("Esa cuenta ya no existe.");
+      return `Eliminar la cuenta de personal «${target.username}» (${target.displayName}).`;
+    },
+    async execute(payload, actor) {
+      const user = managerOf(actor);
+      const target = await prisma.user.findUnique({
+        where: { id: payload.userId },
+      });
+      if (!target) throw new ActionError("Esa cuenta ya no existe.");
+      if (target.id === user.userId) {
+        throw new ActionError("No puedes eliminar tu propia cuenta.");
+      }
+      if (target.role === "OWNER") {
+        throw new ActionError("No se puede eliminar una cuenta de dueño.");
+      }
+      await prisma.user.delete({ where: { id: target.id } });
+      await recordAudit({
+        action: "ASSISTANT_USER_DELETE",
+        entityType: "User",
+        entityId: target.id,
+        summary: `Eliminada la cuenta «${target.username}» desde Aran`,
+        userId: user.userId,
+      });
+      return { message: `Cuenta «${target.username}» eliminada.` };
+    },
+  },
+  {
+    type: "staff.move_collection_book",
+    scope: "STAFF",
+    risk: "medium",
+    schema: z.object({
+      collectionId: id,
+      bookId: id,
+      direction: z.enum(["up", "down"]),
+    }),
+    async describe(payload) {
+      const [collection, book] = await Promise.all([
+        prisma.collection.findUnique({ where: { id: payload.collectionId } }),
+        bookOrThrow(payload.bookId),
+      ]);
+      if (!collection || collection.ownerReaderId) {
+        throw new ActionError("Esa lista no existe o es privada.");
+      }
+      return `Mover «${book.title}» ${
+        payload.direction === "up" ? "una posición arriba" : "una posición abajo"
+      } en la lista «${collection.name}».`;
+    },
+    async execute(payload, actor) {
+      const user = staffOf(actor);
+      const collection = await prisma.collection.findUnique({
+        where: { id: payload.collectionId },
+      });
+      if (!collection || collection.ownerReaderId) {
+        throw new ActionError("Esa lista no existe o es privada.");
+      }
+      const items = await prisma.bookCollection.findMany({
+        where: { collectionId: collection.id },
+        orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+        select: { bookId: true },
+      });
+      const index = items.findIndex((item) => item.bookId === payload.bookId);
+      if (index < 0) throw new ActionError("Ese libro no está en la lista.");
+      const target = payload.direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= items.length) {
+        throw new ActionError("Ese libro ya está en el extremo de la lista.");
+      }
+      await prisma.$transaction([
+        prisma.bookCollection.update({
+          where: {
+            bookId_collectionId: {
+              collectionId: collection.id,
+              bookId: items[index]!.bookId,
+            },
+          },
+          data: { position: target },
+        }),
+        prisma.bookCollection.update({
+          where: {
+            bookId_collectionId: {
+              collectionId: collection.id,
+              bookId: items[target]!.bookId,
+            },
+          },
+          data: { position: index },
+        }),
+      ]);
+      await recordAudit({
+        action: "ASSISTANT_COLLECTION_MOVE_BOOK",
+        entityType: "Collection",
+        entityId: collection.id,
+        summary: `Reordenado un libro en «${collection.name}» desde Aran`,
+        userId: user.userId,
+      });
+      return { message: `Libro movido en «${collection.name}».` };
+    },
+  },
+  {
+    type: "staff.create_purchase_suggestion",
+    scope: "STAFF",
+    risk: "medium",
+    schema: z.object({
+      title: z.string().trim().min(1).max(220),
+      author: z.string().trim().min(1).max(180),
+      isbn: optionalText(32),
+      reason: optionalText(500),
+    }),
+    async describe(payload) {
+      return `Crear una solicitud de compra de «${payload.title}» de ${payload.author}.`;
+    },
+    async execute(payload, actor) {
+      const user = staffOf(actor);
+      const suggestion = await prisma.purchaseSuggestion.create({
+        data: {
+          title: payload.title,
+          author: payload.author,
+          isbn: payload.isbn ?? null,
+          reason: payload.reason ?? null,
+          userId: user.userId,
+        },
+      });
+      await recordAudit({
+        action: "ASSISTANT_PURCHASE_SUGGESTION_CREATE",
+        entityType: "PurchaseSuggestion",
+        entityId: suggestion.id,
+        summary: `Solicitud de compra de «${suggestion.title}» creada desde Aran`,
+        userId: user.userId,
+      });
+      return { message: `Solicitud de compra de «${suggestion.title}» creada.` };
+    },
+  },
+  {
+    type: "staff.send_test_email",
+    scope: "STAFF",
+    managerOnly: true,
+    risk: "medium",
+    schema: z.object({ to: z.string().trim().email().max(160) }),
+    async describe(payload) {
+      return `Enviar un correo de prueba a ${payload.to}.`;
+    },
+    async execute(payload, actor) {
+      const user = managerOf(actor);
+      if (!isMailConfigured()) {
+        throw new ActionError("El servidor de correo no está configurado.");
+      }
+      const result = await sendMail({
+        to: payload.to,
+        subject: "Prueba de correo - Biblioteca Institut d'Aran",
+        text: [
+          "Este es un correo de prueba enviado desde el panel de administración de la Biblioteca Institut d'Aran.",
+          "",
+          "Si recibes este mensaje, la configuración SMTP es correcta.",
+          "",
+          "— Biblioteca Institut d'Aran",
+        ].join("\n"),
+      });
+      if (!result.sent) {
+        throw new ActionError(
+          `No se pudo enviar el correo: ${result.error ?? "error desconocido"}`,
+        );
+      }
+      await recordAudit({
+        action: "ASSISTANT_MAIL_TEST",
+        entityType: "Notification",
+        entityId: null,
+        summary: "Correo de prueba enviado desde Aran",
+        userId: user.userId,
+      });
+      return { message: `Correo de prueba enviado a ${payload.to}.` };
+    },
+  },
+  {
+    type: "staff.send_overdue_reminders",
+    scope: "STAFF",
+    risk: "high",
+    schema: z.object({}),
+    async describe() {
+      return "Enviar los recordatorios de retraso a todas las personas con préstamos vencidos.";
+    },
+    async execute(_payload, actor) {
+      const user = staffOf(actor);
+      const report = await runOverdueReminders({
+        trigger: "manual",
+        userId: user.userId,
+      });
+      return {
+        message: `Recordatorios procesados: ${report.overdue} préstamos vencidos, ${report.sent} enviados, ${report.queued} en bandeja y ${report.duplicates} ya avisados.`,
+      };
+    },
+  },
+  {
+    type: "staff.retry_notification",
+    scope: "STAFF",
+    managerOnly: true,
+    risk: "medium",
+    schema: z.object({ notificationId: id }),
+    async describe(payload) {
+      const notification = await prisma.notification.findUnique({
+        where: { id: payload.notificationId },
+        select: { subject: true },
+      });
+      if (!notification) throw new ActionError("Ese aviso ya no existe.");
+      return `Reintentar el envío del aviso «${notification.subject}».`;
+    },
+    async execute(payload, actor) {
+      const user = managerOf(actor);
+      const result = await deliverNotification(payload.notificationId);
+      switch (result.status) {
+        case "missing":
+          throw new ActionError("Ese aviso ya no existe.");
+        case "already-sent":
+          return { message: "Ese aviso ya se había enviado." };
+        case "no-recipient":
+          throw new ActionError("Ese aviso no tiene destinatario.");
+        case "not-configured":
+          throw new ActionError("El servidor de correo no está configurado.");
+        case "failed":
+          throw new ActionError(
+            `No se pudo enviar el aviso: ${result.error ?? "error desconocido"}`,
+          );
+      }
+      await recordAudit({
+        action: "ASSISTANT_NOTIFICATION_RESEND",
+        entityType: "Notification",
+        entityId: payload.notificationId,
+        summary: "Aviso reenviado desde Aran",
+        userId: user.userId,
+      });
+      return { message: "Aviso reenviado." };
+    },
+  },
+  {
+    type: "staff.retry_unsent_notifications",
+    scope: "STAFF",
+    managerOnly: true,
+    risk: "medium",
+    schema: z.object({}),
+    async describe() {
+      return "Reintentar el envío de los avisos pendientes o fallidos de la bandeja de salida (hasta 10).";
+    },
+    async execute(_payload, actor) {
+      const user = managerOf(actor);
+      const pending = await prisma.notification.findMany({
+        where: { sentAt: null, to: { not: "" } },
+        orderBy: [{ lastAttemptAt: "asc" }, { createdAt: "asc" }],
+        take: 10,
+        select: { id: true },
+      });
+      let sent = 0;
+      for (const notification of pending) {
+        const result = await deliverNotification(notification.id);
+        if (result.status === "sent") sent += 1;
+        if (result.status === "not-configured") break;
+      }
+      await recordAudit({
+        action: "ASSISTANT_NOTIFICATION_RETRY",
+        entityType: "Notification",
+        entityId: null,
+        summary: `Reintento de avisos desde Aran: ${sent} enviados de ${pending.length}`,
+        userId: user.userId,
+      });
+      if (pending.length === 0) {
+        return { message: "No había avisos pendientes de reenvío." };
+      }
+      return {
+        message: `Reintento completado: ${sent} de ${pending.length} avisos enviados.`,
+      };
+    },
+  },
 ];
 
 const BY_TYPE = new Map(definitions.map((definition) => [definition.type, definition]));
@@ -1700,12 +2111,24 @@ export function actionDefinitionsFor(actor: AssistantActor): ActionDefinition[] 
   return definitions.filter((definition) => isAllowedAction(definition.type, actor));
 }
 
+function describeActionFields(schema: z.ZodTypeAny): string {
+  const shape = (schema as { shape?: Record<string, z.ZodTypeAny> }).shape;
+  if (!shape) return "";
+  return Object.entries(shape)
+    .map(([key, value]) => {
+      const optional = value.safeParse(undefined).success;
+      return `${key}${optional ? "?" : ""}`;
+    })
+    .join(", ");
+}
+
 export function actionCatalogForPrompt(actor: AssistantActor): string {
   return actionDefinitionsFor(actor)
-    .map(
-      (definition) =>
-        `- ${definition.type} (${definition.risk === "high" ? "riesgo alto" : "riesgo medio"})`,
-    )
+    .map((definition) => {
+      const fields = describeActionFields(definition.schema);
+      const risk = definition.risk === "high" ? "riesgo alto" : "riesgo medio";
+      return `- ${definition.type} (${risk})${fields ? `: ${fields}` : ""}`;
+    })
     .join("\n");
 }
 

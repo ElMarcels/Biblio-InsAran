@@ -39,7 +39,8 @@ export function toolsForActor(
       name: "proponer_accion",
       description:
         "Propone una acción que la persona debe confirmar. NUNCA ejecuta nada por sí sola. " +
-        "Rellena `payload` con un objeto JSON válido con los campos que pide el tipo de acción. " +
+        "Rellena `payload` con un objeto JSON válido con los campos que pide el tipo de acción " +
+        "(en ACCIONES DISPONIBLES se indican los campos de cada tipo). " +
         "Después de proponerla, explica en una frase qué va a pasar y pide confirmación.",
       parameters: z.object({
         type: z

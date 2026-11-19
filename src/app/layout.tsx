@@ -14,7 +14,7 @@ import { LOCALE_TAGS, OG_LOCALES } from "@/lib/i18n/config";
 import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getCurrentReader } from "@/lib/reader-auth";
-import { DARK_CLASS, THEME_INIT_SCRIPT } from "@/lib/theme";
+import { DARK_CLASS, GTA6_CLASS, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { getThemePreference } from "@/lib/theme-server";
 
 import "./globals.css";
@@ -84,7 +84,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       lang={LOCALE_TAGS[locale]}
       className={`${display.variable} ${body.variable} ${mono.variable} h-full ${
         theme === "dark" ? DARK_CLASS : ""
-      }`}
+      } ${theme === "gta6" ? GTA6_CLASS : ""}`}
       suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">

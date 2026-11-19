@@ -26,4 +26,5 @@ export async function setThemeAction(theme: ThemePreference): Promise<void> {
   }
 
   revalidatePath("/", "layout");
+  revalidatePath("/",);
 }

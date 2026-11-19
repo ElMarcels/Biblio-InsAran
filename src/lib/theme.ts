@@ -11,16 +11,20 @@
 
 export const THEME_COOKIE = "biblio_theme";
 
-export type ThemePreference = "system" | "light" | "dark";
+export type ThemePreference = "system" | "light" | "dark" | "gta6";
 
 export const THEME_PREFERENCES: readonly ThemePreference[] = [
   "system",
   "light",
   "dark",
+  "gta6",
 ];
 
 /** Clase que se añade a <html> cuando el tema oscuro está activo. */
 export const DARK_CLASS = "dark";
+
+/** Clase que se añade a <html> cuando el tema GTA 6 está activo. */
+export const GTA6_CLASS = "gta6";
 
 export function isThemePreference(value: unknown): value is ThemePreference {
   return (
@@ -37,8 +41,8 @@ export function nextThemePreference(theme: ThemePreference): ThemePreference {
 
 /**
  * Script que se inyecta al principio de <body>: aplica el tema antes del
- * primer pintado para que no haya destello claro/oscuro. Con cookie `dark` o
- * `light` el servidor ya lo ha resuelto; con `system` (o sin cookie) es este
- * script quien consulta la preferencia del sistema.
+ * primer pintado para que no haya destello claro/oscuro. Con cookie `dark`,
+ * `light` o `gta6` el servidor ya lo ha resuelto; con `system` (o sin cookie)
+ * es este script quien consulta la preferencia del sistema.
  */
-export const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);var p=m?decodeURIComponent(m[1]):"system";var d=p==="dark"||(p==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("${DARK_CLASS}",d);}catch(e){}})();`;
+export const THEME_INIT_SCRIPT = `(function(){try{var m=document.cookie.match(/(?:^|; )${THEME_COOKIE}=([^;]*)/);var p=m?decodeURIComponent(m[1]):"system";var d=p==="dark"||(p==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("${DARK_CLASS}",d);document.documentElement.classList.toggle("${GTA6_CLASS}",p==="gta6");}catch(e){}})();`;

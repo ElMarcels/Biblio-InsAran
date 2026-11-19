@@ -104,6 +104,13 @@ export function AssistantOrb({
         ? "READER"
         : "PUBLIC";
 
+  // Paleta visual del orbe según la zona donde esté el usuario
+  const orbVariant = pathname.startsWith("/panel")
+    ? "staff"
+    : pathname.startsWith("/mi-biblioteca")
+      ? "reader"
+      : "public";
+
   // Atajo de teclado: Ctrl+K / Cmd+K para abrir/cerrar, Escape para cerrar
   useEffect(() => {
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
@@ -158,7 +165,7 @@ export function AssistantOrb({
         title={open ? t("assistant.close") : `${t("assistant.open")} (Ctrl+K)`}
         onClick={() => setOpen((value) => !value)}
       >
-        <span className="aran-orb" aria-hidden="true">
+        <span className={`aran-orb aran-orb--${orbVariant}`} aria-hidden="true">
           <span className="aran-orb__ring" />
           <span className="aran-orb__core" />
         </span>

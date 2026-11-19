@@ -716,6 +716,177 @@
   height: 34px;
 }
 
+/* ---- Variantes del orbe según contexto ------------------------------------ */
+
+/* Público: catálogo y portada — verde/azul, exploración tranquila */
+.aran-orb--public {
+  background: conic-gradient(
+    from 0deg,
+    #34c759 0%, #30d158 15%, #00c7be 30%, #32ade6 50%,
+    #007aff 70%, #5ac8fa 85%, #34c759 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 15px rgba(0, 199, 190, 0.5),
+    0 0 35px rgba(50, 173, 230, 0.25),
+    0 0 60px rgba(52, 199, 89, 0.15);
+}
+
+.aran-orb--public::before {
+  background: conic-gradient(
+    from 180deg,
+    #34c759 0%, #5ac8fa 15%, #007aff 30%, #32ade6 45%,
+    #00c7be 55%, #30d158 68%, #34c759 100%
+  );
+}
+
+.aran-orb--public .aran-orb__core {
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(200, 255, 220, 0.75) 20%,
+    rgba(0, 199, 190, 0.45) 50%,
+    rgba(50, 173, 230, 0.1) 75%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px rgb(0 199 190 / 0.6),
+    0 0 20px rgb(50 173 230 / 0.3);
+}
+
+.aran-orb--public .aran-orb__ring {
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    conic-gradient(
+      from 0deg,
+      rgba(52, 199, 89, 0.7), rgba(48, 209, 88, 0.5),
+      rgba(0, 199, 190, 0.6), rgba(50, 173, 230, 0.7),
+      rgba(0, 122, 255, 0.8), rgba(90, 200, 250, 0.7),
+      rgba(52, 199, 89, 0.7)
+    ) border-box;
+}
+
+/* Lector: mi biblioteca — violeta/magenta, zona personal */
+.aran-orb--reader {
+  background: conic-gradient(
+    from 0deg,
+    #af52de 0%, #bf5af2 15%, #ff375f 30%, #ff6482 45%,
+    #af52de 60%, #5856d6 75%, #af52de 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 15px rgba(175, 82, 222, 0.5),
+    0 0 35px rgba(191, 90, 242, 0.25),
+    0 0 60px rgba(255, 55, 95, 0.15);
+}
+
+.aran-orb--reader::before {
+  background: conic-gradient(
+    from 180deg,
+    #af52de 0%, #5856d6 15%, #ff375f 30%, #ff6482 45%,
+    #bf5af2 55%, #af52de 100%
+  );
+}
+
+.aran-orb--reader .aran-orb__core {
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 200, 230, 0.75) 20%,
+    rgba(175, 82, 222, 0.45) 50%,
+    rgba(191, 90, 242, 0.1) 75%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px rgb(175 82 222 / 0.6),
+    0 0 20px rgb(191 90 242 / 0.3);
+}
+
+.aran-orb--reader .aran-orb__ring {
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    conic-gradient(
+      from 0deg,
+      rgba(175, 82, 222, 0.7), rgba(191, 90, 242, 0.5),
+      rgba(255, 55, 95, 0.6), rgba(255, 100, 130, 0.5),
+      rgba(175, 82, 222, 0.8), rgba(88, 86, 214, 0.7),
+      rgba(175, 82, 222, 0.7)
+    ) border-box;
+}
+
+/* Staff: panel de gestión — naranja/rojo, modo trabajo activo */
+.aran-orb--staff {
+  background: conic-gradient(
+    from 0deg,
+    #ff9500 0%, #ff6b00 15%, #ff3b30 30%, #ff453a 45%,
+    #ff9500 60%, #ff9f0a 75%, #ff9500 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 15px rgba(255, 149, 0, 0.5),
+    0 0 35px rgba(255, 59, 48, 0.25),
+    0 0 60px rgba(255, 107, 0, 0.15);
+}
+
+.aran-orb--staff::before {
+  background: conic-gradient(
+    from 180deg,
+    #ff9500 0%, #ff9f0a 15%, #ff3b30 30%, #ff453a 45%,
+    #ff6b00 55%, #ff9500 100%
+  );
+}
+
+.aran-orb--staff .aran-orb__core {
+  background: radial-gradient(
+    circle at 40% 35%,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 230, 200, 0.75) 20%,
+    rgba(255, 149, 0, 0.45) 50%,
+    rgba(255, 59, 48, 0.1) 75%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 10px rgb(255 149 0 / 0.6),
+    0 0 20px rgb(255 59 48 / 0.3);
+}
+
+.aran-orb--staff .aran-orb__ring {
+  background:
+    linear-gradient(transparent, transparent) padding-box,
+    conic-gradient(
+      from 0deg,
+      rgba(255, 149, 0, 0.7), rgba(255, 107, 0, 0.5),
+      rgba(255, 59, 48, 0.6), rgba(255, 69, 58, 0.5),
+      rgba(255, 149, 0, 0.8), rgba(255, 159, 10, 0.7),
+      rgba(255, 149, 0, 0.7)
+    ) border-box;
+}
+
+/* Variantes en modo oscuro — más glow */
+.dark .aran-orb--public {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 18px rgba(0, 199, 190, 0.6),
+    0 0 40px rgba(50, 173, 230, 0.35),
+    0 0 60px rgba(52, 199, 89, 0.2);
+}
+
+.dark .aran-orb--reader {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 18px rgba(175, 82, 222, 0.6),
+    0 0 40px rgba(191, 90, 242, 0.35),
+    0 0 60px rgba(255, 55, 95, 0.2);
+}
+
+.dark .aran-orb--staff {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 0 18px rgba(255, 149, 0, 0.6),
+    0 0 40px rgba(255, 59, 48, 0.35),
+    0 0 60px rgba(255, 107, 0, 0.2);
+}
+
 .dark .aran-orb {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.15),

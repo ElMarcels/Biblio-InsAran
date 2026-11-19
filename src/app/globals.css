@@ -716,176 +716,447 @@
   height: 34px;
 }
 
-/* ---- Variantes del orbe según contexto ------------------------------------ */
+/* ---- Variantes del orbe según pantalla ------------------------------------ */
 
-/* Público: catálogo y portada — verde/azul, exploración tranquila */
-.aran-orb--public {
-  background: conic-gradient(
-    from 0deg,
-    #34c759 0%, #30d158 15%, #00c7be 30%, #32ade6 50%,
-    #007aff 70%, #5ac8fa 85%, #34c759 100%
-  );
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 15px rgba(0, 199, 190, 0.5),
-    0 0 35px rgba(50, 173, 230, 0.25),
-    0 0 60px rgba(52, 199, 89, 0.15);
+/* Helper: cada variante define background, box-shadow, ::before, __core y __ring.
+   Familias de color:
+   - Público: tonos fríos (azul, cian, verde, índigo)
+   - Lector: tonos intermedios (violeta, magenta, rosa, púrpura)
+   - Panel: tonos cálidos (naranja, rojo, ámbar, coral, dorado)
+   - Default: arcoíris original */
+
+/* ===== PÚBLICO ===== */
+
+/* Home — cian/azul, bienvenida */
+.aran-orb--home {
+  background: conic-gradient(from 0deg, #06b6d4 0%, #0ea5e9 25%, #3b82f6 50%, #6366f1 75%, #06b6d4 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(6,182,212,0.5), 0 0 35px rgba(59,130,246,0.25), 0 0 60px rgba(99,102,241,0.15);
+}
+.aran-orb--home::before { background: conic-gradient(from 180deg, #06b6d4 0%, #6366f1 30%, #3b82f6 50%, #0ea5e9 70%, #06b6d4 100%); }
+.aran-orb--home .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(165,243,252,0.75) 20%, rgba(6,182,212,0.45) 50%, rgba(59,130,246,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(6 182 212 / 0.6), 0 0 20px rgb(59 130 246 / 0.3); }
+.aran-orb--home .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(6,182,212,0.7), rgba(14,165,233,0.5), rgba(59,130,246,0.6), rgba(99,102,241,0.7), rgba(6,182,212,0.8), rgba(14,165,233,0.7), rgba(6,182,212,0.7)) border-box; }
+
+/* Catálogo — verde/cian, exploración */
+.aran-orb--catalogo {
+  background: conic-gradient(from 0deg, #10b981 0%, #06b6d4 25%, #14b8a6 50%, #34d399 75%, #10b981 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(16,185,129,0.5), 0 0 35px rgba(6,182,212,0.25), 0 0 60px rgba(20,184,166,0.15);
+}
+.aran-orb--catalogo::before { background: conic-gradient(from 180deg, #10b981 0%, #14b8a6 30%, #06b6d4 50%, #34d399 70%, #10b981 100%); }
+.aran-orb--catalogo .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(167,243,208,0.75) 20%, rgba(16,185,129,0.45) 50%, rgba(6,182,212,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(16 185 129 / 0.6), 0 0 20px rgb(6 182 212 / 0.3); }
+.aran-orb--catalogo .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(16,185,129,0.7), rgba(6,182,212,0.5), rgba(20,184,166,0.6), rgba(52,211,153,0.7), rgba(16,185,129,0.8), rgba(6,182,212,0.7), rgba(16,185,129,0.7)) border-box; }
+
+/* Libro — índigo/violeta, detalle */
+.aran-orb--libro {
+  background: conic-gradient(from 0deg, #6366f1 0%, #8b5cf6 25%, #a78bfa 50%, #4f46e5 75%, #6366f1 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(99,102,241,0.5), 0 0 35px rgba(139,92,246,0.25), 0 0 60px rgba(79,70,229,0.15);
+}
+.aran-orb--libro::before { background: conic-gradient(from 180deg, #6366f1 0%, #4f46e5 30%, #8b5cf6 50%, #a78bfa 70%, #6366f1 100%); }
+.aran-orb--libro .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(199,210,254,0.75) 20%, rgba(99,102,241,0.45) 50%, rgba(139,92,246,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(99 102 241 / 0.6), 0 0 20px rgb(139 92 246 / 0.3); }
+.aran-orb--libro .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(99,102,241,0.7), rgba(139,92,246,0.5), rgba(167,139,250,0.6), rgba(79,70,229,0.7), rgba(99,102,241,0.8), rgba(139,92,246,0.7), rgba(99,102,241,0.7)) border-box; }
+
+/* Autores — azul/celeste, descubrimiento */
+.aran-orb--autores {
+  background: conic-gradient(from 0deg, #3b82f6 0%, #0ea5e9 25%, #0284c7 50%, #2563eb 75%, #3b82f6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(59,130,246,0.5), 0 0 35px rgba(14,165,233,0.25), 0 0 60px rgba(37,99,235,0.15);
+}
+.aran-orb--autores::before { background: conic-gradient(from 180deg, #3b82f6 0%, #2563eb 30%, #0ea5e9 50%, #0284c7 70%, #3b82f6 100%); }
+.aran-orb--autores .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(191,219,254,0.75) 20%, rgba(59,130,246,0.45) 50%, rgba(14,165,233,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(59 130 246 / 0.6), 0 0 20px rgb(14 165 233 / 0.3); }
+.aran-orb--autores .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(59,130,246,0.7), rgba(14,165,233,0.5), rgba(2,132,199,0.6), rgba(37,99,235,0.7), rgba(59,130,246,0.8), rgba(14,165,233,0.7), rgba(59,130,246,0.7)) border-box; }
+
+/* Autor (ficha) — azul profundo */
+.aran-orb--autor {
+  background: conic-gradient(from 0deg, #2563eb 0%, #1d4ed8 25%, #3b82f6 50%, #1e40af 75%, #2563eb 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(37,99,235,0.5), 0 0 35px rgba(29,78,216,0.25), 0 0 60px rgba(30,64,175,0.15);
+}
+.aran-orb--autor::before { background: conic-gradient(from 180deg, #2563eb 0%, #1e40af 30%, #3b82f6 50%, #1d4ed8 70%, #2563eb 100%); }
+.aran-orb--autor .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(147,197,253,0.75) 20%, rgba(37,99,235,0.45) 50%, rgba(29,78,216,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(37 99 235 / 0.6), 0 0 20px rgb(29 78 216 / 0.3); }
+.aran-orb--autor .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(37,99,235,0.7), rgba(29,78,216,0.5), rgba(59,130,246,0.6), rgba(30,64,175,0.7), rgba(37,99,235,0.8), rgba(29,78,216,0.7), rgba(37,99,235,0.7)) border-box; }
+
+/* Colecciones — teal/verde azulado, curación */
+.aran-orb--colecciones {
+  background: conic-gradient(from 0deg, #14b8a6 0%, #0d9488 25%, #2dd4bf 50%, #0f766e 75%, #14b8a6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(20,184,166,0.5), 0 0 35px rgba(13,148,136,0.25), 0 0 60px rgba(15,118,110,0.15);
+}
+.aran-orb--colecciones::before { background: conic-gradient(from 180deg, #14b8a6 0%, #0f766e 30%, #0d9488 50%, #2dd4bf 70%, #14b8a6 100%); }
+.aran-orb--colecciones .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(153,246,228,0.75) 20%, rgba(20,184,166,0.45) 50%, rgba(13,148,136,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(20 184 166 / 0.6), 0 0 20px rgb(13 148 136 / 0.3); }
+.aran-orb--colecciones .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(20,184,166,0.7), rgba(13,148,136,0.5), rgba(45,212,191,0.6), rgba(15,118,110,0.7), rgba(20,184,166,0.8), rgba(13,148,136,0.7), rgba(20,184,166,0.7)) border-box; }
+
+/* Colección (individual) — emerald */
+.aran-orb--coleccion {
+  background: conic-gradient(from 0deg, #10b981 0%, #059669 25%, #34d399 50%, #047857 75%, #10b981 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(16,185,129,0.5), 0 0 35px rgba(5,150,105,0.25), 0 0 60px rgba(4,120,87,0.15);
+}
+.aran-orb--coleccion::before { background: conic-gradient(from 180deg, #10b981 0%, #047857 30%, #059669 50%, #34d399 70%, #10b981 100%); }
+.aran-orb--coleccion .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(167,243,208,0.75) 20%, rgba(16,185,129,0.45) 50%, rgba(5,150,105,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(16 185 129 / 0.6), 0 0 20px rgb(5 150 105 / 0.3); }
+.aran-orb--coleccion .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(16,185,129,0.7), rgba(5,150,105,0.5), rgba(52,211,153,0.6), rgba(4,120,87,0.7), rgba(16,185,129,0.8), rgba(5,150,105,0.7), rgba(16,185,129,0.7)) border-box; }
+
+/* Etiquetas — sky/azul claro, clasificación */
+.aran-orb--etiquetas {
+  background: conic-gradient(from 0deg, #0ea5e9 0%, #0284c7 25%, #38bdf8 50%, #0369a1 75%, #0ea5e9 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(14,165,233,0.5), 0 0 35px rgba(2,132,199,0.25), 0 0 60px rgba(3,105,161,0.15);
+}
+.aran-orb--etiquetas::before { background: conic-gradient(from 180deg, #0ea5e9 0%, #0369a1 30%, #0284c7 50%, #38bdf8 70%, #0ea5e9 100%); }
+.aran-orb--etiquetas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(186,230,253,0.75) 20%, rgba(14,165,233,0.45) 50%, rgba(2,132,199,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(14 165 233 / 0.6), 0 0 20px rgb(2 132 199 / 0.3); }
+.aran-orb--etiquetas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(14,165,233,0.7), rgba(2,132,199,0.5), rgba(56,189,248,0.6), rgba(3,105,161,0.7), rgba(14,165,233,0.8), rgba(2,132,199,0.7), rgba(14,165,233,0.7)) border-box; }
+
+/* Solicitar — amber/dorado, petición */
+.aran-orb--solicitar {
+  background: conic-gradient(from 0deg, #f59e0b 0%, #d97706 25%, #fbbf24 50%, #b45309 75%, #f59e0b 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(245,158,11,0.5), 0 0 35px rgba(217,119,6,0.25), 0 0 60px rgba(180,83,9,0.15);
+}
+.aran-orb--solicitar::before { background: conic-gradient(from 180deg, #f59e0b 0%, #b45309 30%, #d97706 50%, #fbbf24 70%, #f59e0b 100%); }
+.aran-orb--solicitar .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(253,230,138,0.75) 20%, rgba(245,158,11,0.45) 50%, rgba(217,119,6,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(245 158 11 / 0.6), 0 0 20px rgb(217 119 6 / 0.3); }
+.aran-orb--solicitar .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(245,158,11,0.7), rgba(217,119,6,0.5), rgba(251,191,36,0.6), rgba(180,83,9,0.7), rgba(245,158,11,0.8), rgba(217,119,6,0.7), rgba(245,158,11,0.7)) border-box; }
+
+/* Login — slate/gris, acceso */
+.aran-orb--login {
+  background: conic-gradient(from 0deg, #64748b 0%, #475569 25%, #94a3b8 50%, #334155 75%, #64748b 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(100,116,139,0.5), 0 0 35px rgba(71,85,105,0.25), 0 0 60px rgba(51,65,85,0.15);
+}
+.aran-orb--login::before { background: conic-gradient(from 180deg, #64748b 0%, #334155 30%, #475569 50%, #94a3b8 70%, #64748b 100%); }
+.aran-orb--login .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(203,213,225,0.75) 20%, rgba(100,116,139,0.45) 50%, rgba(71,85,105,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(100 116 139 / 0.6), 0 0 20px rgb(71 85 105 / 0.3); }
+.aran-orb--login .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(100,116,139,0.7), rgba(71,85,105,0.5), rgba(148,163,184,0.6), rgba(51,65,85,0.7), rgba(100,116,139,0.8), rgba(71,85,105,0.7), rgba(100,116,139,0.7)) border-box; }
+
+/* Asistente — púrpura mágico */
+.aran-orb--asistente {
+  background: conic-gradient(from 0deg, #8b5cf6 0%, #7c3aed 25%, #a78bfa 50%, #6d28d9 75%, #8b5cf6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(139,92,246,0.5), 0 0 35px rgba(124,58,237,0.25), 0 0 60px rgba(109,40,217,0.15);
+}
+.aran-orb--asistente::before { background: conic-gradient(from 180deg, #8b5cf6 0%, #6d28d9 30%, #7c3aed 50%, #a78bfa 70%, #8b5cf6 100%); }
+.aran-orb--asistente .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(196,181,253,0.75) 20%, rgba(139,92,246,0.45) 50%, rgba(124,58,237,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(139 92 246 / 0.6), 0 0 20px rgb(124 58 237 / 0.3); }
+.aran-orb--asistente .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(139,92,246,0.7), rgba(124,58,237,0.5), rgba(167,139,250,0.6), rgba(109,40,217,0.7), rgba(139,92,246,0.8), rgba(124,58,237,0.7), rgba(139,92,246,0.7)) border-box; }
+
+/* ===== LECTOR ===== */
+
+/* Reader login — rosa/violeta, bienvenida lector */
+.aran-orb--reader-login {
+  background: conic-gradient(from 0deg, #ec4899 0%, #db2777 25%, #f472b6 50%, #be185d 75%, #ec4899 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(236,72,153,0.5), 0 0 35px rgba(219,39,119,0.25), 0 0 60px rgba(190,24,93,0.15);
+}
+.aran-orb--reader-login::before { background: conic-gradient(from 180deg, #ec4899 0%, #be185d 30%, #db2777 50%, #f472b6 70%, #ec4899 100%); }
+.aran-orb--reader-login .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(244,114,182,0.75) 20%, rgba(236,72,153,0.45) 50%, rgba(219,39,119,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(236 72 153 / 0.6), 0 0 20px rgb(219 39 119 / 0.3); }
+.aran-orb--reader-login .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(236,72,153,0.7), rgba(219,39,119,0.5), rgba(244,114,182,0.6), rgba(190,24,93,0.7), rgba(236,72,153,0.8), rgba(219,39,119,0.7), rgba(236,72,153,0.7)) border-box; }
+
+/* Reader PIN — fucsia, cambio de PIN */
+.aran-orb--reader-pin {
+  background: conic-gradient(from 0deg, #d946ef 0%, #c026d3 25%, #e879f9 50%, #a21caf 75%, #d946ef 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(217,70,239,0.5), 0 0 35px rgba(192,38,211,0.25), 0 0 60px rgba(162,28,175,0.15);
+}
+.aran-orb--reader-pin::before { background: conic-gradient(from 180deg, #d946ef 0%, #a21caf 30%, #c026d3 50%, #e879f9 70%, #d946ef 100%); }
+.aran-orb--reader-pin .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(232,121,249,0.75) 20%, rgba(217,70,239,0.45) 50%, rgba(192,38,211,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(217 70 239 / 0.6), 0 0 20px rgb(192 38 211 / 0.3); }
+.aran-orb--reader-pin .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(217,70,239,0.7), rgba(192,38,211,0.5), rgba(232,121,249,0.6), rgba(162,28,175,0.7), rgba(217,70,239,0.8), rgba(192,38,211,0.7), rgba(217,70,239,0.7)) border-box; }
+
+/* Reader préstamos — violeta, mis libros */
+.aran-orb--reader-prestamos {
+  background: conic-gradient(from 0deg, #8b5cf6 0%, #7c3aed 25%, #a78bfa 50%, #6d28d9 75%, #8b5cf6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(139,92,246,0.5), 0 0 35px rgba(124,58,237,0.25), 0 0 60px rgba(109,40,217,0.15);
+}
+.aran-orb--reader-prestamos::before { background: conic-gradient(from 180deg, #8b5cf6 0%, #6d28d9 30%, #7c3aed 50%, #a78bfa 70%, #8b5cf6 100%); }
+.aran-orb--reader-prestamos .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(196,181,253,0.75) 20%, rgba(139,92,246,0.45) 50%, rgba(124,58,237,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(139 92 246 / 0.6), 0 0 20px rgb(124 58 237 / 0.3); }
+.aran-orb--reader-prestamos .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(139,92,246,0.7), rgba(124,58,237,0.5), rgba(167,139,250,0.6), rgba(109,40,217,0.7), rgba(139,92,246,0.8), rgba(124,58,237,0.7), rgba(139,92,246,0.7)) border-box; }
+
+/* Reader reservas — magenta, espera */
+.aran-orb--reader-reservas {
+  background: conic-gradient(from 0deg, #d946ef 0%, #c026d3 25%, #e879f9 50%, #a21caf 75%, #d946ef 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(217,70,239,0.5), 0 0 35px rgba(192,38,211,0.25), 0 0 60px rgba(162,28,175,0.15);
+}
+.aran-orb--reader-reservas::before { background: conic-gradient(from 180deg, #d946ef 0%, #a21caf 30%, #c026d3 50%, #e879f9 70%, #d946ef 100%); }
+.aran-orb--reader-reservas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(232,121,249,0.75) 20%, rgba(217,70,239,0.45) 50%, rgba(192,38,211,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(217 70 239 / 0.6), 0 0 20px rgb(192 38 211 / 0.3); }
+.aran-orb--reader-reservas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(217,70,239,0.7), rgba(192,38,211,0.5), rgba(232,121,249,0.6), rgba(162,28,175,0.7), rgba(217,70,239,0.8), rgba(192,38,211,0.7), rgba(217,70,239,0.7)) border-box; }
+
+/* Reader historial — púrpura suave, pasado */
+.aran-orb--reader-historial {
+  background: conic-gradient(from 0deg, #a855f7 0%, #9333ea 25%, #c084fc 50%, #7e22ce 75%, #a855f7 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(168,85,247,0.5), 0 0 35px rgba(147,51,234,0.25), 0 0 60px rgba(126,34,206,0.15);
+}
+.aran-orb--reader-historial::before { background: conic-gradient(from 180deg, #a855f7 0%, #7e22ce 30%, #9333ea 50%, #c084fc 70%, #a855f7 100%); }
+.aran-orb--reader-historial .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(192,132,252,0.75) 20%, rgba(168,85,247,0.45) 50%, rgba(147,51,234,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(168 85 247 / 0.6), 0 0 20px rgb(147 51 234 / 0.3); }
+.aran-orb--reader-historial .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(168,85,247,0.7), rgba(147,51,234,0.5), rgba(192,132,252,0.6), rgba(126,34,206,0.7), rgba(168,85,247,0.8), rgba(147,51,234,0.7), rgba(168,85,247,0.7)) border-box; }
+
+/* Reader listas — rosa, curación personal */
+.aran-orb--reader-listas {
+  background: conic-gradient(from 0deg, #f472b6 0%, #ec4899 25%, #fb7185 50%, #e11d48 75%, #f472b6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(244,114,182,0.5), 0 0 35px rgba(236,72,153,0.25), 0 0 60px rgba(225,29,72,0.15);
+}
+.aran-orb--reader-listas::before { background: conic-gradient(from 180deg, #f472b6 0%, #e11d48 30%, #ec4899 50%, #fb7185 70%, #f472b6 100%); }
+.aran-orb--reader-listas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(251,113,133,0.75) 20%, rgba(244,114,182,0.45) 50%, rgba(236,72,153,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(244 114 182 / 0.6), 0 0 20px rgb(236 72 153 / 0.3); }
+.aran-orb--reader-listas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(244,114,182,0.7), rgba(236,72,153,0.5), rgba(251,113,133,0.6), rgba(225,29,72,0.7), rgba(244,114,182,0.8), rgba(236,72,153,0.7), rgba(244,114,182,0.7)) border-box; }
+
+/* Reader notificaciones — rojo/coral, atención */
+.aran-orb--reader-notificaciones {
+  background: conic-gradient(from 0deg, #ef4444 0%, #dc2626 25%, #f87171 50%, #b91c1c 75%, #ef4444 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(239,68,68,0.5), 0 0 35px rgba(220,38,38,0.25), 0 0 60px rgba(185,28,28,0.15);
+}
+.aran-orb--reader-notificaciones::before { background: conic-gradient(from 180deg, #ef4444 0%, #b91c1c 30%, #dc2626 50%, #f87171 70%, #ef4444 100%); }
+.aran-orb--reader-notificaciones .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(248,113,113,0.75) 20%, rgba(239,68,68,0.45) 50%, rgba(220,38,38,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(239 68 68 / 0.6), 0 0 20px rgb(220 38 38 / 0.3); }
+.aran-orb--reader-notificaciones .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(239,68,68,0.7), rgba(220,38,38,0.5), rgba(248,113,113,0.6), rgba(185,28,28,0.7), rgba(239,68,68,0.8), rgba(220,38,38,0.7), rgba(239,68,68,0.7)) border-box; }
+
+/* Reader solicitudes — ámbar, peticiones */
+.aran-orb--reader-solicitudes {
+  background: conic-gradient(from 0deg, #f97316 0%, #ea580c 25%, #fb923c 50%, #c2410c 75%, #f97316 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(249,115,22,0.5), 0 0 35px rgba(234,88,12,0.25), 0 0 60px rgba(194,65,12,0.15);
+}
+.aran-orb--reader-solicitudes::before { background: conic-gradient(from 180deg, #f97316 0%, #c2410c 30%, #ea580c 50%, #fb923c 70%, #f97316 100%); }
+.aran-orb--reader-solicitudes .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(251,146,60,0.75) 20%, rgba(249,115,22,0.45) 50%, rgba(234,88,12,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(249 115 22 / 0.6), 0 0 20px rgb(234 88 12 / 0.3); }
+.aran-orb--reader-solicitudes .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(249,115,22,0.7), rgba(234,88,12,0.5), rgba(251,146,60,0.6), rgba(194,65,12,0.7), rgba(249,115,22,0.8), rgba(234,88,12,0.7), rgba(249,115,22,0.7)) border-box; }
+
+/* Reader cuenta — índigo, configuración personal */
+.aran-orb--reader-cuenta {
+  background: conic-gradient(from 0deg, #6366f1 0%, #4f46e5 25%, #818cf8 50%, #4338ca 75%, #6366f1 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(99,102,241,0.5), 0 0 35px rgba(79,70,229,0.25), 0 0 60px rgba(67,56,202,0.15);
+}
+.aran-orb--reader-cuenta::before { background: conic-gradient(from 180deg, #6366f1 0%, #4338ca 30%, #4f46e5 50%, #818cf8 70%, #6366f1 100%); }
+.aran-orb--reader-cuenta .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(129,140,248,0.75) 20%, rgba(99,102,241,0.45) 50%, rgba(79,70,229,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(99 102 241 / 0.6), 0 0 20px rgb(79 70 229 / 0.3); }
+.aran-orb--reader-cuenta .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(99,102,241,0.7), rgba(79,70,229,0.5), rgba(129,140,248,0.6), rgba(67,56,202,0.7), rgba(99,102,241,0.8), rgba(79,70,229,0.7), rgba(99,102,241,0.7)) border-box; }
+
+/* ===== PANEL ===== */
+
+/* Panel home — naranja, dashboard */
+.aran-orb--panel-home {
+  background: conic-gradient(from 0deg, #f97316 0%, #ea580c 25%, #fb923c 50%, #c2410c 75%, #f97316 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(249,115,22,0.5), 0 0 35px rgba(234,88,12,0.25), 0 0 60px rgba(194,65,12,0.15);
+}
+.aran-orb--panel-home::before { background: conic-gradient(from 180deg, #f97316 0%, #c2410c 30%, #ea580c 50%, #fb923c 70%, #f97316 100%); }
+.aran-orb--panel-home .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(251,146,60,0.75) 20%, rgba(249,115,22,0.45) 50%, rgba(234,88,12,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(249 115 22 / 0.6), 0 0 20px rgb(234 88 12 / 0.3); }
+.aran-orb--panel-home .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(249,115,22,0.7), rgba(234,88,12,0.5), rgba(251,146,60,0.6), rgba(194,65,12,0.7), rgba(249,115,22,0.8), rgba(234,88,12,0.7), rgba(249,115,22,0.7)) border-box; }
+
+/* Panel libros — verde, catálogo */
+.aran-orb--panel-libros {
+  background: conic-gradient(from 0deg, #22c55e 0%, #16a34a 25%, #4ade80 50%, #15803d 75%, #22c55e 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(34,197,94,0.5), 0 0 35px rgba(22,163,74,0.25), 0 0 60px rgba(21,128,61,0.15);
+}
+.aran-orb--panel-libros::before { background: conic-gradient(from 180deg, #22c55e 0%, #15803d 30%, #16a34a 50%, #4ade80 70%, #22c55e 100%); }
+.aran-orb--panel-libros .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(187,247,208,0.75) 20%, rgba(34,197,94,0.45) 50%, rgba(22,163,74,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(34 197 94 / 0.6), 0 0 20px rgb(22 163 74 / 0.3); }
+.aran-orb--panel-libros .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(34,197,94,0.7), rgba(22,163,74,0.5), rgba(74,222,128,0.6), rgba(21,128,61,0.7), rgba(34,197,94,0.8), rgba(22,163,74,0.7), rgba(34,197,94,0.7)) border-box; }
+
+/* Panel libros nuevo — esmeralda, creación */
+.aran-orb--panel-libros-nuevo {
+  background: conic-gradient(from 0deg, #10b981 0%, #059669 25%, #34d399 50%, #047857 75%, #10b981 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(16,185,129,0.5), 0 0 35px rgba(5,150,105,0.25), 0 0 60px rgba(4,120,87,0.15);
+}
+.aran-orb--panel-libros-nuevo::before { background: conic-gradient(from 180deg, #10b981 0%, #047857 30%, #059669 50%, #34d399 70%, #10b981 100%); }
+.aran-orb--panel-libros-nuevo .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(167,243,208,0.75) 20%, rgba(16,185,129,0.45) 50%, rgba(5,150,105,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(16 185 129 / 0.6), 0 0 20px rgb(5 150 105 / 0.3); }
+.aran-orb--panel-libros-nuevo .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(16,185,129,0.7), rgba(5,150,105,0.5), rgba(52,211,153,0.6), rgba(4,120,87,0.7), rgba(16,185,129,0.8), rgba(5,150,105,0.7), rgba(16,185,129,0.7)) border-box; }
+
+/* Panel libros editar — lima, edición */
+.aran-orb--panel-libros-editar {
+  background: conic-gradient(from 0deg, #84cc16 0%, #65a30d 25%, #a3e635 50%, #4d7c0f 75%, #84cc16 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(132,204,22,0.5), 0 0 35px rgba(101,163,13,0.25), 0 0 60px rgba(77,124,15,0.15);
+}
+.aran-orb--panel-libros-editar::before { background: conic-gradient(from 180deg, #84cc16 0%, #4d7c0f 30%, #65a30d 50%, #a3e635 70%, #84cc16 100%); }
+.aran-orb--panel-libros-editar .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(192,228,97,0.75) 20%, rgba(132,204,22,0.45) 50%, rgba(101,163,13,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(132 204 22 / 0.6), 0 0 20px rgb(101 163 13 / 0.3); }
+.aran-orb--panel-libros-editar .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(132,204,22,0.7), rgba(101,163,13,0.5), rgba(163,230,53,0.6), rgba(77,124,15,0.7), rgba(132,204,22,0.8), rgba(101,163,13,0.7), rgba(132,204,22,0.7)) border-box; }
+
+/* Panel lectores — azul, personas */
+.aran-orb--panel-lectores {
+  background: conic-gradient(from 0deg, #3b82f6 0%, #2563eb 25%, #60a5fa 50%, #1d4ed8 75%, #3b82f6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(59,130,246,0.5), 0 0 35px rgba(37,99,235,0.25), 0 0 60px rgba(29,78,216,0.15);
+}
+.aran-orb--panel-lectores::before { background: conic-gradient(from 180deg, #3b82f6 0%, #1d4ed8 30%, #2563eb 50%, #60a5fa 70%, #3b82f6 100%); }
+.aran-orb--panel-lectores .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(147,197,253,0.75) 20%, rgba(59,130,246,0.45) 50%, rgba(37,99,235,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(59 130 246 / 0.6), 0 0 20px rgb(37 99 235 / 0.3); }
+.aran-orb--panel-lectores .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(59,130,246,0.7), rgba(37,99,235,0.5), rgba(96,165,250,0.6), rgba(29,78,216,0.7), rgba(59,130,246,0.8), rgba(37,99,235,0.7), rgba(59,130,246,0.7)) border-box; }
+
+/* Panel lector (ficha) — azul profundo */
+.aran-orb--panel-lector {
+  background: conic-gradient(from 0deg, #2563eb 0%, #1d4ed8 25%, #3b82f6 50%, #1e40af 75%, #2563eb 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(37,99,235,0.5), 0 0 35px rgba(29,78,216,0.25), 0 0 60px rgba(30,64,175,0.15);
+}
+.aran-orb--panel-lector::before { background: conic-gradient(from 180deg, #2563eb 0%, #1e40af 30%, #1d4ed8 50%, #3b82f6 70%, #2563eb 100%); }
+.aran-orb--panel-lector .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(147,197,253,0.75) 20%, rgba(37,99,235,0.45) 50%, rgba(29,78,216,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(37 99 235 / 0.6), 0 0 20px rgb(29 78 216 / 0.3); }
+.aran-orb--panel-lector .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(37,99,235,0.7), rgba(29,78,216,0.5), rgba(59,130,246,0.6), rgba(30,64,175,0.7), rgba(37,99,235,0.8), rgba(29,78,216,0.7), rgba(37,99,235,0.7)) border-box; }
+
+/* Panel préstamos — ámbar, circulación */
+.aran-orb--panel-prestamos {
+  background: conic-gradient(from 0deg, #f59e0b 0%, #d97706 25%, #fbbf24 50%, #b45309 75%, #f59e0b 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(245,158,11,0.5), 0 0 35px rgba(217,119,6,0.25), 0 0 60px rgba(180,83,9,0.15);
+}
+.aran-orb--panel-prestamos::before { background: conic-gradient(from 180deg, #f59e0b 0%, #b45309 30%, #d97706 50%, #fbbf24 70%, #f59e0b 100%); }
+.aran-orb--panel-prestamos .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(253,230,138,0.75) 20%, rgba(245,158,11,0.45) 50%, rgba(217,119,6,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(245 158 11 / 0.6), 0 0 20px rgb(217 119 6 / 0.3); }
+.aran-orb--panel-prestamos .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(245,158,11,0.7), rgba(217,119,6,0.5), rgba(251,191,36,0.6), rgba(180,83,9,0.7), rgba(245,158,11,0.8), rgba(217,119,6,0.7), rgba(245,158,11,0.7)) border-box; }
+
+/* Panel préstamos nuevo — dorado, nuevo préstamo */
+.aran-orb--panel-prestamos-nuevo {
+  background: conic-gradient(from 0deg, #eab308 0%, #ca8a04 25%, #facc15 50%, #a16207 75%, #eab308 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(234,179,8,0.5), 0 0 35px rgba(202,138,4,0.25), 0 0 60px rgba(161,98,7,0.15);
+}
+.aran-orb--panel-prestamos-nuevo::before { background: conic-gradient(from 180deg, #eab308 0%, #a16207 30%, #ca8a04 50%, #facc15 70%, #eab308 100%); }
+.aran-orb--panel-prestamos-nuevo .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(250,204,21,0.75) 20%, rgba(234,179,8,0.45) 50%, rgba(202,138,4,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(234 179 8 / 0.6), 0 0 20px rgb(202 138 4 / 0.3); }
+.aran-orb--panel-prestamos-nuevo .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(234,179,8,0.7), rgba(202,138,4,0.5), rgba(250,204,21,0.6), rgba(161,98,7,0.7), rgba(234,179,8,0.8), rgba(202,138,4,0.7), rgba(234,179,8,0.7)) border-box; }
+
+/* Panel reservas — coral, espera */
+.aran-orb--panel-reservas {
+  background: conic-gradient(from 0deg, #f97316 0%, #ea580c 25%, #fb923c 50%, #c2410c 75%, #f97316 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(249,115,22,0.5), 0 0 35px rgba(234,88,12,0.25), 0 0 60px rgba(194,65,12,0.15);
+}
+.aran-orb--panel-reservas::before { background: conic-gradient(from 180deg, #f97316 0%, #c2410c 30%, #ea580c 50%, #fb923c 70%, #f97316 100%); }
+.aran-orb--panel-reservas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(251,146,60,0.75) 20%, rgba(249,115,22,0.45) 50%, rgba(234,88,12,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(249 115 22 / 0.6), 0 0 20px rgb(234 88 12 / 0.3); }
+.aran-orb--panel-reservas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(249,115,22,0.7), rgba(234,88,12,0.5), rgba(251,146,60,0.6), rgba(194,65,12,0.7), rgba(249,115,22,0.8), rgba(234,88,12,0.7), rgba(249,115,22,0.7)) border-box; }
+
+/* Panel colecciones — teal, curación */
+.aran-orb--panel-colecciones {
+  background: conic-gradient(from 0deg, #14b8a6 0%, #0d9488 25%, #2dd4bf 50%, #0f766e 75%, #14b8a6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(20,184,166,0.5), 0 0 35px rgba(13,148,136,0.25), 0 0 60px rgba(15,118,110,0.15);
+}
+.aran-orb--panel-colecciones::before { background: conic-gradient(from 180deg, #14b8a6 0%, #0f766e 30%, #0d9488 50%, #2dd4bf 70%, #14b8a6 100%); }
+.aran-orb--panel-colecciones .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(153,246,228,0.75) 20%, rgba(20,184,166,0.45) 50%, rgba(13,148,136,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(20 184 166 / 0.6), 0 0 20px rgb(13 148 136 / 0.3); }
+.aran-orb--panel-colecciones .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(20,184,166,0.7), rgba(13,148,136,0.5), rgba(45,212,191,0.6), rgba(15,118,110,0.7), rgba(20,184,166,0.8), rgba(13,148,136,0.7), rgba(20,184,166,0.7)) border-box; }
+
+/* Panel colección (editar) — cian */
+.aran-orb--panel-coleccion {
+  background: conic-gradient(from 0deg, #06b6d4 0%, #0891b2 25%, #22d3ee 50%, #0e7490 75%, #06b6d4 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(6,182,212,0.5), 0 0 35px rgba(8,145,178,0.25), 0 0 60px rgba(14,116,144,0.15);
+}
+.aran-orb--panel-coleccion::before { background: conic-gradient(from 180deg, #06b6d4 0%, #0e7490 30%, #0891b2 50%, #22d3ee 70%, #06b6d4 100%); }
+.aran-orb--panel-coleccion .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(103,232,249,0.75) 20%, rgba(6,182,212,0.45) 50%, rgba(8,145,178,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(6 182 212 / 0.6), 0 0 20px rgb(8 145 178 / 0.3); }
+.aran-orb--panel-coleccion .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(6,182,212,0.7), rgba(8,145,178,0.5), rgba(34,211,238,0.6), rgba(14,116,144,0.7), rgba(6,182,212,0.8), rgba(8,145,178,0.7), rgba(6,182,212,0.7)) border-box; }
+
+/* Panel solicitudes — índigo, revisión */
+.aran-orb--panel-solicitudes {
+  background: conic-gradient(from 0deg, #6366f1 0%, #4f46e5 25%, #818cf8 50%, #4338ca 75%, #6366f1 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(99,102,241,0.5), 0 0 35px rgba(79,70,229,0.25), 0 0 60px rgba(67,56,202,0.15);
+}
+.aran-orb--panel-solicitudes::before { background: conic-gradient(from 180deg, #6366f1 0%, #4338ca 30%, #4f46e5 50%, #818cf8 70%, #6366f1 100%); }
+.aran-orb--panel-solicitudes .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(129,140,248,0.75) 20%, rgba(99,102,241,0.45) 50%, rgba(79,70,229,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(99 102 241 / 0.6), 0 0 20px rgb(79 70 229 / 0.3); }
+.aran-orb--panel-solicitudes .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(99,102,241,0.7), rgba(79,70,229,0.5), rgba(129,140,248,0.6), rgba(67,56,202,0.7), rgba(99,102,241,0.8), rgba(79,70,229,0.7), rgba(99,102,241,0.7)) border-box; }
+
+/* Panel tareas — rojo, urgencia */
+.aran-orb--panel-tareas {
+  background: conic-gradient(from 0deg, #ef4444 0%, #dc2626 25%, #f87171 50%, #b91c1c 75%, #ef4444 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(239,68,68,0.5), 0 0 35px rgba(220,38,38,0.25), 0 0 60px rgba(185,28,28,0.15);
+}
+.aran-orb--panel-tareas::before { background: conic-gradient(from 180deg, #ef4444 0%, #b91c1c 30%, #dc2626 50%, #f87171 70%, #ef4444 100%); }
+.aran-orb--panel-tareas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(248,113,113,0.75) 20%, rgba(239,68,68,0.45) 50%, rgba(220,38,38,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(239 68 68 / 0.6), 0 0 20px rgb(220 38 38 / 0.3); }
+.aran-orb--panel-tareas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(239,68,68,0.7), rgba(220,38,38,0.5), rgba(248,113,113,0.6), rgba(185,28,28,0.7), rgba(239,68,68,0.8), rgba(220,38,38,0.7), rgba(239,68,68,0.7)) border-box; }
+
+/* Panel calendario — violeta, tiempo */
+.aran-orb--panel-calendario {
+  background: conic-gradient(from 0deg, #8b5cf6 0%, #7c3aed 25%, #a78bfa 50%, #6d28d9 75%, #8b5cf6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(139,92,246,0.5), 0 0 35px rgba(124,58,237,0.25), 0 0 60px rgba(109,40,217,0.15);
+}
+.aran-orb--panel-calendario::before { background: conic-gradient(from 180deg, #8b5cf6 0%, #6d28d9 30%, #7c3aed 50%, #a78bfa 70%, #8b5cf6 100%); }
+.aran-orb--panel-calendario .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(196,181,253,0.75) 20%, rgba(139,92,246,0.45) 50%, rgba(124,58,237,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(139 92 246 / 0.6), 0 0 20px rgb(124 58 237 / 0.3); }
+.aran-orb--panel-calendario .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(139,92,246,0.7), rgba(124,58,237,0.5), rgba(167,139,250,0.6), rgba(109,40,217,0.7), rgba(139,92,246,0.8), rgba(124,58,237,0.7), rgba(139,92,246,0.7)) border-box; }
+
+/* Panel estadísticas — esmeralda, datos */
+.aran-orb--panel-estadisticas {
+  background: conic-gradient(from 0deg, #10b981 0%, #059669 25%, #34d399 50%, #047857 75%, #10b981 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(16,185,129,0.5), 0 0 35px rgba(5,150,105,0.25), 0 0 60px rgba(4,120,87,0.15);
+}
+.aran-orb--panel-estadisticas::before { background: conic-gradient(from 180deg, #10b981 0%, #047857 30%, #059669 50%, #34d399 70%, #10b981 100%); }
+.aran-orb--panel-estadisticas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(167,243,208,0.75) 20%, rgba(16,185,129,0.45) 50%, rgba(5,150,105,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(16 185 129 / 0.6), 0 0 20px rgb(5 150 105 / 0.3); }
+.aran-orb--panel-estadisticas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(16,185,129,0.7), rgba(5,150,105,0.5), rgba(52,211,153,0.6), rgba(4,120,87,0.7), rgba(16,185,129,0.8), rgba(5,150,105,0.7), rgba(16,185,129,0.7)) border-box; }
+
+/* Panel correo — sky, comunicación */
+.aran-orb--panel-correo {
+  background: conic-gradient(from 0deg, #0ea5e9 0%, #0284c7 25%, #38bdf8 50%, #0369a1 75%, #0ea5e9 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(14,165,233,0.5), 0 0 35px rgba(2,132,199,0.25), 0 0 60px rgba(3,105,161,0.15);
+}
+.aran-orb--panel-correo::before { background: conic-gradient(from 180deg, #0ea5e9 0%, #0369a1 30%, #0284c7 50%, #38bdf8 70%, #0ea5e9 100%); }
+.aran-orb--panel-correo .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(186,230,253,0.75) 20%, rgba(14,165,233,0.45) 50%, rgba(2,132,199,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(14 165 233 / 0.6), 0 0 20px rgb(2 132 199 / 0.3); }
+.aran-orb--panel-correo .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(14,165,233,0.7), rgba(2,132,199,0.5), rgba(56,189,248,0.6), rgba(3,105,161,0.7), rgba(14,165,233,0.8), rgba(2,132,199,0.7), rgba(14,165,233,0.7)) border-box; }
+
+/* Panel correo salida — azul, bandeja */
+.aran-orb--panel-correo-salida {
+  background: conic-gradient(from 0deg, #3b82f6 0%, #2563eb 25%, #60a5fa 50%, #1d4ed8 75%, #3b82f6 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(59,130,246,0.5), 0 0 35px rgba(37,99,235,0.25), 0 0 60px rgba(29,78,216,0.15);
+}
+.aran-orb--panel-correo-salida::before { background: conic-gradient(from 180deg, #3b82f6 0%, #1d4ed8 30%, #2563eb 50%, #60a5fa 70%, #3b82f6 100%); }
+.aran-orb--panel-correo-salida .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(147,197,253,0.75) 20%, rgba(59,130,246,0.45) 50%, rgba(37,99,235,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(59 130 246 / 0.6), 0 0 20px rgb(37 99 235 / 0.3); }
+.aran-orb--panel-correo-salida .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(59,130,246,0.7), rgba(37,99,235,0.5), rgba(96,165,250,0.6), rgba(29,78,216,0.7), rgba(59,130,246,0.8), rgba(37,99,235,0.7), rgba(59,130,246,0.7)) border-box; }
+
+/* Panel reseñas — rosa, valoración */
+.aran-orb--panel-resenas {
+  background: conic-gradient(from 0deg, #ec4899 0%, #db2777 25%, #f472b6 50%, #be185d 75%, #ec4899 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(236,72,153,0.5), 0 0 35px rgba(219,39,119,0.25), 0 0 60px rgba(190,24,93,0.15);
+}
+.aran-orb--panel-resenas::before { background: conic-gradient(from 180deg, #ec4899 0%, #be185d 30%, #db2777 50%, #f472b6 70%, #ec4899 100%); }
+.aran-orb--panel-resenas .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(244,114,182,0.75) 20%, rgba(236,72,153,0.45) 50%, rgba(219,39,119,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(236 72 153 / 0.6), 0 0 20px rgb(219 39 119 / 0.3); }
+.aran-orb--panel-resenas .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(236,72,153,0.7), rgba(219,39,119,0.5), rgba(244,114,182,0.6), rgba(190,24,93,0.7), rgba(236,72,153,0.8), rgba(219,39,119,0.7), rgba(236,72,153,0.7)) border-box; }
+
+/* Panel actividad — slate, auditoría */
+.aran-orb--panel-actividad {
+  background: conic-gradient(from 0deg, #64748b 0%, #475569 25%, #94a3b8 50%, #334155 75%, #64748b 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(100,116,139,0.5), 0 0 35px rgba(71,85,105,0.25), 0 0 60px rgba(51,65,85,0.15);
+}
+.aran-orb--panel-actividad::before { background: conic-gradient(from 180deg, #64748b 0%, #334155 30%, #475569 50%, #94a3b8 70%, #64748b 100%); }
+.aran-orb--panel-actividad .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(203,213,225,0.75) 20%, rgba(100,116,139,0.45) 50%, rgba(71,85,105,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(100 116 139 / 0.6), 0 0 20px rgb(71 85 105 / 0.3); }
+.aran-orb--panel-actividad .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(100,116,139,0.7), rgba(71,85,105,0.5), rgba(148,163,184,0.6), rgba(51,65,85,0.7), rgba(100,116,139,0.8), rgba(71,85,105,0.7), rgba(100,116,139,0.7)) border-box; }
+
+/* Panel changelog — púrpura, novedades */
+.aran-orb--panel-changelog {
+  background: conic-gradient(from 0deg, #a855f7 0%, #9333ea 25%, #c084fc 50%, #7e22ce 75%, #a855f7 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(168,85,247,0.5), 0 0 35px rgba(147,51,234,0.25), 0 0 60px rgba(126,34,206,0.15);
+}
+.aran-orb--panel-changelog::before { background: conic-gradient(from 180deg, #a855f7 0%, #7e22ce 30%, #9333ea 50%, #c084fc 70%, #a855f7 100%); }
+.aran-orb--panel-changelog .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(192,132,252,0.75) 20%, rgba(168,85,247,0.45) 50%, rgba(147,51,234,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(168 85 247 / 0.6), 0 0 20px rgb(147 51 234 / 0.3); }
+.aran-orb--panel-changelog .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(168,85,247,0.7), rgba(147,51,234,0.5), rgba(192,132,252,0.6), rgba(126,34,206,0.7), rgba(168,85,247,0.8), rgba(147,51,234,0.7), rgba(168,85,247,0.7)) border-box; }
+
+/* Panel usuarios — rojo, administración */
+.aran-orb--panel-usuarios {
+  background: conic-gradient(from 0deg, #ef4444 0%, #dc2626 25%, #f87171 50%, #b91c1c 75%, #ef4444 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(239,68,68,0.5), 0 0 35px rgba(220,38,38,0.25), 0 0 60px rgba(185,28,28,0.15);
+}
+.aran-orb--panel-usuarios::before { background: conic-gradient(from 180deg, #ef4444 0%, #b91c1c 30%, #dc2626 50%, #f87171 70%, #ef4444 100%); }
+.aran-orb--panel-usuarios .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(248,113,113,0.75) 20%, rgba(239,68,68,0.45) 50%, rgba(220,38,38,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(239 68 68 / 0.6), 0 0 20px rgb(220 38 38 / 0.3); }
+.aran-orb--panel-usuarios .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(239,68,68,0.7), rgba(220,38,38,0.5), rgba(248,113,113,0.6), rgba(185,28,28,0.7), rgba(239,68,68,0.8), rgba(220,38,38,0.7), rgba(239,68,68,0.7)) border-box; }
+
+/* Panel cuenta — índigo, configuración */
+.aran-orb--panel-cuenta {
+  background: conic-gradient(from 0deg, #6366f1 0%, #4f46e5 25%, #818cf8 50%, #4338ca 75%, #6366f1 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 15px rgba(99,102,241,0.5), 0 0 35px rgba(79,70,229,0.25), 0 0 60px rgba(67,56,202,0.15);
+}
+.aran-orb--panel-cuenta::before { background: conic-gradient(from 180deg, #6366f1 0%, #4338ca 30%, #4f46e5 50%, #818cf8 70%, #6366f1 100%); }
+.aran-orb--panel-cuenta .aran-orb__core { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(129,140,248,0.75) 20%, rgba(99,102,241,0.45) 50%, rgba(79,70,229,0.1) 75%, transparent 100%); box-shadow: 0 0 10px rgb(99 102 241 / 0.6), 0 0 20px rgb(79 70 229 / 0.3); }
+.aran-orb--panel-cuenta .aran-orb__ring { background: linear-gradient(transparent,transparent) padding-box, conic-gradient(from 0deg, rgba(99,102,241,0.7), rgba(79,70,229,0.5), rgba(129,140,248,0.6), rgba(67,56,202,0.7), rgba(99,102,241,0.8), rgba(79,70,229,0.7), rgba(99,102,241,0.7)) border-box; }
+
+/* Default — arcoíris original, fallback */
+.aran-orb--default {
+  /* Hereda el arcoíris base del .aran-orb sin sobrescribir nada */
 }
 
-.aran-orb--public::before {
-  background: conic-gradient(
-    from 180deg,
-    #34c759 0%, #5ac8fa 15%, #007aff 30%, #32ade6 45%,
-    #00c7be 55%, #30d158 68%, #34c759 100%
-  );
-}
-
-.aran-orb--public .aran-orb__core {
-  background: radial-gradient(
-    circle at 40% 35%,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(200, 255, 220, 0.75) 20%,
-    rgba(0, 199, 190, 0.45) 50%,
-    rgba(50, 173, 230, 0.1) 75%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 10px rgb(0 199 190 / 0.6),
-    0 0 20px rgb(50 173 230 / 0.3);
-}
-
-.aran-orb--public .aran-orb__ring {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    conic-gradient(
-      from 0deg,
-      rgba(52, 199, 89, 0.7), rgba(48, 209, 88, 0.5),
-      rgba(0, 199, 190, 0.6), rgba(50, 173, 230, 0.7),
-      rgba(0, 122, 255, 0.8), rgba(90, 200, 250, 0.7),
-      rgba(52, 199, 89, 0.7)
-    ) border-box;
-}
-
-/* Lector: mi biblioteca — violeta/magenta, zona personal */
-.aran-orb--reader {
-  background: conic-gradient(
-    from 0deg,
-    #af52de 0%, #bf5af2 15%, #ff375f 30%, #ff6482 45%,
-    #af52de 60%, #5856d6 75%, #af52de 100%
-  );
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 15px rgba(175, 82, 222, 0.5),
-    0 0 35px rgba(191, 90, 242, 0.25),
-    0 0 60px rgba(255, 55, 95, 0.15);
-}
-
-.aran-orb--reader::before {
-  background: conic-gradient(
-    from 180deg,
-    #af52de 0%, #5856d6 15%, #ff375f 30%, #ff6482 45%,
-    #bf5af2 55%, #af52de 100%
-  );
-}
-
-.aran-orb--reader .aran-orb__core {
-  background: radial-gradient(
-    circle at 40% 35%,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(255, 200, 230, 0.75) 20%,
-    rgba(175, 82, 222, 0.45) 50%,
-    rgba(191, 90, 242, 0.1) 75%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 10px rgb(175 82 222 / 0.6),
-    0 0 20px rgb(191 90 242 / 0.3);
-}
-
-.aran-orb--reader .aran-orb__ring {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    conic-gradient(
-      from 0deg,
-      rgba(175, 82, 222, 0.7), rgba(191, 90, 242, 0.5),
-      rgba(255, 55, 95, 0.6), rgba(255, 100, 130, 0.5),
-      rgba(175, 82, 222, 0.8), rgba(88, 86, 214, 0.7),
-      rgba(175, 82, 222, 0.7)
-    ) border-box;
-}
-
-/* Staff: panel de gestión — naranja/rojo, modo trabajo activo */
-.aran-orb--staff {
-  background: conic-gradient(
-    from 0deg,
-    #ff9500 0%, #ff6b00 15%, #ff3b30 30%, #ff453a 45%,
-    #ff9500 60%, #ff9f0a 75%, #ff9500 100%
-  );
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 15px rgba(255, 149, 0, 0.5),
-    0 0 35px rgba(255, 59, 48, 0.25),
-    0 0 60px rgba(255, 107, 0, 0.15);
-}
-
-.aran-orb--staff::before {
-  background: conic-gradient(
-    from 180deg,
-    #ff9500 0%, #ff9f0a 15%, #ff3b30 30%, #ff453a 45%,
-    #ff6b00 55%, #ff9500 100%
-  );
-}
-
-.aran-orb--staff .aran-orb__core {
-  background: radial-gradient(
-    circle at 40% 35%,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(255, 230, 200, 0.75) 20%,
-    rgba(255, 149, 0, 0.45) 50%,
-    rgba(255, 59, 48, 0.1) 75%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 10px rgb(255 149 0 / 0.6),
-    0 0 20px rgb(255 59 48 / 0.3);
-}
-
-.aran-orb--staff .aran-orb__ring {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    conic-gradient(
-      from 0deg,
-      rgba(255, 149, 0, 0.7), rgba(255, 107, 0, 0.5),
-      rgba(255, 59, 48, 0.6), rgba(255, 69, 58, 0.5),
-      rgba(255, 149, 0, 0.8), rgba(255, 159, 10, 0.7),
-      rgba(255, 149, 0, 0.7)
-    ) border-box;
-}
-
-/* Variantes en modo oscuro — más glow */
-.dark .aran-orb--public {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 18px rgba(0, 199, 190, 0.6),
-    0 0 40px rgba(50, 173, 230, 0.35),
-    0 0 60px rgba(52, 199, 89, 0.2);
-}
-
-.dark .aran-orb--reader {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 18px rgba(175, 82, 222, 0.6),
-    0 0 40px rgba(191, 90, 242, 0.35),
-    0 0 60px rgba(255, 55, 95, 0.2);
-}
-
-.dark .aran-orb--staff {
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.15),
-    0 0 18px rgba(255, 149, 0, 0.6),
-    0 0 40px rgba(255, 59, 48, 0.35),
-    0 0 60px rgba(255, 107, 0, 0.2);
-}
+/* ===== DARK MODE — más glow en cada variante ===== */
+.dark .aran-orb--home { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(6,182,212,0.6), 0 0 40px rgba(59,130,246,0.35), 0 0 60px rgba(99,102,241,0.2); }
+.dark .aran-orb--catalogo { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(16,185,129,0.6), 0 0 40px rgba(6,182,212,0.35), 0 0 60px rgba(20,184,166,0.2); }
+.dark .aran-orb--libro { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(99,102,241,0.6), 0 0 40px rgba(139,92,246,0.35), 0 0 60px rgba(79,70,229,0.2); }
+.dark .aran-orb--autores { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(59,130,246,0.6), 0 0 40px rgba(14,165,233,0.35), 0 0 60px rgba(37,99,235,0.2); }
+.dark .aran-orb--autor { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(37,99,235,0.6), 0 0 40px rgba(29,78,216,0.35), 0 0 60px rgba(30,64,175,0.2); }
+.dark .aran-orb--colecciones { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(20,184,166,0.6), 0 0 40px rgba(13,148,136,0.35), 0 0 60px rgba(15,118,110,0.2); }
+.dark .aran-orb--coleccion { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(16,185,129,0.6), 0 0 40px rgba(5,150,105,0.35), 0 0 60px rgba(4,120,87,0.2); }
+.dark .aran-orb--etiquetas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(14,165,233,0.6), 0 0 40px rgba(2,132,199,0.35), 0 0 60px rgba(3,105,161,0.2); }
+.dark .aran-orb--solicitar { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(245,158,11,0.6), 0 0 40px rgba(217,119,6,0.35), 0 0 60px rgba(180,83,9,0.2); }
+.dark .aran-orb--login { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(100,116,139,0.6), 0 0 40px rgba(71,85,105,0.35), 0 0 60px rgba(51,65,85,0.2); }
+.dark .aran-orb--asistente { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(139,92,246,0.6), 0 0 40px rgba(124,58,237,0.35), 0 0 60px rgba(109,40,217,0.2); }
+.dark .aran-orb--reader-login { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(236,72,153,0.6), 0 0 40px rgba(219,39,119,0.35), 0 0 60px rgba(190,24,93,0.2); }
+.dark .aran-orb--reader-pin { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(217,70,239,0.6), 0 0 40px rgba(192,38,211,0.35), 0 0 60px rgba(162,28,175,0.2); }
+.dark .aran-orb--reader-prestamos { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(139,92,246,0.6), 0 0 40px rgba(124,58,237,0.35), 0 0 60px rgba(109,40,217,0.2); }
+.dark .aran-orb--reader-reservas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(217,70,239,0.6), 0 0 40px rgba(192,38,211,0.35), 0 0 60px rgba(162,28,175,0.2); }
+.dark .aran-orb--reader-historial { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(168,85,247,0.6), 0 0 40px rgba(147,51,234,0.35), 0 0 60px rgba(126,34,206,0.2); }
+.dark .aran-orb--reader-listas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(244,114,182,0.6), 0 0 40px rgba(236,72,153,0.35), 0 0 60px rgba(225,29,72,0.2); }
+.dark .aran-orb--reader-notificaciones { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(239,68,68,0.6), 0 0 40px rgba(220,38,38,0.35), 0 0 60px rgba(185,28,28,0.2); }
+.dark .aran-orb--reader-solicitudes { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(249,115,22,0.6), 0 0 40px rgba(234,88,12,0.35), 0 0 60px rgba(194,65,12,0.2); }
+.dark .aran-orb--reader-cuenta { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(99,102,241,0.6), 0 0 40px rgba(79,70,229,0.35), 0 0 60px rgba(67,56,202,0.2); }
+.dark .aran-orb--panel-home { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(249,115,22,0.6), 0 0 40px rgba(234,88,12,0.35), 0 0 60px rgba(194,65,12,0.2); }
+.dark .aran-orb--panel-libros { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(34,197,94,0.6), 0 0 40px rgba(22,163,74,0.35), 0 0 60px rgba(21,128,61,0.2); }
+.dark .aran-orb--panel-libros-nuevo { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(16,185,129,0.6), 0 0 40px rgba(5,150,105,0.35), 0 0 60px rgba(4,120,87,0.2); }
+.dark .aran-orb--panel-libros-editar { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(132,204,22,0.6), 0 0 40px rgba(101,163,13,0.35), 0 0 60px rgba(77,124,15,0.2); }
+.dark .aran-orb--panel-lectores { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(59,130,246,0.6), 0 0 40px rgba(37,99,235,0.35), 0 0 60px rgba(29,78,216,0.2); }
+.dark .aran-orb--panel-lector { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(37,99,235,0.6), 0 0 40px rgba(29,78,216,0.35), 0 0 60px rgba(30,64,175,0.2); }
+.dark .aran-orb--panel-prestamos { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(245,158,11,0.6), 0 0 40px rgba(217,119,6,0.35), 0 0 60px rgba(180,83,9,0.2); }
+.dark .aran-orb--panel-prestamos-nuevo { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(234,179,8,0.6), 0 0 40px rgba(202,138,4,0.35), 0 0 60px rgba(161,98,7,0.2); }
+.dark .aran-orb--panel-reservas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(249,115,22,0.6), 0 0 40px rgba(234,88,12,0.35), 0 0 60px rgba(194,65,12,0.2); }
+.dark .aran-orb--panel-colecciones { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(20,184,166,0.6), 0 0 40px rgba(13,148,136,0.35), 0 0 60px rgba(15,118,110,0.2); }
+.dark .aran-orb--panel-coleccion { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(6,182,212,0.6), 0 0 40px rgba(8,145,178,0.35), 0 0 60px rgba(14,116,144,0.2); }
+.dark .aran-orb--panel-solicitudes { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(99,102,241,0.6), 0 0 40px rgba(79,70,229,0.35), 0 0 60px rgba(67,56,202,0.2); }
+.dark .aran-orb--panel-tareas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(239,68,68,0.6), 0 0 40px rgba(220,38,38,0.35), 0 0 60px rgba(185,28,28,0.2); }
+.dark .aran-orb--panel-calendario { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(139,92,246,0.6), 0 0 40px rgba(124,58,237,0.35), 0 0 60px rgba(109,40,217,0.2); }
+.dark .aran-orb--panel-estadisticas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(16,185,129,0.6), 0 0 40px rgba(5,150,105,0.35), 0 0 60px rgba(4,120,87,0.2); }
+.dark .aran-orb--panel-correo { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(14,165,233,0.6), 0 0 40px rgba(2,132,199,0.35), 0 0 60px rgba(3,105,161,0.2); }
+.dark .aran-orb--panel-correo-salida { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(59,130,246,0.6), 0 0 40px rgba(37,99,235,0.35), 0 0 60px rgba(29,78,216,0.2); }
+.dark .aran-orb--panel-resenas { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(236,72,153,0.6), 0 0 40px rgba(219,39,119,0.35), 0 0 60px rgba(190,24,93,0.2); }
+.dark .aran-orb--panel-actividad { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(100,116,139,0.6), 0 0 40px rgba(71,85,105,0.35), 0 0 60px rgba(51,65,85,0.2); }
+.dark .aran-orb--panel-changelog { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(168,85,247,0.6), 0 0 40px rgba(147,51,234,0.35), 0 0 60px rgba(126,34,206,0.2); }
+.dark .aran-orb--panel-usuarios { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(239,68,68,0.6), 0 0 40px rgba(220,38,38,0.35), 0 0 60px rgba(185,28,28,0.2); }
+.dark .aran-orb--panel-cuenta { box-shadow: 0 0 0 1px rgba(255,255,255,0.15), 0 0 18px rgba(99,102,241,0.6), 0 0 40px rgba(79,70,229,0.35), 0 0 60px rgba(67,56,202,0.2); }
 
 .dark .aran-orb {
   box-shadow:

@@ -104,12 +104,83 @@ export function AssistantOrb({
         ? "READER"
         : "PUBLIC";
 
-  // Paleta visual del orbe según la zona donde esté el usuario
-  const orbVariant = pathname.startsWith("/panel")
-    ? "staff"
-    : pathname.startsWith("/mi-biblioteca")
-      ? "reader"
-      : "public";
+  // Paleta visual del orbe según la pantalla exacta donde esté el usuario
+  const orbVariant = getOrbVariant(pathname);
+
+  /** Devuelve la variante de color según la ruta actual. */
+  function getOrbVariant(path: string): string {
+    // Portada
+    if (path === "/") return "home";
+    // Catálogo
+    if (path.startsWith("/catalogo")) return "catalogo";
+    // Ficha de libro
+    if (path.startsWith("/libro/")) return "libro";
+    // Autores
+    if (path === "/autores") return "autores";
+    if (path.startsWith("/autor/")) return "autor";
+    // Colecciones
+    if (path === "/colecciones") return "colecciones";
+    if (path.startsWith("/colecciones/")) return "coleccion";
+    // Etiquetas
+    if (path === "/etiquetas" || path.startsWith("/etiquetas/")) return "etiquetas";
+    // Solicitar
+    if (path === "/solicitar") return "solicitar";
+    // Login
+    if (path === "/login") return "login";
+    // Asistente
+    if (path === "/asistente") return "asistente";
+    // Mi biblioteca — login
+    if (path === "/mi-biblioteca") return "reader-login";
+    if (path === "/mi-biblioteca/cambio-pin") return "reader-pin";
+    // Mi biblioteca — zona
+    if (path.startsWith("/mi-biblioteca/prestamos")) return "reader-prestamos";
+    if (path.startsWith("/mi-biblioteca/reservas")) return "reader-reservas";
+    if (path.startsWith("/mi-biblioteca/historial")) return "reader-historial";
+    if (path.startsWith("/mi-biblioteca/listas")) return "reader-listas";
+    if (path.startsWith("/mi-biblioteca/notificaciones")) return "reader-notificaciones";
+    if (path.startsWith("/mi-biblioteca/solicitudes")) return "reader-solicitudes";
+    if (path.startsWith("/mi-biblioteca/cuenta")) return "reader-cuenta";
+    // Panel — dashboard
+    if (path === "/panel") return "panel-home";
+    // Panel — libros
+    if (path === "/panel/libros") return "panel-libros";
+    if (path === "/panel/libros/nuevo") return "panel-libros-nuevo";
+    if (path.startsWith("/panel/libros/") && path.endsWith("/editar")) return "panel-libros-editar";
+    // Panel — lectores
+    if (path === "/panel/lectores") return "panel-lectores";
+    if (path.startsWith("/panel/lectores/")) return "panel-lector";
+    // Panel — préstamos
+    if (path === "/panel/prestamos") return "panel-prestamos";
+    if (path === "/panel/prestamos/nuevo") return "panel-prestamos-nuevo";
+    // Panel — reservas
+    if (path.startsWith("/panel/reservas")) return "panel-reservas";
+    // Panel — colecciones
+    if (path === "/panel/colecciones") return "panel-colecciones";
+    if (path.startsWith("/panel/colecciones/")) return "panel-coleccion";
+    // Panel — solicitudes
+    if (path.startsWith("/panel/solicitudes")) return "panel-solicitudes";
+    // Panel — tareas
+    if (path.startsWith("/panel/tareas")) return "panel-tareas";
+    // Panel — calendario
+    if (path.startsWith("/panel/calendario")) return "panel-calendario";
+    // Panel — estadísticas
+    if (path.startsWith("/panel/estadisticas")) return "panel-estadisticas";
+    // Panel — correo
+    if (path === "/panel/correo") return "panel-correo";
+    if (path.startsWith("/panel/correo/salida")) return "panel-correo-salida";
+    // Panel — reseñas
+    if (path.startsWith("/panel/resenas")) return "panel-resenas";
+    // Panel — actividad
+    if (path.startsWith("/panel/actividad")) return "panel-actividad";
+    // Panel — changelog
+    if (path.startsWith("/panel/changelog")) return "panel-changelog";
+    // Panel — usuarios
+    if (path.startsWith("/panel/usuarios")) return "panel-usuarios";
+    // Panel — cuenta
+    if (path.startsWith("/panel/cuenta")) return "panel-cuenta";
+    // Fallback
+    return "default";
+  }
 
   // Atajo de teclado: Ctrl+K / Cmd+K para abrir/cerrar, Escape para cerrar
   useEffect(() => {

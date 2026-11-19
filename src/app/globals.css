@@ -91,22 +91,10 @@
 }
 
 /* =========================================================================
-   Tema GTA 6 — Vice City
-   Paleta extraída directamente de los trailers y el branding oficial de
-   GTA VI. La estética es el atardecer de Vice City: cielo que va de púrpura
-   magullado a rosa flamingo a naranja ardiente, con toques de teal de lago
-   (el contraste frío que define Miami). No es un tema "neón genérico" — es
-   la paleta cinematográfica de Rockstar.
-   
-   Referencia:
-   - Midnight violet  #1A0B2E  (fondo, profundidad)
-   - Twilight purple  #3B1C6E  (superficies, capas)
-   - Flamingo rose    #FC94AF  (acento principal, headers)
-   - Lagoon teal      #12C2C4  (contraste frío, Miami puro)
-   - Sunset orange    #FF8A3D  (calor, CTAs)
-   - Sand peach       #FFD1B8  (neutros suaves)
-   
-   Proporción: 60% violeta profundo, 25% rosa flamingo, 10% teal, 5% naranja.
+   Tema GTA 6 — Vice City neón
+   Paleta inspirada en los trailers de GTA VI: atardecer de Vice City, neón
+   rosa, púrpura profundo, cian eléctrico y verde lima. Fondo oscuro con
+   acentos brillantes y degradados cálidos.
    ========================================================================= */
 
 /* Permite usar `gta6:` cuando haga falta un ajuste puntual. */
@@ -115,400 +103,59 @@
 .gta6 {
   color-scheme: dark;
 
-  /* Superficies — violeta profundo, no negro. El fondo de Vice City es
-     el cielo nocturno sobre el océano, no la oscuridad total. */
-  --color-paper: #1A0B2E;
-  --color-surface: #2a1545;
-  --color-ink: #f5eef8;
-  --color-ink-soft: #c9b8d9;
-  --color-ink-faint: #8b7aa8;
+  /* Superficies — fondo oscuro púrpura/azul, no negro puro */
+  --color-paper: #0d0a1a;
+  --color-surface: #16102a;
+  --color-ink: #f0e6ff;
+  --color-ink-soft: #c4b5d9;
+  --color-ink-faint: #8a7ba8;
 
-  /* Líneas — sutiles, con tinte púrpura */
-  --color-line: #f5eef8;
-  --color-hairline: #3d2060;
+  /* Líneas */
+  --color-line: #f0e6ff;
+  --color-hairline: #2e2550;
 
-  /* Acento — flamingo rose, el color icónico de GTA VI */
-  --color-accent: #FC94AF;
-  --color-accent-ink: #1A0B2E;
-  --color-accent-soft: #3d1a30;
+  /* Acento — rosa neón Vice City */
+  --color-accent: #ff2d78;
+  --color-accent-ink: #0d0a1a;
+  --color-accent-soft: #3d1028;
 
-  /* Estados — teal para éxito (contraste frío Miami), naranja para warning,
-     rosa intenso para peligro */
-  --color-ok: #12C2C4;
-  --color-ok-soft: #0a2e2f;
-  --color-warn: #FF8A3D;
-  --color-warn-soft: #33200a;
-  --color-danger: #FF6EC7;
-  --color-danger-soft: #3a1028;
+  /* Estados */
+  --color-ok: #00e59b;
+  --color-ok-soft: #0a2e1f;
+  --color-warn: #ffb347;
+  --color-warn-soft: #332200;
+  --color-danger: #ff4444;
+  --color-danger-soft: #3a1010;
 }
 
-/* Fondo con gradiente sutil de atardecer — el cielo de Vice City detrás
-   de toda la interfaz. Muy sutil para no competir con el contenido. */
-.gta6 body {
-  background: linear-gradient(180deg, #1A0B2E 0%, #2a1045 40%, #1A0B2E 100%);
+/* Gradientes y acentos GTA 6 — botones, enlaces y elementos interactivos
+   heredan el rosa neón, pero los fondos y bordes tienen un toque de cian. */
+.gta6 a,
+.gta6 button:not(.btn-ghost):not([disabled]) {
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
 }
 
-/* Títulos con tracking más amplio y color flamingo rose — el estilo
-   cinematográfico de los trailers. */
-.gta6 h1,
-.gta6 h2,
-.gta6 h3,
-.gta6 h4 {
-  letter-spacing: -0.01em;
-}
-
-/* Selección de texto — gradiente Vice City */
-.gta6 ::selection {
-  background-color: #FC94AF;
-  color: #1A0B2E;
-}
-
-/* Focus visible — glow teal (el contraste frío de Miami) */
-.gta6 :focus-visible {
-  outline-color: #12C2C4;
-  outline-offset: 2px;
-}
-
-/* Botones primarios — gradiente atardecer (rosa → naranja) como el cielo
-   de Vice City. Con glow neón al hover. */
 .gta6 .btn-primary {
-  background: linear-gradient(135deg, #FC94AF 0%, #FF8A3D 100%);
+  background: linear-gradient(135deg, #ff2d78 0%, #ff6b35 100%);
   border-color: transparent;
-  color: #1A0B2E;
-  font-weight: 700;
-  box-shadow: 0 0 0 0 transparent;
+  color: #0d0a1a;
 }
 .gta6 .btn-primary:hover {
-  background: linear-gradient(135deg, #FFB0C4 0%, #FFA566 100%);
-  box-shadow:
-    0 0 16px rgba(252, 148, 175, 0.45),
-    0 0 32px rgba(255, 138, 61, 0.2);
+  background: linear-gradient(135deg, #ff4d94 0%, #ff8555 100%);
+  box-shadow: 0 0 12px rgba(255, 45, 120, 0.4);
 }
 
-/* Botones de acento — teal de lago, el contraste frío */
-.gta6 .btn-accent {
-  background: #12C2C4;
-  border-color: transparent;
-  color: #1A0B2E;
-  font-weight: 700;
-}
-.gta6 .btn-accent:hover {
-  background: #3dd8da;
-  box-shadow: 0 0 16px rgba(18, 194, 196, 0.4);
-}
-
-/* Enlaces — flamingo rose con glow sutil */
-.gta6 a:not(.btn-primary):not(.btn-accent):not(.btn-outline):not(.btn-danger):not(.btn-ghost) {
-  color: #FC94AF;
-  text-decoration-color: transparent;
-}
-.gta6 a:not(.btn-primary):not(.btn-accent):not(.btn-outline):not(.btn-danger):not(.btn-ghost):hover {
-  color: #FFB0C4;
-  text-shadow: 0 0 12px rgba(252, 148, 175, 0.5);
-}
-
-/* Inputs — borde púrpura sutil, glow teal al focus */
-.gta6 input,
-.gta6 select,
-.gta6 textarea {
-  border-color: #3d2060;
-  background-color: #2a1545;
-  color: #f5eef8;
-}
+/* Inputs y selects con borde neón al focus */
 .gta6 input:focus,
 .gta6 select:focus,
 .gta6 textarea:focus {
-  border-color: #12C2C4 !important;
-  box-shadow:
-    0 0 0 2px rgba(18, 194, 196, 0.2),
-    0 0 12px rgba(18, 194, 196, 0.15) !important;
+  border-color: #ff2d78 !important;
+  box-shadow: 0 0 0 2px rgba(255, 45, 120, 0.25) !important;
 }
 
-/* Placeholders en inputs */
-.gta6 input::placeholder,
-.gta6 textarea::placeholder {
-  color: #8b7aa8;
-}
-
-/* Tablas — filas con hover en tono flamingo */
-.gta6 tbody tr:hover {
-  background-color: rgba(252, 148, 175, 0.06);
-}
-
-/* Scrollbar — gradiente atardecer Vice City */
-.gta6 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.gta6 ::-webkit-scrollbar-track {
-  background: #1A0B2E;
-}
+/* Scrollbar neón */
 .gta6 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #FC94AF, #FF8A3D) !important;
-  border-radius: 9999px;
-}
-.gta6 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #FFB0C4, #FFA566) !important;
-}
-
-/* Orbe de Aran — paleta GTA 6: flamingo rose + teal + sunset orange */
-.gta6 .aran-orb {
-  background: conic-gradient(
-    from 0deg,
-    #FC94AF 0%, #FF8A3D 20%, #12C2C4 40%, #3B1C6E 60%,
-    #FC94AF 80%, #FF8A3D 100%
-  );
-  box-shadow:
-    0 0 0 1px rgba(252, 148, 175, 0.2),
-    0 0 18px rgba(252, 148, 175, 0.55),
-    0 0 40px rgba(255, 138, 61, 0.3),
-    0 0 60px rgba(18, 194, 196, 0.15);
-}
-.gta6 .aran-orb::before {
-  background: conic-gradient(
-    from 180deg,
-    #12C2C4 0%, #FC94AF 25%, #FF8A3D 50%, #3B1C6E 75%,
-    #12C2C4 100%
-  );
-}
-.gta6 .aran-orb__core {
-  background: radial-gradient(
-    circle at 40% 35%,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(252, 148, 175, 0.8) 20%,
-    rgba(255, 138, 61, 0.5) 50%,
-    rgba(18, 194, 196, 0.15) 75%,
-    transparent 100%
-  );
-  box-shadow:
-    0 0 10px rgba(252, 148, 175, 0.65),
-    0 0 22px rgba(255, 138, 61, 0.35);
-}
-.gta6 .aran-orb__ring {
-  background:
-    linear-gradient(transparent, transparent) padding-box,
-    conic-gradient(
-      from 0deg,
-      rgba(252, 148, 175, 0.8),
-      rgba(255, 138, 61, 0.6),
-      rgba(18, 194, 196, 0.7),
-      rgba(59, 28, 110, 0.6),
-      rgba(252, 148, 175, 0.8),
-      rgba(255, 138, 61, 0.7),
-      rgba(252, 148, 175, 0.8)
-    ) border-box;
-}
-
-/* Launcher de Aran — borde y fondo con paleta GTA 6 */
-.gta6 .aran-launcher {
-  border-color: #3d2060;
-  background: #2a1545;
-  box-shadow: 5px 5px 0 0 #3d2060;
-}
-.gta6 .aran-launcher:hover {
-  box-shadow: 7px 7px 0 0 #FC94AF;
-}
-.gta6 .aran-launcher__label {
-  color: #FC94AF;
-}
-
-/* Panel de Aran (chat abierto) */
-.gta6 .aran-panel {
-  border: 2px solid #3d2060;
-  background: #1A0B2E;
-  box-shadow:
-    0 0 24px rgba(252, 148, 175, 0.15),
-    0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-/* Variantes del orbe — todas con la paleta GTA 6 como base.
-   Cada pantalla mantiene su identidad de color, pero los tonos se
-   adaptan a la paleta Vice City: más saturados, más cinematográficos. */
-
-/* Público — tonos teal/cian (el océano de Miami) */
-.gta6 .aran-orb--home,
-.gta6 .aran-orb--catalogo,
-.gta6 .aran-orb--libro,
-.gta6 .aran-orb--autores,
-.gta6 .aran-orb--autor,
-.gta6 .aran-orb--colecciones,
-.gta6 .aran-orb--coleccion,
-.gta6 .aran-orb--etiquetas {
-  background: conic-gradient(from 0deg, #12C2C4 0%, #0ea5e9 25%, #06b6d4 50%, #3B1C6E 75%, #12C2C4 100%);
-  box-shadow: 0 0 0 1px rgba(18,194,196,0.2), 0 0 15px rgba(18,194,196,0.5), 0 0 35px rgba(6,182,212,0.25), 0 0 60px rgba(59,28,110,0.15);
-}
-.gta6 .aran-orb--home::before,
-.gta6 .aran-orb--catalogo::before,
-.gta6 .aran-orb--libro::before,
-.gta6 .aran-orb--autores::before,
-.gta6 .aran-orb--autor::before,
-.gta6 .aran-orb--colecciones::before,
-.gta6 .aran-orb--coleccion::before,
-.gta6 .aran-orb--etiquetas::before {
-  background: conic-gradient(from 180deg, #12C2C4 0%, #3B1C6E 30%, #06b6d4 50%, #0ea5e9 70%, #12C2C4 100%);
-}
-.gta6 .aran-orb--home .aran-orb__core,
-.gta6 .aran-orb--catalogo .aran-orb__core,
-.gta6 .aran-orb--libro .aran-orb__core,
-.gta6 .aran-orb--autores .aran-orb__core,
-.gta6 .aran-orb--autor .aran-orb__core,
-.gta6 .aran-orb--colecciones .aran-orb__core,
-.gta6 .aran-orb--coleccion .aran-orb__core,
-.gta6 .aran-orb--etiquetas .aran-orb__core {
-  background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(18,194,196,0.75) 20%, rgba(6,182,212,0.45) 50%, rgba(59,28,110,0.1) 75%, transparent 100%);
-  box-shadow: 0 0 10px rgba(18,194,196,0.6), 0 0 20px rgba(6,182,212,0.3);
-}
-
-/* Solicitar — naranja atardecer */
-.gta6 .aran-orb--solicitar {
-  background: conic-gradient(from 0deg, #FF8A3D 0%, #f59e0b 25%, #FFD1B8 50%, #3B1C6E 75%, #FF8A3D 100%);
-  box-shadow: 0 0 0 1px rgba(255,138,61,0.2), 0 0 15px rgba(255,138,61,0.5), 0 0 35px rgba(245,158,11,0.25), 0 0 60px rgba(255,209,184,0.15);
-}
-.gta6 .aran-orb--solicitar::before {
-  background: conic-gradient(from 180deg, #FF8A3D 0%, #3B1C6E 30%, #f59e0b 50%, #FFD1B8 70%, #FF8A3D 100%);
-}
-.gta6 .aran-orb--solicitar .aran-orb__core {
-  background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(255,209,184,0.75) 20%, rgba(255,138,61,0.45) 50%, rgba(59,28,110,0.1) 75%, transparent 100%);
-  box-shadow: 0 0 10px rgba(255,138,61,0.6), 0 0 20px rgba(245,158,11,0.3);
-}
-
-/* Login — slate con tinte púrpura */
-.gta6 .aran-orb--login {
-  background: conic-gradient(from 0deg, #64748b 0%, #475569 25%, #3B1C6E 50%, #8b7aa8 75%, #64748b 100%);
-  box-shadow: 0 0 0 1px rgba(100,116,139,0.2), 0 0 15px rgba(100,116,139,0.5), 0 0 35px rgba(59,28,110,0.25), 0 0 60px rgba(139,122,168,0.15);
-}
-.gta6 .aran-orb--login::before {
-  background: conic-gradient(from 180deg, #64748b 0%, #3B1C6E 30%, #475569 50%, #8b7aa8 70%, #64748b 100%);
-}
-.gta6 .aran-orb--login .aran-orb__core {
-  background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(139,122,168,0.75) 20%, rgba(100,116,139,0.45) 50%, rgba(59,28,110,0.1) 75%, transparent 100%);
-  box-shadow: 0 0 10px rgba(100,116,139,0.6), 0 0 20px rgba(59,28,110,0.3);
-}
-
-/* Asistente — púrpura con rosa flamingo */
-.gta6 .aran-orb--asistente {
-  background: conic-gradient(from 0deg, #FC94AF 0%, #8b5cf6 25%, #3B1C6E 50%, #a78bfa 75%, #FC94AF 100%);
-  box-shadow: 0 0 0 1px rgba(252,148,175,0.2), 0 0 15px rgba(139,92,246,0.5), 0 0 35px rgba(59,28,110,0.25), 0 0 60px rgba(252,148,175,0.15);
-}
-.gta6 .aran-orb--asistente::before {
-  background: conic-gradient(from 180deg, #FC94AF 0%, #3B1C6E 30%, #8b5cf6 50%, #a78bfa 70%, #FC94AF 100%);
-}
-.gta6 .aran-orb--asistente .aran-orb__core {
-  background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(252,148,175,0.75) 20%, rgba(139,92,246,0.45) 50%, rgba(59,28,110,0.1) 75%, transparent 100%);
-  box-shadow: 0 0 10px rgba(139,92,246,0.6), 0 0 20px rgba(252,148,175,0.3);
-}
-
-/* Lector — tonos rosa flamingo y magenta (zona personal, glamour) */
-.gta6 .aran-orb--reader-login,
-.gta6 .aran-orb--reader-pin,
-.gta6 .aran-orb--reader-prestamos,
-.gta6 .aran-orb--reader-reservas,
-.gta6 .aran-orb--reader-historial,
-.gta6 .aran-orb--reader-listas,
-.gta6 .aran-orb--reader-notificaciones,
-.gta6 .aran-orb--reader-solicitudes,
-.gta6 .aran-orb--reader-cuenta {
-  background: conic-gradient(from 0deg, #FC94AF 0%, #FF6EC7 25%, #a855f7 50%, #3B1C6E 75%, #FC94AF 100%);
-  box-shadow: 0 0 0 1px rgba(252,148,175,0.2), 0 0 15px rgba(255,110,199,0.5), 0 0 35px rgba(168,85,247,0.25), 0 0 60px rgba(59,28,110,0.15);
-}
-.gta6 .aran-orb--reader-login::before,
-.gta6 .aran-orb--reader-pin::before,
-.gta6 .aran-orb--reader-prestamos::before,
-.gta6 .aran-orb--reader-reservas::before,
-.gta6 .aran-orb--reader-historial::before,
-.gta6 .aran-orb--reader-listas::before,
-.gta6 .aran-orb--reader-notificaciones::before,
-.gta6 .aran-orb--reader-solicitudes::before,
-.gta6 .aran-orb--reader-cuenta::before {
-  background: conic-gradient(from 180deg, #FC94AF 0%, #3B1C6E 30%, #FF6EC7 50%, #a855f7 70%, #FC94AF 100%);
-}
-.gta6 .aran-orb--reader-login .aran-orb__core,
-.gta6 .aran-orb--reader-pin .aran-orb__core,
-.gta6 .aran-orb--reader-prestamos .aran-orb__core,
-.gta6 .aran-orb--reader-reservas .aran-orb__core,
-.gta6 .aran-orb--reader-historial .aran-orb__core,
-.gta6 .aran-orb--reader-listas .aran-orb__core,
-.gta6 .aran-orb--reader-notificaciones .aran-orb__core,
-.gta6 .aran-orb--reader-solicitudes .aran-orb__core,
-.gta6 .aran-orb--reader-cuenta .aran-orb__core {
-  background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(252,148,175,0.75) 20%, rgba(255,110,199,0.45) 50%, rgba(59,28,110,0.1) 75%, transparent 100%);
-  box-shadow: 0 0 10px rgba(255,110,199,0.6), 0 0 20px rgba(168,85,247,0.3);
-}
-
-/* Panel — tonos naranja atardecer y coral (trabajo activo, calor de Miami) */
-.gta6 .aran-orb--panel-home,
-.gta6 .aran-orb--panel-libros,
-.gta6 .aran-orb--panel-libros-nuevo,
-.gta6 .aran-orb--panel-libros-editar,
-.gta6 .aran-orb--panel-lectores,
-.gta6 .aran-orb--panel-lector,
-.gta6 .aran-orb--panel-prestamos,
-.gta6 .aran-orb--panel-prestamos-nuevo,
-.gta6 .aran-orb--panel-reservas,
-.gta6 .aran-orb--panel-colecciones,
-.gta6 .aran-orb--panel-coleccion,
-.gta6 .aran-orb--panel-solicitudes,
-.gta6 .aran-orb--panel-tareas,
-.gta6 .aran-orb--panel-calendario,
-.gta6 .aran-orb--panel-estadisticas,
-.gta6 .aran-orb--panel-correo,
-.gta6 .aran-orb--panel-correo-salida,
-.gta6 .aran-orb--panel-resenas,
-.gta6 .aran-orb--panel-actividad,
-.gta6 .aran-orb--panel-changelog,
-.gta6 .aran-orb--panel-usuarios,
-.gta6 .aran-orb--panel-cuenta {
-  background: conic-gradient(from 0deg, #FF8A3D 0%, #FC94AF 25%, #f59e0b 50%, #3B1C6E 75%, #FF8A3D 100%);
-  box-shadow: 0 0 0 1px rgba(255,138,61,0.2), 0 0 15px rgba(255,138,61,0.5), 0 0 35px rgba(252,148,175,0.25), 0 0 60px rgba(59,28,110,0.15);
-}
-.gta6 .aran-orb--panel-home::before,
-.gta6 .aran-orb--panel-libros::before,
-.gta6 .aran-orb--panel-libros-nuevo::before,
-.gta6 .aran-orb--panel-libros-editar::before,
-.gta6 .aran-orb--panel-lectores::before,
-.gta6 .aran-orb--panel-lector::before,
-.gta6 .aran-orb--panel-prestamos::before,
-.gta6 .aran-orb--panel-prestamos-nuevo::before,
-.gta6 .aran-orb--panel-reservas::before,
-.gta6 .aran-orb--panel-colecciones::before,
-.gta6 .aran-orb--panel-coleccion::before,
-.gta6 .aran-orb--panel-solicitudes::before,
-.gta6 .aran-orb--panel-tareas::before,
-.gta6 .aran-orb--panel-calendario::before,
-.gta6 .aran-orb--panel-estadisticas::before,
-.gta6 .aran-orb--panel-correo::before,
-.gta6 .aran-orb--panel-correo-salida::before,
-.gta6 .aran-orb--panel-resenas::before,
-.gta6 .aran-orb--panel-actividad::before,
-.gta6 .aran-orb--panel-changelog::before,
-.gta6 .aran-orb--panel-usuarios::before,
-.gta6 .aran-orb--panel-cuenta::before {
-  background: conic-gradient(from 180deg, #FF8A3D 0%, #3B1C6E 30%, #FC94AF 50%, #f59e0b 70%, #FF8A3D 100%);
-}
-.gta6 .aran-orb--panel-home .aran-orb__core,
-.gta6 .aran-orb--panel-libros .aran-orb__core,
-.gta6 .aran-orb--panel-libros-nuevo .aran-orb__core,
-.gta6 .aran-orb--panel-libros-editar .aran-orb__core,
-.gta6 .aran-orb--panel-lectores .aran-orb__core,
-.gta6 .aran-orb--panel-lector .aran-orb__core,
-.gta6 .aran-orb--panel-prestamos .aran-orb__core,
-.gta6 .aran-orb--panel-prestamos-nuevo .aran-orb__core,
-.gta6 .aran-orb--panel-reservas .aran-orb__core,
-.gta6 .aran-orb--panel-colecciones .aran-orb__core,
-.gta6 .aran-orb--panel-coleccion .aran-orb__core,
-.gta6 .aran-orb--panel-solicitudes .aran-orb__core,
-.gta6 .aran-orb--panel-tareas .aran-orb__core,
-.gta6 .aran-orb--panel-calendario .aran-orb__core,
-.gta6 .aran-orb--panel-estadisticas .aran-orb__core,
-.gta6 .aran-orb--panel-correo .aran-orb__core,
-.gta6 .aran-orb--panel-correo-salida .aran-orb__core,
-.gta6 .aran-orb--panel-resenas .aran-orb__core,
-.gta6 .aran-orb--panel-actividad .aran-orb__core,
-.gta6 .aran-orb--panel-changelog .aran-orb__core,
-.gta6 .aran-orb--panel-usuarios .aran-orb__core,
-.gta6 .aran-orb--panel-cuenta .aran-orb__core {
-  background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.98) 0%, rgba(255,209,184,0.75) 20%, rgba(255,138,61,0.45) 50%, rgba(59,28,110,0.1) 75%, transparent 100%);
-  box-shadow: 0 0 10px rgba(255,138,61,0.6), 0 0 20px rgba(252,148,175,0.3);
+  background: linear-gradient(180deg, #ff2d78, #7b2dff) !important;
 }
 
 @layer base {

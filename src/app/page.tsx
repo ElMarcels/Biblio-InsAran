@@ -34,14 +34,14 @@ export default async function HomePage() {
     <PageTransition>
       <div className="flex flex-1 flex-col">
         <section className="border-b-2 border-line bg-surface">
-          <div className="shell grid gap-10 py-14 lg:grid-cols-[1.5fr_1fr] lg:py-20">
+          <div className="shell grid gap-8 py-10 sm:gap-10 sm:py-14 lg:grid-cols-[1.5fr_1fr] lg:py-20">
             <div>
               <p className="micro mb-5 animate-fade-in-up">
                 {t("home.fondoBibliograficoInstitution", {
                   institution: SITE_INSTITUTION,
                 })}
               </p>
-              <h1 className="max-w-[16ch] animate-fade-in-up text-[46px] font-bold sm:text-[68px]" style={{ animationDelay: "70ms" }}>
+              <h1 className="max-w-[16ch] animate-fade-in-up text-[34px] font-bold sm:text-[46px] lg:text-[68px]" style={{ animationDelay: "70ms" }}>
                 Biblioteca{" "}
                 <span className="text-accent">Institut d&apos;Aran</span>
               </h1>
@@ -81,26 +81,26 @@ export default async function HomePage() {
               </p>
             </div>
 
-            <dl className="grid grid-cols-2 self-start border-2 border-line bg-paper sm:grid-cols-2 lg:mt-2">
-              <div className="border-b-2 border-r-2 border-line p-5 animate-scale-in">
+            <dl className="grid grid-cols-2 self-start border-2 border-line bg-paper lg:mt-2">
+              <div className="border-b-2 border-r-2 border-line p-4 sm:p-5 animate-scale-in">
                 <dt className="micro">{t("home.titulos")}</dt>
-                <dd className="mt-1 font-display text-[40px] font-bold leading-none tabular-nums">
+                <dd className="mt-1 font-display text-[28px] sm:text-[40px] font-bold leading-none tabular-nums">
                   <CountUp value={totalBooks} />
                 </dd>
               </div>
-              <div className="border-b-2 border-line p-5 animate-scale-in" style={{ animationDelay: "80ms" }}>
+              <div className="border-b-2 border-line p-4 sm:p-5 animate-scale-in" style={{ animationDelay: "80ms" }}>
                 <dt className="micro">{t("home.ejemplares")}</dt>
-                <dd className="mt-1 font-display text-[40px] font-bold leading-none tabular-nums">
+                <dd className="mt-1 font-display text-[28px] sm:text-[40px] font-bold leading-none tabular-nums">
                   <CountUp value={totalCopies} />
                 </dd>
               </div>
-              <div className="border-r-2 border-line p-5 animate-scale-in" style={{ animationDelay: "160ms" }}>
+              <div className="border-r-2 border-line p-4 sm:p-5 animate-scale-in" style={{ animationDelay: "160ms" }}>
                 <dt className="micro">{t("home.categorias")}</dt>
-                <dd className="mt-1 font-display text-[40px] font-bold leading-none tabular-nums">
+                <dd className="mt-1 font-display text-[28px] sm:text-[40px] font-bold leading-none tabular-nums">
                   <CountUp value={categories.length} />
                 </dd>
               </div>
-              <div className="p-5 animate-scale-in" style={{ animationDelay: "240ms" }}>
+              <div className="p-4 sm:p-5 animate-scale-in" style={{ animationDelay: "240ms" }}>
                 <dt className="micro">{t("home.acceso")}</dt>
                 <dd className="mt-2 text-[14px] font-semibold leading-snug">
                   {t("home.publico")}

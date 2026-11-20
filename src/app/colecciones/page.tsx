@@ -42,7 +42,7 @@ export default async function CollectionsPage() {
       <div className="shell flex flex-1 flex-col py-10">
         <header className="mb-8 animate-fade-in-up">
           <p className="micro mb-3">{t("collections.colecciones")}</p>
-        <h1 className="font-display text-[38px] font-bold sm:text-[44px]">
+        <h1 className="font-display text-[28px] sm:text-[38px] lg:text-[44px]">
           {t("collections.listasPreparadasPorLaBiblioteca")}
         </h1>
         <p className="mt-3 max-w-2xl text-[15px] text-ink-soft">

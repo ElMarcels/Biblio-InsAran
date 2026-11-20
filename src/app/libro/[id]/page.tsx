@@ -148,8 +148,8 @@ export default async function BookPage({ params }: { params: Params }) {
           </Link>
         </nav>
 
-        <article className="grid gap-9 lg:grid-cols-[300px_1fr]">
-          <div className="max-w-[300px] animate-fade-in-up">
+        <article className="grid gap-6 sm:gap-9 lg:grid-cols-[260px_1fr]">
+          <div className="mx-auto max-w-[260px] animate-fade-in-up lg:mx-0">
             <ViewTransition name={`cover-${book.id}`} share="morph" default="none">
               <BookCover
                 title={book.title}
@@ -161,7 +161,7 @@ export default async function BookPage({ params }: { params: Params }) {
             </ViewTransition>
             <div className="mt-4 border-2 border-line bg-surface p-4">
               <p className="micro">{t("book.disponibilidad")}</p>
-              <p className="mt-1 font-display text-[26px] font-bold leading-none">
+              <p className="mt-1 font-display text-[22px] sm:text-[26px] font-bold leading-none">
                 {t("book.availableDeTotalEjemplares", {
                   available,
                   total: book.copies,
@@ -203,10 +203,10 @@ export default async function BookPage({ params }: { params: Params }) {
               {book.year ? <span className="tag-muted">{book.year}</span> : null}
             </div>
 
-            <h1 className="mt-4 animate-fade-in-up font-display text-[38px] font-bold sm:text-[50px]" style={{ animationDelay: "120ms" }}>
+            <h1 className="mt-4 animate-fade-in-up font-display text-[28px] sm:text-[38px] lg:text-[50px]" style={{ animationDelay: "120ms" }}>
               {book.title}
             </h1>
-            <p className="mt-2 animate-fade-in-up text-[19px] text-ink-soft" style={{ animationDelay: "170ms" }}>
+            <p className="mt-2 animate-fade-in-up text-[16px] sm:text-[19px] text-ink-soft" style={{ animationDelay: "170ms" }}>
               <Link
                 href={authorHref(book.author)}
                 className="font-semibold text-ink underline decoration-line decoration-2 underline-offset-4 hover:text-accent"

@@ -104,7 +104,7 @@ export default async function CatalogPage({
         <header className="mb-8 animate-fade-in-up">
           <p className="micro mb-3">{t("catalog.catalogo")}</p>
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <h1 className="font-display text-[38px] font-bold sm:text-[46px]">
+          <h1 className="font-display text-[28px] sm:text-[38px] lg:text-[46px]">
             {category
               ? category
               : tag
@@ -125,10 +125,10 @@ export default async function CatalogPage({
       <form
         action="/catalogo"
         method="get"
-        className="mb-8 grid animate-fade-in-up gap-3 border-2 border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
+        className="mb-8 grid animate-fade-in-up gap-3 border-2 border-line bg-surface p-3 sm:p-4 md:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]"
         style={{ animationDelay: "80ms" }}
       >
-        <div className="sm:col-span-2 lg:col-span-1">
+        <div className="md:col-span-2 lg:col-span-1">
           <label htmlFor="q" className="label">
             {t("catalog.busqueda")}
           </label>

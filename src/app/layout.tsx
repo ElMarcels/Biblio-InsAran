@@ -10,12 +10,18 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_NAME } from "@/lib/constants";
-import { LOCALE_TAGS, OG_LOCALES } from "@/lib/i18n/config";
+import { LOCALE_TAGS, LOCALES, OG_LOCALES, type Locale } from "@/lib/i18n/config";
 import { getLocale, getTranslations } from "@/lib/i18n/server";
 import { createTranslator } from "@/lib/i18n/translate";
 import { getCurrentReader } from "@/lib/reader-auth";
 import { DARK_CLASS, GTA6_CLASS, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { getThemePreference } from "@/lib/theme-server";
+
+type HeaderUser = {
+  username: string;
+  displayName: string;
+  role: string;
+} | null;
 
 import "./globals.css";
 
@@ -79,6 +85,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   ]);
   const t = createTranslator(messages, fallback);
 
+  const headerUser: HeaderUser = user
+    ? { username: user.username, displayName: user.displayName, role: user.role }
+    : null;
+
   return (
     <html
       lang={LOCALE_TAGS[locale]}
@@ -97,7 +107,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           >
             {t("common.skipToContent")}
           </a>
-          <SiteHeader />
+          <SiteHeader
+            initialUser={headerUser}
+            initialLocale={locale}
+            initialTheme={theme}
+          />
           <main id="contenido" className="flex min-h-full flex-1 flex-col">
             {children}
           </main>

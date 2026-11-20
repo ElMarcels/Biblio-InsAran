@@ -30,7 +30,7 @@ export default async function LoginPage({
         <div className="shell grid flex-1 items-center gap-12 py-14 lg:grid-cols-2">
           <div className="hidden flex-col justify-center lg:flex">
             <p className="micro mb-5 animate-fade-in-up">{t("login.accesoRestringido")}</p>
-            <h1 className="max-w-[14ch] animate-fade-in-up text-[54px] font-bold leading-[0.98]" style={{ animationDelay: "70ms" }}>
+            <h1 className="max-w-[14ch] animate-fade-in-up text-[34px] sm:text-[42px] lg:text-[54px] font-bold leading-[0.98]" style={{ animationDelay: "70ms" }}>
               {t("login.elPanelDeLa")} <span className="text-accent">{t("login.biblioteca")}</span>
             </h1>
             <p className="mt-6 max-w-md animate-fade-in-up text-[16px] leading-relaxed text-ink-soft" style={{ animationDelay: "140ms" }}>

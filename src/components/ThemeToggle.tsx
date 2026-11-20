@@ -7,7 +7,7 @@ import { setThemeAction } from "@/lib/actions/theme";
 import type { TranslationKey } from "@/lib/i18n/translate";
 import {
   DARK_CLASS,
-  nextThemePreference,
+  THEME_PREFERENCES,
   type ThemePreference,
 } from "@/lib/theme";
 
@@ -77,8 +77,9 @@ function ThemeIcon({ theme }: { theme: ThemePreference }) {
 }
 
 /**
- * Botón de tema. Cicla sistema → claro → oscuro y guarda la elección en una
- * cookie (el servidor la aplica en el HTML; el cliente la aplica al instante).
+ * Selector desplegable de tema. Permite elegir entre sistema, claro, oscuro y
+ * GTA6 y guarda la elección en una cookie (el servidor la aplica en el HTML;
+ * el cliente la aplica al instante).
  */
 export function ThemeToggle({ initial }: { initial: ThemePreference }) {
   const t = useT();
@@ -95,28 +96,48 @@ export function ThemeToggle({ initial }: { initial: ThemePreference }) {
     return () => query.removeEventListener("change", onChange);
   }, [theme]);
 
-  const label = t(LABEL_KEYS[theme]);
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const next = e.target.value as ThemePreference;
+    setTheme(next);
+    applyTheme(next);
+    startTransition(async () => {
+      await setThemeAction(next);
+      router.refresh();
+    });
+  };
 
   return (
-    <button
-      type="button"
-      disabled={pending}
-      title={label}
-      aria-label={label}
-      onClick={() => {
-        const next = nextThemePreference(theme);
-        setTheme(next);
-        applyTheme(next);
-        startTransition(async () => {
-          await setThemeAction(next);
-          router.refresh();
-        });
-      }}
-      className="btn-ghost btn-sm px-2"
-    >
-      <span key={theme} className="animate-pop inline-flex">
-        <ThemeIcon theme={theme} />
+    <label className="relative">
+      <select
+        value={theme}
+        disabled={pending}
+        aria-label={t(LABEL_KEYS[theme])}
+        title={t(LABEL_KEYS[theme])}
+        onChange={handleChange}
+        className="appearance-none bg-transparent cursor-pointer py-1 pl-4 pr-7 rounded hover:bg-base-200 focus:bg-base-200 focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+      >
+        {THEME_PREFERENCES.map((pref) => (
+          <option key={pref} value={pref}>
+            {t(LABEL_KEYS[pref])}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute inset-y-0 right-1 flex items-center">
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="opacity-50"
+          aria-hidden="true"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </span>
-    </button>
+    </label>
   );
 }

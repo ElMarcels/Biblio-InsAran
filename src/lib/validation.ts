@@ -480,6 +480,47 @@ export const collectionSchema = z.object({
 export type CollectionInput = z.infer<typeof collectionSchema>;
 
 // ---------------------------------------------------------------------------
+// Recursos digitales
+// ---------------------------------------------------------------------------
+
+export const DIGITAL_RESOURCE_TYPES = ["AUDIOBOOK", "PDF", "EBOOK", "LINK"] as const;
+export type DigitalResourceType = (typeof DIGITAL_RESOURCE_TYPES)[number];
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export const digitalResourceSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(2, msg("validation.digitalResourceTitleRequired"))
+    .max(180, msg("validation.digitalResourceTitleTooLong")),
+  author: optionalText(160),
+  type: z
+    .string()
+    .refine(
+      (value): value is DigitalResourceType =>
+        DIGITAL_RESOURCE_TYPES.includes(value as DigitalResourceType),
+      msg("validation.digitalResourceTypeInvalid"),
+    ),
+  url: z
+    .string()
+    .trim()
+    .max(2000, msg("validation.textTooLong"))
+    .refine(isHttpUrl, msg("validation.digitalResourceUrlInvalid")),
+  description: optionalText(1200),
+  language: optionalText(40),
+});
+
+export type DigitalResourceInput = z.infer<typeof digitalResourceSchema>;
+
+// ---------------------------------------------------------------------------
 // Solicitudes de compra
 // ---------------------------------------------------------------------------
 

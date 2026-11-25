@@ -91,6 +91,7 @@ export function SiteHeader({
           <NavLink href="/autores">{t("nav.autorias")}</NavLink>
           <NavLink href="/etiquetas">{t("nav.materias")}</NavLink>
           <NavLink href="/colecciones">{t("nav.colecciones")}</NavLink>
+          <NavLink href="/recursos-digitales">{t("nav.recursosDigitales")}</NavLink>
           <NavLink href="/mi-biblioteca">{t("nav.miBiblioteca")}</NavLink>
 
           {user ? (
@@ -160,6 +161,7 @@ export function SiteHeader({
             <MobileNavLink href="/autores" onClick={() => setMenuOpen(false)}>{t("nav.autorias")}</MobileNavLink>
             <MobileNavLink href="/etiquetas" onClick={() => setMenuOpen(false)}>{t("nav.materias")}</MobileNavLink>
             <MobileNavLink href="/colecciones" onClick={() => setMenuOpen(false)}>{t("nav.colecciones")}</MobileNavLink>
+            <MobileNavLink href="/recursos-digitales" onClick={() => setMenuOpen(false)}>{t("nav.recursosDigitales")}</MobileNavLink>
             <MobileNavLink href="/mi-biblioteca" onClick={() => setMenuOpen(false)}>{t("nav.miBiblioteca")}</MobileNavLink>
 
             {user ? (

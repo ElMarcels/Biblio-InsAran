@@ -6,7 +6,8 @@ fondo está restringida a las cuentas de la plataforma.
 
 - **Visitante** (sin cuenta): consulta el catálogo, busca y filtra por
   categoría, idioma o año, ve la ficha de cada libro y puede **pedir un título**
-  que todavía no está en el catálogo.
+  que todavía no está en el catálogo. También consulta los **recursos digitales**
+  (audiolibros, PDF y enlaces) desde `/recursos-digitales`.
 - **Lector/a** (sin cuenta de personal): entra en «Mi biblioteca» con su número
   de carné y un PIN, consulta sus préstamos y reservas, prorroga y reserva
   libros, mantiene sus **listas de lectura**, valora y reseña los libros,
@@ -14,7 +15,8 @@ fondo está restringida a las cuentas de la plataforma.
   títulos. El primer acceso obliga a elegir PIN propio.
 - **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
   gestiona préstamos, reservas, lectores, listas curadas y **solicitudes de
-  compra** (al aprobar una, el título entra en el catálogo). Cuenta con un
+  compra** (al aprobar una, el título entra en el catálogo), además de añadir,
+  editar y borrar recursos digitales desde el panel. Cuenta con un
   **calendario de vencimientos** para ver de un vistazo qué devoluciones tocan
   cada día del mes.
 - **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la

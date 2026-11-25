@@ -26,6 +26,13 @@ enum Role {
   EDITOR
 }
 
+enum DigitalResourceType {
+  AUDIOBOOK
+  PDF
+  EBOOK
+  LINK
+}
+
 /// Cuenta de la plataforma.
 model User {
   id                 String    @id @default(cuid())
@@ -57,9 +64,10 @@ model User {
   booksUpdated Book[]     @relation("BookUpdatedBy")
   auditLogs    AuditLog[]
 
-  loansCreated        Loan[]        @relation("LoanCreatedBy")
-  reservationsCreated Reservation[] @relation("ReservationCreatedBy")
-  collectionsCreated  Collection[]  @relation("CollectionCreatedBy")
+  loansCreated            Loan[]            @relation("LoanCreatedBy")
+  reservationsCreated     Reservation[]     @relation("ReservationCreatedBy")
+  collectionsCreated      Collection[]      @relation("CollectionCreatedBy")
+  digitalResourcesCreated DigitalResource[] @relation("DigitalResourceCreatedBy")
 
   changelogsCreated Changelog[]     @relation("ChangelogCreatedBy")
   changelogViews    ChangelogView[] @relation("ChangelogViewUser")
@@ -175,6 +183,25 @@ model BookCollection {
 
   @@id([bookId, collectionId])
   @@index([collectionId, position])
+}
+
+/// Enlace a un recurso digital consultable públicamente.
+model DigitalResource {
+  id          String              @id @default(cuid())
+  title       String
+  author      String?
+  type        DigitalResourceType
+  url         String
+  description String?
+  language    String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  createdById String?
+  createdBy   User?   @relation("DigitalResourceCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([createdAt])
 }
 
 /// Lector/a de la biblioteca (alumnado, profesorado, familias…).

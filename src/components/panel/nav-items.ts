@@ -11,6 +11,7 @@ export const PANEL_NAV: PanelNavItem[] = [
   { href: "/panel/tareas", label: "panel.tareas" },
   { href: "/panel/libros", label: "panel.libros" },
   { href: "/panel/libros/nuevo", label: "panel.anadirLibro" },
+  { href: "/panel/recursos-digitales", label: "panel.digitalResources.title" },
   { href: "/panel/colecciones", label: "panel.listasCuradas" },
   { href: "/panel/lectores", label: "panel.lectores" },
   { href: "/panel/prestamos", label: "panel.prestamos" },

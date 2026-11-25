@@ -33,9 +33,14 @@ export default async function AranPanelPage() {
             <p className="mt-2 flex-1 text-[14px] text-ink-soft">
               {t("panel.aran.newsDescription")}
             </p>
-            <Link href="/panel/changelog" className="btn-primary btn-sm mt-5">
-              {t("panel.aran.manageNews")}
-            </Link>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <Link href="/panel/libros/nuevo" className="btn-primary btn-sm">
+                {t("panel.aran.addBook")}
+              </Link>
+              <Link href="/panel/recursos-digitales/nuevo" className="btn-outline btn-sm">
+                {t("panel.aran.addDigitalResource")}
+              </Link>
+            </div>
           </section>
 
           <section className="flex flex-col items-start border-2 border-line bg-surface p-6">

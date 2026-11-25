@@ -1,8 +1,16 @@
 import { PageTransition } from "@/components/PageTransition";
-import { Markdown } from "@/components/Markdown";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
+import type { DigitalResourceType } from "@/lib/validation";
+import type { TranslationKey } from "@/lib/i18n/translate";
+
+const TYPE_LABELS: Record<DigitalResourceType, TranslationKey> = {
+  AUDIOBOOK: "digitalResources.type.AUDIOBOOK",
+  PDF: "digitalResources.type.PDF",
+  EBOOK: "digitalResources.type.EBOOK",
+  LINK: "digitalResources.type.LINK",
+};
 
 export async function generateMetadata() {
   const t = await getT();
@@ -10,13 +18,36 @@ export async function generateMetadata() {
 }
 
 export default async function NewsPage() {
-  const [t, items] = await Promise.all([
+  const [t, books, resources] = await Promise.all([
     getT(),
-    prisma.changelog.findMany({
-      orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, body: true, createdAt: true },
+    prisma.book.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 12,
+      select: { id: true, title: true, author: true, description: true, createdAt: true },
+    }),
+    prisma.digitalResource.findMany({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 12,
+      select: {
+        id: true,
+        title: true,
+        author: true,
+        type: true,
+        url: true,
+        description: true,
+        createdAt: true,
+      },
     }),
   ]);
+  const items = [
+    ...books.map((book) => ({ ...book, kind: "book" as const })),
+    ...resources.map((resource) => ({ ...resource, kind: "resource" as const })),
+  ]
+    .sort(
+      (a, b) =>
+        b.createdAt.getTime() - a.createdAt.getTime() || a.id.localeCompare(b.id),
+    )
+    .slice(0, 12);
 
   return (
     <PageTransition>
@@ -36,16 +67,45 @@ export default async function NewsPage() {
             {t("news.empty")}
           </p>
         ) : (
-          <div className="flex max-w-4xl flex-col gap-5">
+          <div className="grid max-w-5xl gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
               <article
-                key={item.id}
-                className="animate-fade-in-up border-2 border-line bg-surface p-5 sm:p-7"
+                key={`${item.kind}-${item.id}`}
+                className="flex flex-col border-2 border-line bg-surface p-5"
               >
-                <p className="micro mb-2">{formatDate(item.createdAt)}</p>
-                <h2 className="font-display text-[21px] font-bold">{item.title}</h2>
-                <div className="mt-4 border-t border-hairline pt-4">
-                  <Markdown>{item.body}</Markdown>
+                <p className="micro mb-2">
+                  {formatDate(item.createdAt)} · {item.kind === "book"
+                    ? t("news.book")
+                    : `${t("news.digitalResource")} · ${t(TYPE_LABELS[item.type])}`}
+                </p>
+                <h2 className="font-display text-[21px] font-bold leading-snug">
+                  {item.title}
+                </h2>
+                {item.author ? (
+                  <p className="mt-1 text-[13px] text-ink-faint">{item.author}</p>
+                ) : null}
+                {item.description ? (
+                  <p className="mt-4 flex-1 text-[14px] leading-relaxed text-ink-soft">
+                    {item.description}
+                  </p>
+                ) : (
+                  <div className="flex-1" />
+                )}
+                <div className="mt-5 border-t border-hairline pt-4">
+                  {item.kind === "book" ? (
+                    <a href={`/libro/${item.id}`} className="btn-primary btn-sm">
+                      {t("news.openBook")}
+                    </a>
+                  ) : (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary btn-sm"
+                    >
+                      {t("news.openResource")}
+                    </a>
+                  )}
                 </div>
               </article>
             ))}

@@ -1,6 +1,7 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { useT } from "../i18n/LocaleProvider";
@@ -83,13 +84,17 @@ function contextualSuggestions(pathname: string, scope: AssistantScope): string[
 export function AssistantOrb({
   hasStaff,
   hasReader,
+  assistantEnabled,
 }: {
   hasStaff: boolean;
   hasReader: boolean;
+  assistantEnabled: boolean;
 }) {
   const t = useT();
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [panelView, setPanelView] = useState<"menu" | "chat">("menu");
 
   const hidden =
     pathname === "/login" ||
@@ -187,7 +192,13 @@ export function AssistantOrb({
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        if (!hidden) setOpen((v) => !v);
+        if (!hidden) {
+          if (open) setOpen(false);
+          else {
+            setPanelView("menu");
+            setOpen(true);
+          }
+        }
       }
       if (event.key === "Escape" && open) {
         setOpen(false);
@@ -215,16 +226,75 @@ export function AssistantOrb({
           role="dialog"
           aria-modal="true"
           aria-label={t("assistant.name")}
-          className="aran-panel fixed right-4 bottom-24 z-[90] h-[min(620px,calc(100dvh-8rem))] w-[min(420px,calc(100vw-2rem))] max-sm:right-4 max-sm:left-4 max-sm:w-auto"
+          className="aran-panel fixed right-4 bottom-24 z-[90] w-[min(420px,calc(100vw-2rem))] max-sm:right-4 max-sm:left-4 max-sm:w-auto"
         >
-          <AssistantChat
-            key={scope}
-            scope={scope}
-            variant="panel"
-            onClose={() => setOpen(false)}
-            contextSuggestions={contextualSuggestions(pathname, scope)}
-            pagePath={pathname}
-          />
+          {panelView === "chat" ? (
+            <div className="h-[min(620px,calc(100dvh-8rem))]">
+              <AssistantChat
+                key={scope}
+                scope={scope}
+                variant="panel"
+                onClose={() => setOpen(false)}
+                contextSuggestions={contextualSuggestions(pathname, scope)}
+                pagePath={pathname}
+              />
+            </div>
+          ) : (
+            <div className="border-2 border-line bg-surface p-5 shadow-[8px_8px_0_0_var(--color-line)]">
+              <div className="mb-4">
+                <p className="micro">{t("assistant.name")}</p>
+                <h2 className="mt-1 font-display text-[22px] font-bold">
+                  {t("assistant.menuTitle")}
+                </h2>
+                <p className="mt-1 text-[13px] text-ink-soft">
+                  {t("assistant.menuIntro")}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (assistantEnabled) setPanelView("chat");
+                    else router.push("/asistente");
+                  }}
+                  className="border-2 border-line bg-paper p-3 text-left transition-colors hover:bg-surface"
+                >
+                  <span className="block font-display text-[16px] font-bold">
+                    {t("assistant.menuAranAI")}
+                  </span>
+                  <span className="mt-1 block text-[12px] text-ink-faint">
+                    {t("assistant.menuAranAIDescription")}
+                  </span>
+                </button>
+                <Link
+                  href="/novedades"
+                  onClick={() => setOpen(false)}
+                  className="border-2 border-line bg-paper p-3 transition-colors hover:bg-surface"
+                >
+                  <span className="block font-display text-[16px] font-bold">
+                    {t("assistant.menuNews")}
+                  </span>
+                  <span className="mt-1 block text-[12px] text-ink-faint">
+                    {t("assistant.menuNewsDescription")}
+                  </span>
+                </Link>
+                {hasStaff ? (
+                  <Link
+                    href="/panel/aran/ideas"
+                    onClick={() => setOpen(false)}
+                    className="border-2 border-line bg-paper p-3 transition-colors hover:bg-surface"
+                  >
+                    <span className="block font-display text-[16px] font-bold">
+                      {t("assistant.menuIdeas")}
+                    </span>
+                    <span className="mt-1 block text-[12px] text-ink-faint">
+                      {t("assistant.menuIdeasDescription")}
+                    </span>
+                  </Link>
+                ) : null}
+              </div>
+            </div>
+          )}
         </section>
       ) : null}
 
@@ -234,7 +304,13 @@ export function AssistantOrb({
         aria-label={open ? t("assistant.close") : t("assistant.open")}
         aria-expanded={open}
         title={open ? t("assistant.close") : `${t("assistant.open")} (Ctrl+K)`}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          if (open) setOpen(false);
+          else {
+            setPanelView("menu");
+            setOpen(true);
+          }
+        }}
       >
         <span className={`aran-orb aran-orb--${orbVariant}`} aria-hidden="true">
           <span className="aran-orb__ring" />

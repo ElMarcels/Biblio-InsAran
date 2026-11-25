@@ -118,9 +118,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <SiteFooter />
           <ChangelogGate />
           <LicenseGate />
-          {isAssistantEnabled() ? (
-            <AssistantOrb hasStaff={Boolean(user)} hasReader={Boolean(reader)} />
-          ) : null}
+          <AssistantOrb
+            hasStaff={Boolean(user)}
+            hasReader={Boolean(reader)}
+            assistantEnabled={isAssistantEnabled()}
+          />
         </LocaleProvider>
       </body>
     </html>

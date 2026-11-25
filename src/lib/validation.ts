@@ -596,6 +596,28 @@ export const changelogSchema = z.object({
 
 export type ChangelogInput = z.infer<typeof changelogSchema>;
 
+export const ARAN_IDEA_STATUSES = [
+  "NEW",
+  "REVIEWING",
+  "PLANNED",
+  "REJECTED",
+  "IMPLEMENTED",
+] as const;
+export type AranIdeaStatus = (typeof ARAN_IDEA_STATUSES)[number];
+
+export const aranIdeaSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(3, msg("validation.aranIdeaTitleRequired"))
+    .max(140, msg("validation.aranIdeaTitleTooLong")),
+  description: z
+    .string()
+    .trim()
+    .min(10, msg("validation.aranIdeaDescriptionRequired"))
+    .max(3000, msg("validation.aranIdeaDescriptionTooLong")),
+});
+
 export const reviewSchema = z.object({
   bookId: z.string().min(1, "actions.bookNoId"),
   rating: z.coerce

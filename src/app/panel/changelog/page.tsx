@@ -1,7 +1,7 @@
 import { ChangelogPublishForm } from "@/components/ChangelogPublishForm";
 import { DeleteChangelogButton } from "@/components/DeleteChangelogButton";
 import { PageTransition } from "@/components/PageTransition";
-import { requireManager } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { prisma } from "@/lib/prisma";
@@ -23,7 +23,7 @@ export default async function ChangelogPage({ searchParams }: { searchParams: Pa
     searchParams.then((params) => one(params.aviso)),
   ]);
 
-  await requireManager();
+  await requireUser();
 
   const changelogs = await prisma.changelog.findMany({
     orderBy: { createdAt: "desc" },

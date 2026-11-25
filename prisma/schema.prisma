@@ -71,6 +71,7 @@ model User {
 
   changelogsCreated Changelog[]     @relation("ChangelogCreatedBy")
   changelogViews    ChangelogView[] @relation("ChangelogViewUser")
+  aranIdeasCreated  AranIdea[]      @relation("AranIdeaCreatedBy")
 
   /// Solicitudes de compra propuestas desde el panel.
   purchaseSuggestions PurchaseSuggestion[] @relation("PurchaseSuggestionUser")
@@ -352,7 +353,7 @@ model AuditLog {
   @@index([entityType])
 }
 
-/// Novedad de la plataforma publicada por la dirección (dueño o rol ADMIN).
+/// Novedad pública de la plataforma, publicada por una cuenta de personal.
 /// Se muestra automáticamente a cada cuenta de personal la próxima vez que
 /// entra, una sola vez: al cerrar el aviso se registra la lectura en
 /// `ChangelogView` y ya no vuelve a aparecer hasta la siguiente publicación.
@@ -381,6 +382,30 @@ model ChangelogView {
 
   @@id([changelogId, userId])
   @@index([userId])
+}
+
+enum AranIdeaStatus {
+  NEW
+  REVIEWING
+  PLANNED
+  REJECTED
+  IMPLEMENTED
+}
+
+/// Propuesta privada de mejora enviada por una cuenta de personal.
+model AranIdea {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  status      AranIdeaStatus @default(NEW)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  createdById String?
+  createdBy   User?          @relation("AranIdeaCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([createdById])
 }
 
 /// Estado de una solicitud de compra.

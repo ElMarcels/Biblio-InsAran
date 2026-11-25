@@ -5,7 +5,7 @@ import { decodeReaderSessionCookie } from "@/lib/reader-session-cookie";
 import { decodeSessionCookie } from "@/lib/session-cookie";
 
 /** Rutas del panel reservadas a la administración (dueño o rol ADMIN). */
-const MANAGER_ONLY = ["/panel/usuarios", "/panel/actividad", "/panel/changelog"];
+const MANAGER_ONLY = ["/panel/usuarios", "/panel/actividad"];
 
 /**
  * Comprobación optimista de sesión y rol para las rutas del panel y del área

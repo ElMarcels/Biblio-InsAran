@@ -63,6 +63,8 @@ export const AUDIT_LABELS: Record<string, TranslationKey> = {
   READER_RESERVATION_CANCEL: "audit.reservationCancel",
   CHANGELOG_PUBLISH: "audit.changelogPublish",
   CHANGELOG_DELETE: "audit.changelogDelete",
+  ARAN_IDEA_CREATE: "audit.aranIdeaCreate",
+  ARAN_IDEA_STATUS_UPDATE: "audit.aranIdeaStatusUpdate",
   LOAN_CREATE: "audit.loanCreate",
   LOAN_RETURN: "audit.loanReturn",
   LOAN_RENEW: "audit.loanRenew",

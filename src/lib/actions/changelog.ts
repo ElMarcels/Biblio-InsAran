@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
-import { assertManager, assertUser, AuthError } from "../auth";
+import { assertUser, AuthError } from "../auth";
 import { pendingChangelogs } from "../changelog";
 import { recordAudit } from "../audit";
 import { prisma } from "../prisma";
@@ -15,7 +15,7 @@ import {
 
 const UNAUTHORIZED: ActionState = {
   status: "error",
-  message: "actions.ownerOnly",
+  message: "actions.sessionExpired",
 };
 
 function text(formData: FormData, key: string): string {
@@ -24,14 +24,14 @@ function text(formData: FormData, key: string): string {
 }
 
 function revalidateChangelog() {
+  revalidatePath("/novedades");
   // El aviso vive en la raíz: se refresca para todas las rutas visitadas.
   revalidatePath("/", "layout");
   revalidatePath("/panel/changelog");
 }
 
 /**
- * Publica una novedad de la plataforma. Solo el dueño o una cuenta con rol
- * ADMIN pueden publicar (la comprobación se hace aquí, no en el formulario).
+ * Publica una novedad pública. La autorización se valida aquí en el servidor.
  */
 export async function publishChangelogAction(
   _prev: ActionState,
@@ -39,7 +39,7 @@ export async function publishChangelogAction(
 ): Promise<ActionState> {
   let user;
   try {
-    user = await assertManager();
+    user = await assertUser();
   } catch (error) {
     if (error instanceof AuthError) return UNAUTHORIZED;
     throw error;
@@ -82,14 +82,14 @@ export async function publishChangelogAction(
   redirect("/panel/changelog?aviso=publicada");
 }
 
-/** Borra una novedad ya publicada (solo dueño o ADMIN). */
+/** Borra una novedad ya publicada (solo cuentas de personal). */
 export async function deleteChangelogAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
   let user;
   try {
-    user = await assertManager();
+    user = await assertUser();
   } catch (error) {
     if (error instanceof AuthError) return UNAUTHORIZED;
     throw error;

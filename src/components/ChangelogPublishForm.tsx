@@ -12,7 +12,7 @@ import { Field, inputClass } from "./forms/Field";
 
 /**
  * Publica una novedad de la plataforma en Markdown. La comprueba el servidor
- * (solo dueño o ADMIN): al publicarla desaparece para quien la firma y aparece
+ * (solo cuentas de personal): al publicarla aparece en la sección pública y
  * una sola vez en cada cuenta de personal.
  */
 export function ChangelogPublishForm() {

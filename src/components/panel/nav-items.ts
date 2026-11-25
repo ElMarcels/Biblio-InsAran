@@ -21,7 +21,7 @@ export const PANEL_NAV: PanelNavItem[] = [
   { href: "/panel/resenas", label: "panel.reviews.resenas" },
   { href: "/panel/estadisticas", label: "panel.estadisticas" },
   { href: "/panel/resenas", label: "panel.reviews.resenas" },
-  { href: "/panel/changelog", label: "panel.novedades", managerOnly: true },
+  { href: "/panel/aran", label: "panel.aran.menu" },
   { href: "/panel/correo", label: "panel.mail.title", managerOnly: true },
   { href: "/panel/usuarios", label: "panel.usuarios", managerOnly: true },
   { href: "/panel/actividad", label: "panel.actividad", managerOnly: true },

@@ -390,6 +390,7 @@ model GroupCall {
 
   participants GroupCallParticipant[]
   signals      GroupCallSignal[]
+  boardEvents  GroupCallBoardEvent[]
 
   @@index([groupId, endedAt, createdAt])
 }
@@ -408,6 +409,7 @@ model GroupCallParticipant {
   joinedAt       DateTime @default(now())
   lastSeenAt     DateTime @default(now())
   leftAt         DateTime?
+  raisedHandAt   DateTime?
 
   @@unique([callId, connectionId])
   @@index([callId, lastSeenAt])
@@ -425,6 +427,20 @@ model GroupCallSignal {
   createdAt          DateTime @default(now())
 
   @@index([callId, toConnectionId, createdAt])
+}
+
+/// Trazo compartido de la pizarra de una llamada; se elimina al finalizarla.
+model GroupCallBoardEvent {
+  id                 String    @id @default(cuid())
+  callId             String
+  call               GroupCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+  position           Int       @default(autoincrement()) @unique
+  senderConnectionId String
+  senderName         String
+  payload            String
+  createdAt          DateTime  @default(now())
+
+  @@index([callId, position])
 }
 
 /// Préstamo de un ejemplar a un lector/a.

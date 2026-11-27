@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   groupCallActionSchema,
+  groupCallBoardActionSchema,
   groupCallSignalSchema,
   groupCreateSchema,
   groupInviteSchema,
@@ -64,6 +65,31 @@ describe("validación de grupos privados", () => {
     assert.deepEqual(groupCallActionSchema.parse(base), { ...base, videoEnabled: false });
     assert.equal(groupCallActionSchema.safeParse({ ...base, videoEnabled: true }).success, true);
     assert.equal(groupCallActionSchema.safeParse({ ...base, videoEnabled: "yes" }).success, false);
+    assert.equal(groupCallActionSchema.safeParse({ ...base, action: "raiseHand" }).success, true);
+    assert.equal(groupCallActionSchema.safeParse({ ...base, action: "lowerHand" }).success, true);
+  });
+
+  it("limita los trazos de la pizarra a colores y coordenadas permitidos", () => {
+    const base = {
+      action: "stroke",
+      connectionId: "9fef3fb7-7ad1-4673-b2a8-ec6fb97dfcb0",
+      color: "#2563eb",
+      width: 4,
+      erase: false,
+      points: [{ x: 0.1, y: 0.9 }, { x: 0.8, y: 0.2 }],
+    };
+
+    assert.equal(groupCallBoardActionSchema.safeParse(base).success, true);
+    assert.equal(groupCallBoardActionSchema.safeParse({ ...base, color: "url(https://example.com)" }).success, false);
+    assert.equal(groupCallBoardActionSchema.safeParse({ ...base, points: [{ x: 1.1, y: 0.5 }] }).success, false);
+    assert.equal(
+      groupCallBoardActionSchema.safeParse({ ...base, points: Array.from({ length: 81 }, () => ({ x: 0.5, y: 0.5 })) }).success,
+      false,
+    );
+    assert.equal(
+      groupCallBoardActionSchema.safeParse({ action: "clear", connectionId: base.connectionId }).success,
+      true,
+    );
   });
 
   it("valida la configuración opcional de servidores ICE", () => {

@@ -5,8 +5,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { GroupActorType } from "@/lib/groups/auth";
 
 import { useT } from "../i18n/LocaleProvider";
+import { GroupCallWhiteboard } from "./GroupCallWhiteboard";
 
-type Participant = { connectionId: string; displayName: string };
+type Participant = { connectionId: string; displayName: string; raisedHandAt: string | null };
 type CallSnapshot = {
   id: string;
   startedByName: string;
@@ -50,6 +51,7 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
   const [busy, setBusy] = useState(false);
   const [muted, setMuted] = useState(false);
   const [cameraEnabled, setCameraEnabled] = useState(true);
+  const [handBusy, setHandBusy] = useState(false);
   const callIdRef = useRef<string | null>(null);
   const connectionIdRef = useRef<string | null>(null);
   const callStarterRef = useRef(false);
@@ -389,7 +391,34 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
     setCameraEnabled(next);
   }
 
+  async function toggleRaisedHand() {
+    if (!localCall) return;
+    setHandBusy(true);
+    setError(null);
+    const isRaised = Boolean(call?.participants.find((participant) => participant.connectionId === localCall.connectionId)?.raisedHandAt);
+    try {
+      const response = await fetch(callsEndpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          action: isRaised ? "lowerHand" : "raiseHand",
+          callId: localCall.id,
+          connectionId: localCall.connectionId,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) setError(result.error ?? "groups.errors.voiceConnectionFailed");
+    } catch {
+      setError("groups.errors.network");
+    } finally {
+      setHandBusy(false);
+    }
+  }
+
   const isVideoCall = localCall?.videoEnabled ?? call?.videoEnabled ?? false;
+  const raisedHand = Boolean(
+    localCall && call?.participants.find((participant) => participant.connectionId === localCall.connectionId)?.raisedHandAt,
+  );
 
   return (
     <section className="flex flex-wrap items-center justify-between gap-4 border-2 border-line bg-paper px-4 py-4">
@@ -407,6 +436,9 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
       <div className="flex flex-wrap gap-2">
         {localCall ? (
           <>
+            <button type="button" onClick={() => void toggleRaisedHand()} disabled={handBusy} aria-pressed={raisedHand} className="btn-outline btn-sm disabled:opacity-50">
+              {t(raisedHand ? "groups.lowerHand" : "groups.raiseHand")}
+            </button>
             <button type="button" onClick={toggleMuted} className="btn-outline btn-sm">
               {t(muted ? "groups.unmute" : "groups.mute")}
             </button>
@@ -458,10 +490,21 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
           ))}
         </div>
       ) : null}
+      {localCall ? (
+        <GroupCallWhiteboard
+          actorType={actorType}
+          groupId={groupId}
+          callId={localCall.id}
+          connectionId={localCall.connectionId}
+        />
+      ) : null}
       {call ? (
         <ul className="flex w-full flex-wrap gap-2" aria-label={t("groups.voiceParticipants")}>
           {call.participants.map((participant) => (
-            <li key={participant.connectionId} className="tag-muted">{participant.displayName}</li>
+            <li key={participant.connectionId} className="tag-muted">
+              {participant.raisedHandAt ? <span aria-label={t("groups.handRaised")}>✋ </span> : null}
+              {participant.displayName}
+            </li>
           ))}
         </ul>
       ) : null}

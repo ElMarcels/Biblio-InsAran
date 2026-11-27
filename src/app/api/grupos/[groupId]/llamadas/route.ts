@@ -25,7 +25,7 @@ async function activeParticipants(callId: string) {
       leftAt: null,
       lastSeenAt: { gte: new Date(Date.now() - CALL_PARTICIPANT_TTL_MS) },
     },
-    select: { connectionId: true, displayName: true },
+    select: { connectionId: true, displayName: true, raisedHandAt: true },
     orderBy: { joinedAt: "asc" },
   });
 }
@@ -44,6 +44,7 @@ async function currentCall(groupId: string) {
       data: { endedAt: new Date() },
     });
     await prisma.groupCallSignal.deleteMany({ where: { callId: call.id } });
+    await prisma.groupCallBoardEvent.deleteMany({ where: { callId: call.id } });
     return null;
   }
   return { call, participants };
@@ -178,6 +179,7 @@ export async function POST(request: Request, context: Context) {
         displayName: actor.displayName,
         lastSeenAt: now,
         leftAt: null,
+        raisedHandAt: null,
       },
     });
     return NextResponse.json({ callId });
@@ -189,14 +191,23 @@ export async function POST(request: Request, context: Context) {
       connectionId,
       ...actorParticipant,
       leftAt: null,
+      lastSeenAt: { gte: new Date(Date.now() - CALL_PARTICIPANT_TTL_MS) },
     },
   });
   if (!participant) return NextResponse.json({ error: "groups.errors.notInCall" }, { status: 403 });
 
+  if (action === "raiseHand" || action === "lowerHand") {
+    await prisma.groupCallParticipant.update({
+      where: { id: participant.id },
+      data: { raisedHandAt: action === "raiseHand" ? now : null },
+    });
+    return NextResponse.json({ ok: true });
+  }
+
   if (action === "leave") {
     await prisma.groupCallParticipant.update({
       where: { id: participant.id },
-      data: { leftAt: now },
+      data: { leftAt: now, raisedHandAt: null },
     });
     return NextResponse.json({ ok: true });
   }
@@ -209,8 +220,9 @@ export async function POST(request: Request, context: Context) {
   await prisma.groupCall.update({ where: { id: callId }, data: { endedAt: now } });
   await prisma.groupCallParticipant.updateMany({
     where: { callId, leftAt: null },
-    data: { leftAt: now },
+    data: { leftAt: now, raisedHandAt: null },
   });
   await prisma.groupCallSignal.deleteMany({ where: { callId } });
+  await prisma.groupCallBoardEvent.deleteMany({ where: { callId } });
   return NextResponse.json({ ok: true });
 }

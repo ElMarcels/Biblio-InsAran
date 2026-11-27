@@ -33,6 +33,17 @@ enum DigitalResourceType {
   LINK
 }
 
+enum GroupMemberRole {
+  OWNER
+  MEMBER
+}
+
+enum GroupInvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 /// Cuenta de la plataforma.
 model User {
   id                 String    @id @default(cuid())
@@ -79,6 +90,13 @@ model User {
   /// Conversaciones y acciones propuestas por Aran (asistente de IA).
   assistantConversations AssistantConversation[]
   assistantActions       AssistantAction[]
+
+  groups                 GroupMember[]             @relation("GroupMemberUser")
+  groupInvitationsSent   GroupInvitation[]         @relation("GroupInvitationSenderUser")
+  groupInvitations       GroupInvitation[]         @relation("GroupInvitationTargetUser")
+  groupMessages          GroupMessage[]            @relation("GroupMessageSenderUser")
+  groupCallsStarted      GroupCall[]               @relation("GroupCallStarterUser")
+  groupCallParticipants  GroupCallParticipant[]    @relation("GroupCallParticipantUser")
 
   @@index([role])
   @@index([active])
@@ -256,6 +274,13 @@ model Reader {
   assistantConversations AssistantConversation[]
   assistantActions       AssistantAction[]
 
+  groups                 GroupMember[]             @relation("GroupMemberReader")
+  groupInvitationsSent   GroupInvitation[]         @relation("GroupInvitationSenderReader")
+  groupInvitations       GroupInvitation[]         @relation("GroupInvitationTargetReader")
+  groupMessages          GroupMessage[]            @relation("GroupMessageSenderReader")
+  groupCallsStarted      GroupCall[]               @relation("GroupCallStarterReader")
+  groupCallParticipants  GroupCallParticipant[]    @relation("GroupCallParticipantReader")
+
   @@index([fullName])
   @@index([active])
   @@index([suspendedUntil])
@@ -274,6 +299,131 @@ model ReaderSession {
 
   @@index([readerId])
   @@index([expiresAt])
+}
+
+/// Grupo privado creado por una cuenta de personal o de lector/a.
+model Group {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members      GroupMember[]
+  invitations  GroupInvitation[]
+  messages     GroupMessage[]
+  calls        GroupCall[]
+
+  @@index([createdAt])
+}
+
+/// Membresía; exactamente uno de `userId` y `readerId` se rellena en la capa de servicio.
+model GroupMember {
+  id        String          @id @default(cuid())
+  groupId   String
+  group     Group           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?           @relation("GroupMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  readerId  String?
+  reader    Reader?         @relation("GroupMemberReader", fields: [readerId], references: [id], onDelete: Cascade)
+  role      GroupMemberRole @default(MEMBER)
+  joinedAt  DateTime        @default(now())
+
+  @@unique([groupId, userId])
+  @@unique([groupId, readerId])
+  @@index([userId])
+  @@index([readerId])
+}
+
+/// Invitación privada a una cuenta concreta; no crea membresía hasta aceptarla.
+model GroupInvitation {
+  id                   String                @id @default(cuid())
+  groupId              String
+  group                Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  invitedByUserId      String?
+  invitedByUser        User?                 @relation("GroupInvitationSenderUser", fields: [invitedByUserId], references: [id], onDelete: SetNull)
+  invitedByReaderId    String?
+  invitedByReader      Reader?               @relation("GroupInvitationSenderReader", fields: [invitedByReaderId], references: [id], onDelete: SetNull)
+  invitedByName        String
+  invitedUserId        String?
+  invitedUser          User?                 @relation("GroupInvitationTargetUser", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  invitedReaderId      String?
+  invitedReader        Reader?               @relation("GroupInvitationTargetReader", fields: [invitedReaderId], references: [id], onDelete: Cascade)
+  status               GroupInvitationStatus @default(PENDING)
+  createdAt            DateTime              @default(now())
+  respondedAt          DateTime?
+
+  @@index([invitedUserId, status])
+  @@index([invitedReaderId, status])
+  @@index([groupId, status])
+}
+
+/// Mensaje guardado en un grupo; conserva el nombre mostrado al enviarlo.
+model GroupMessage {
+  id             String   @id @default(cuid())
+  groupId        String
+  group          Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  senderUserId   String?
+  senderUser     User?    @relation("GroupMessageSenderUser", fields: [senderUserId], references: [id], onDelete: SetNull)
+  senderReaderId String?
+  senderReader   Reader?  @relation("GroupMessageSenderReader", fields: [senderReaderId], references: [id], onDelete: SetNull)
+  senderName     String
+  content        String
+  createdAt      DateTime @default(now())
+
+  @@index([groupId, createdAt])
+}
+
+/// Sala de voz WebRTC abierta por una persona del grupo.
+model GroupCall {
+  id              String   @id @default(cuid())
+  groupId         String
+  group           Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  startedByUserId String?
+  startedByUser   User?    @relation("GroupCallStarterUser", fields: [startedByUserId], references: [id], onDelete: SetNull)
+  startedByReaderId String?
+  startedByReader Reader?  @relation("GroupCallStarterReader", fields: [startedByReaderId], references: [id], onDelete: SetNull)
+  startedByName   String
+  createdAt       DateTime @default(now())
+  endedAt         DateTime?
+
+  participants GroupCallParticipant[]
+  signals      GroupCallSignal[]
+
+  @@index([groupId, endedAt, createdAt])
+}
+
+/// Sesión de un dispositivo en una llamada; se renueva mediante heartbeat.
+model GroupCallParticipant {
+  id             String   @id @default(cuid())
+  callId         String
+  call           GroupCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+  connectionId   String
+  userId         String?
+  user           User?    @relation("GroupCallParticipantUser", fields: [userId], references: [id], onDelete: Cascade)
+  readerId       String?
+  reader         Reader?  @relation("GroupCallParticipantReader", fields: [readerId], references: [id], onDelete: Cascade)
+  displayName    String
+  joinedAt       DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+  leftAt         DateTime?
+
+  @@unique([callId, connectionId])
+  @@index([callId, lastSeenAt])
+}
+
+/// WebRTC SDP/ICE signal, delivered only to the addressed participant.
+model GroupCallSignal {
+  id                 String   @id @default(cuid())
+  callId             String
+  call               GroupCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+  fromConnectionId   String
+  toConnectionId     String
+  type               String
+  payload            String
+  createdAt          DateTime @default(now())
+
+  @@index([callId, toConnectionId, createdAt])
 }
 
 /// Préstamo de un ejemplar a un lector/a.

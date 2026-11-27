@@ -12,13 +12,16 @@ pública; la gestión del fondo está restringida a las cuentas de la plataforma
   de carné y un PIN, consulta sus préstamos y reservas, prorroga y reserva
   libros, mantiene sus **listas de lectura**, valora y reseña los libros,
   recibe **avisos** (préstamo, reserva, retraso, sanción) y puede pedir
-  títulos. El primer acceso obliga a elegir PIN propio.
+  títulos. El primer acceso obliga a elegir PIN propio. También puede crear o
+  aceptar invitaciones a **grupos privados** con lectores y personal, escribir
+  mensajes y participar en llamadas de voz.
 - **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
   gestiona préstamos, reservas, lectores, listas curadas y **solicitudes de
   compra** (al aprobar una, el título entra en el catálogo), además de añadir,
   editar y borrar recursos digitales desde el panel. Cuenta con un
   **calendario de vencimientos** para ver de un vistazo qué devoluciones tocan
-  cada día del mes.
+  cada día del mes. También puede crear grupos privados, invitar cuentas y usar
+  su chat y llamadas de voz.
 - **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la
   plataforma, consulta el registro de actividad y publica las novedades de
   AranOS con un tour opcional para las nuevas funciones; cada cuenta de personal
@@ -83,6 +86,13 @@ npm run dev             # http://localhost:3000
 | `ASSISTANT_DAILY_LIMIT` | Mensajes por identidad y día (por defecto `300`). |
 | `ASSISTANT_HISTORY_DAYS` | Días de retención del historial (por defecto `90`). |
 | `ASSISTANT_MAX_OUTPUT_TOKENS` | Tope de tokens de cada respuesta (por defecto `2048`). |
+| `WEBRTC_ICE_SERVERS` | JSON opcional con servidores ICE/STUN/TURN para las llamadas, por ejemplo `[ {"urls":"turn:turn.example.org:3478","username":"usuario-temporal","credential":"credencial-temporal"} ]`. Si se omite, se usa STUN público; usa credenciales TURN temporales y restringidas, porque se entregan a los navegadores de los miembros de la llamada. |
+
+Los grupos admiten hasta 30 miembros y las llamadas hasta 6 participantes. Para
+activar el esquema en producción, aplica la migración `20261127112000_private_groups`
+con `npm run db:deploy` (en desarrollo, `npm run db:migrate`). Las llamadas
+requieren HTTPS y permiso de micrófono; en redes restrictivas puede ser
+necesario configurar TURN en `WEBRTC_ICE_SERVERS`.
 
 > **Neon / proveedores con pooling:** la URL agrupada incluye el sufijo
 > `-pooler` en el host. Esa conexión no admite los bloqueos que Prisma necesita

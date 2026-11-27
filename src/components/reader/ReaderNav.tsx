@@ -13,6 +13,7 @@ const TABS = [
   { href: "/mi-biblioteca/historial", label: "reader.tabHistory" },
   { href: "/mi-biblioteca/listas", label: "reader.tabLists" },
   { href: "/mi-biblioteca/notificaciones", label: "reader.tabNotifications" },
+  { href: "/mi-biblioteca/grupos", label: "reader.tabGroups" },
   { href: "/mi-biblioteca/solicitudes", label: "reader.tabSuggestions" },
   { href: "/mi-biblioteca/cuenta", label: "reader.tabAccount" },
 ] as const;

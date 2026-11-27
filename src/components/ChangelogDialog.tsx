@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { dismissChangelogAction } from "@/lib/actions/changelog";
 
@@ -11,6 +11,7 @@ export type ChangelogItem = {
   id: string;
   title: string;
   body: string;
+  tourSteps: string | null;
   createdAt: string;
 };
 
@@ -25,6 +26,35 @@ export function ChangelogDialog({ items }: { items: ChangelogItem[] }) {
   const t = useT();
   const [pending, startTransition] = useTransition();
   const dismissing = useRef(false);
+  const tours = items.flatMap((item) => {
+    const steps = item.tourSteps?.split(/\r?\n/).map((step) => step.trim()).filter(Boolean) ?? [];
+    return steps.length > 0 ? [{ title: item.title, steps }] : [];
+  });
+  const [tourIndex, setTourIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(0);
+  const activeTour = tours[tourIndex];
+
+  function previousTourStep() {
+    if (stepIndex > 0) {
+      setStepIndex(stepIndex - 1);
+    } else if (tourIndex > 0) {
+      const previousIndex = tourIndex - 1;
+      setTourIndex(previousIndex);
+      setStepIndex(tours[previousIndex].steps.length - 1);
+    }
+  }
+
+  function nextTourStep() {
+    if (!activeTour) return;
+    if (stepIndex + 1 < activeTour.steps.length) {
+      setStepIndex(stepIndex + 1);
+    } else if (tourIndex + 1 < tours.length) {
+      setTourIndex(tourIndex + 1);
+      setStepIndex(0);
+    } else {
+      setTourIndex(tours.length);
+    }
+  }
 
   useEffect(() => {
     // Nada de desplazamiento de fondo mientras el aviso está abierto.
@@ -92,6 +122,73 @@ export function ChangelogDialog({ items }: { items: ChangelogItem[] }) {
               <Markdown>{item.body}</Markdown>
             </article>
           ))}
+          {tours.length > 0 ? (
+            <section
+              className="mt-7 border-2 border-line bg-paper p-5"
+              aria-live="polite"
+              aria-labelledby="changelog-tour-title"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="micro mb-1">AranOS · Tour</p>
+                  <h3 id="changelog-tour-title" className="font-display text-[18px] font-bold">
+                    {activeTour
+                      ? t("changelog.tourFor", { title: activeTour.title })
+                      : t("changelog.tourCompleted")}
+                  </h3>
+                </div>
+                {activeTour ? (
+                  <span className="tag-muted">
+                    {t("changelog.tourProgress", {
+                      current: stepIndex + 1,
+                      total: activeTour.steps.length,
+                    })}
+                  </span>
+                ) : null}
+              </div>
+              {activeTour ? (
+                <>
+                  <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
+                    {activeTour.steps[stepIndex]}
+                  </p>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={previousTourStep}
+                      disabled={pending || (tourIndex === 0 && stepIndex === 0)}
+                      className="btn-outline btn-sm disabled:opacity-50"
+                    >
+                      {t("common.anterior")}
+                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setTourIndex(tours.length)}
+                        disabled={pending}
+                        className="btn-outline btn-sm"
+                      >
+                        {t("changelog.skipTour")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={nextTourStep}
+                        disabled={pending}
+                        className="btn-primary btn-sm"
+                      >
+                        {tourIndex + 1 < tours.length || stepIndex + 1 < activeTour.steps.length
+                          ? t("common.siguiente")
+                          : t("changelog.finishTour")}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <p className="mt-2 text-[13px] text-ink-soft">
+                  {t("changelog.tourCompletedDescription")}
+                </p>
+              )}
+            </section>
+          ) : null}
         </div>
 
         <div className="flex items-center justify-between gap-4 border-t-2 border-line bg-paper px-5 py-4 sm:px-7">

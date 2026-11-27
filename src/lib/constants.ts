@@ -1,7 +1,7 @@
 // Constantes compartidas de la plataforma.
 
-export const SITE_NAME = "Biblioteca Institut d'Aran";
-export const SITE_SHORT = "Biblioteca";
+export const SITE_NAME = "AranOS";
+export const SITE_SHORT = "AranOS";
 
 /** Institución a la que pertenece la biblioteca (aparece junto al logotipo). */
 export const SITE_INSTITUTION = "Institut d'Aran";

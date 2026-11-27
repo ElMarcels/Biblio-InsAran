@@ -7,6 +7,7 @@ export type PendingChangelog = {
   id: string;
   title: string;
   body: string;
+  tourSteps: string | null;
   createdAt: Date;
 };
 
@@ -18,6 +19,6 @@ export async function pendingChangelogs(userId: string): Promise<PendingChangelo
   return prisma.changelog.findMany({
     where: { views: { none: { userId } } },
     orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, body: true, createdAt: true },
+    select: { id: true, title: true, body: true, tourSteps: true, createdAt: true },
   });
 }

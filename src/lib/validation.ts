@@ -592,6 +592,21 @@ export const changelogSchema = z.object({
     .trim()
     .min(1, msg("validation.changelogBodyRequired"))
     .max(20000, msg("validation.changelogBodyTooLong")),
+  tourSteps: z
+    .string()
+    .trim()
+    .max(1120, msg("validation.changelogTourTooLong"))
+    .optional()
+    .transform((value) => {
+      if (!value) return undefined;
+      return value
+        .split(/\r?\n/)
+        .map((step) => step.trim())
+        .filter(Boolean)
+        .join("\n");
+    })
+    .refine((value) => !value || value.split("\n").length <= 5, msg("validation.changelogTourTooManySteps"))
+    .refine((value) => !value || value.split("\n").every((step) => step.length <= 220), msg("validation.changelogTourStepTooLong")),
 });
 
 export type ChangelogInput = z.infer<typeof changelogSchema>;

@@ -362,6 +362,8 @@ model Changelog {
   title     String
   /// Contenido en Markdown.
   body      String
+  /// Pasos de un recorrido guiado, uno por línea.
+  tourSteps String?
   createdAt DateTime @default(now())
 
   createdById String?

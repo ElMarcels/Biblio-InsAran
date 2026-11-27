@@ -71,6 +71,22 @@ export function ChangelogPublishForm() {
         />
       </Field>
 
+      <Field
+        label="panel.changelog.tourSteps"
+        htmlFor="tourSteps"
+        error={errors.tourSteps}
+        hint="panel.changelog.tourStepsHint"
+      >
+        <textarea
+          id="tourSteps"
+          name="tourSteps"
+          rows={4}
+          className={`${inputClass(Boolean(errors.tourSteps))} font-mono text-[13px]`}
+          maxLength={1120}
+          aria-invalid={Boolean(errors.tourSteps)}
+        />
+      </Field>
+
       <div>
         <SubmitButton pendingLabel="panel.changelog.publicando">
           {t("panel.changelog.publicar")}

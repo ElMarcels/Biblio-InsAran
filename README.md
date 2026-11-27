@@ -1,8 +1,8 @@
-# Biblioteca Institut d'Aran
+# AranOS
 
-Aplicación web para el catálogo y la gestión del fondo bibliográfico de la
-Biblioteca Institut d'Aran. El catálogo es de consulta pública; la gestión del
-fondo está restringida a las cuentas de la plataforma.
+AranOS es la aplicación web para el catálogo y la gestión del fondo
+bibliográfico de la Biblioteca Institut d'Aran. El catálogo es de consulta
+pública; la gestión del fondo está restringida a las cuentas de la plataforma.
 
 - **Visitante** (sin cuenta): consulta el catálogo, busca y filtra por
   categoría, idioma o año, ve la ficha de cada libro y puede **pedir un título**
@@ -20,8 +20,9 @@ fondo está restringida a las cuentas de la plataforma.
   **calendario de vencimientos** para ver de un vistazo qué devoluciones tocan
   cada día del mes.
 - **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la
-  plataforma, consulta el registro de actividad y publica las novedades de la
-  plataforma (changelog), que cada cuenta de personal ve una sola vez.
+  plataforma, consulta el registro de actividad y publica las novedades de
+  AranOS con un tour opcional para las nuevas funciones; cada cuenta de personal
+  las ve una sola vez.
 
 ---
 

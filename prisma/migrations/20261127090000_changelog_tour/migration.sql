@@ -1,0 +1,1 @@
+ALTER TABLE "Changelog" ADD COLUMN "tourSteps" TEXT;

@@ -61,6 +61,7 @@ export async function publishChangelogAction(
     data: {
       title: parsed.data.title,
       body: parsed.data.body,
+      tourSteps: parsed.data.tourSteps ?? null,
       createdById: user.id,
     },
   });

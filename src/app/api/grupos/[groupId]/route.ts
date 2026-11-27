@@ -10,6 +10,7 @@ import {
 import {
   groupInviteSchema,
   groupMessageSchema,
+  groupUpdateSchema,
   MAX_GROUP_MEMBERS,
 } from "@/lib/groups/validation";
 import { prisma } from "@/lib/prisma";
@@ -44,6 +45,49 @@ export async function GET(request: Request, context: Context) {
       createdAt: message.createdAt.toISOString(),
     })),
   });
+}
+
+export async function PATCH(request: Request, context: Context) {
+  const actor = await getGroupActor(requestedActorType(request));
+  if (!actor) return NextResponse.json({ error: "groups.errors.session" }, { status: 401 });
+  const { groupId } = await context.params;
+  const membership = await getGroupMembership(groupId, actor);
+  if (!membership) return NextResponse.json({ error: "groups.errors.groupNotFound" }, { status: 404 });
+  if (membership.role !== "OWNER") {
+    return NextResponse.json({ error: "groups.errors.ownerOnly" }, { status: 403 });
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "groups.errors.invalidData" }, { status: 400 });
+  }
+  const parsed = groupUpdateSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "groups.errors.invalidGroup" }, { status: 400 });
+  }
+
+  const group = await prisma.group.update({
+    where: { id: groupId },
+    data: parsed.data,
+    select: { id: true, name: true, description: true },
+  });
+  return NextResponse.json({ group });
+}
+
+export async function DELETE(request: Request, context: Context) {
+  const actor = await getGroupActor(requestedActorType(request));
+  if (!actor) return NextResponse.json({ error: "groups.errors.session" }, { status: 401 });
+  const { groupId } = await context.params;
+  const membership = await getGroupMembership(groupId, actor);
+  if (!membership) return NextResponse.json({ error: "groups.errors.groupNotFound" }, { status: 404 });
+  if (membership.role !== "OWNER") {
+    return NextResponse.json({ error: "groups.errors.ownerOnly" }, { status: 403 });
+  }
+
+  await prisma.group.delete({ where: { id: groupId } });
+  return NextResponse.json({ ok: true });
 }
 
 export async function POST(request: Request, context: Context) {

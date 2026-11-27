@@ -42,6 +42,10 @@ export function GroupRoom({
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviting, setInviting] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<string[]>([]);
+  const [editingGroup, setEditingGroup] = useState(false);
+  const [savingGroup, setSavingGroup] = useState(false);
+  const [deletingGroup, setDeletingGroup] = useState(false);
+  const [groupError, setGroupError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastMessageAtRef = useRef(initialMessages.at(-1)?.createdAt ?? null);
   const headers = { "Content-Type": "application/json", "x-aranos-actor": actorType };
@@ -160,6 +164,54 @@ export function GroupRoom({
     }
   }
 
+  async function updateGroup(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSavingGroup(true);
+    setGroupError(null);
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch(endpoint, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({
+          name: form.get("name"),
+          description: form.get("description"),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setGroupError(data.error ?? "groups.errors.updateFailed");
+        return;
+      }
+      setEditingGroup(false);
+      router.refresh();
+    } catch {
+      setGroupError("groups.errors.network");
+    } finally {
+      setSavingGroup(false);
+    }
+  }
+
+  async function deleteGroup() {
+    if (!window.confirm(t("groups.deleteConfirm", { name: group.name }))) return;
+    setDeletingGroup(true);
+    setGroupError(null);
+    try {
+      const response = await fetch(endpoint, { method: "DELETE", headers });
+      const data = await response.json();
+      if (!response.ok) {
+        setGroupError(data.error ?? "groups.errors.deleteFailed");
+        return;
+      }
+      router.push(basePath);
+      router.refresh();
+    } catch {
+      setGroupError("groups.errors.network");
+    } finally {
+      setDeletingGroup(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-7">
       <header className="flex flex-wrap items-end justify-between gap-4">
@@ -227,6 +279,42 @@ export function GroupRoom({
               ))}
             </ul>
           </section>
+
+          {role === "OWNER" ? (
+            <section className="flex flex-col gap-3 border-2 border-line bg-paper p-4">
+              <h3 className="font-display text-[18px] font-bold">{t("groups.manageGroup")}</h3>
+              {groupError ? <p role="alert" className="text-[13px] text-danger">{t(groupError as never)}</p> : null}
+              {editingGroup ? (
+                <form onSubmit={updateGroup} className="flex flex-col gap-3">
+                  <label className="flex flex-col gap-1 text-[13px] font-semibold">
+                    {t("groups.name")}
+                    <input name="name" className="input" minLength={2} maxLength={60} defaultValue={group.name} required />
+                  </label>
+                  <label className="flex flex-col gap-1 text-[13px] font-semibold">
+                    {t("groups.description")}
+                    <textarea name="description" className="input min-h-20 resize-y" maxLength={300} defaultValue={group.description} />
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="submit" disabled={savingGroup} className="btn-primary btn-sm disabled:opacity-50">
+                      {savingGroup ? t("groups.saving") : t("groups.saveChanges")}
+                    </button>
+                    <button type="button" disabled={savingGroup} onClick={() => setEditingGroup(false)} className="btn-outline btn-sm disabled:opacity-50">
+                      {t("groups.cancel")}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setEditingGroup(true)} className="btn-outline btn-sm">
+                    {t("groups.editGroup")}
+                  </button>
+                  <button type="button" disabled={deletingGroup} onClick={deleteGroup} className="btn-outline btn-sm text-danger disabled:opacity-50">
+                    {deletingGroup ? t("groups.deleting") : t("groups.deleteGroup")}
+                  </button>
+                </div>
+              )}
+            </section>
+          ) : null}
 
           {role === "OWNER" ? (
             <section className="flex flex-col gap-3 border-2 border-line bg-paper p-4">

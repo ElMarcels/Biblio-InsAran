@@ -8,6 +8,7 @@ import {
   groupCreateSchema,
   groupInviteSchema,
   groupMessageSchema,
+  groupUpdateSchema,
   iceServersSchema,
 } from "./validation";
 
@@ -25,6 +26,15 @@ describe("validación de grupos privados", () => {
         description: "Lecturas del curso",
       });
     }
+  });
+
+  it("valida y normaliza los cambios de nombre y descripción del grupo", () => {
+    assert.deepEqual(
+      groupUpdateSchema.parse({ name: "  Club lector  ", description: "  Lecturas del curso  " }),
+      { name: "Club lector", description: "Lecturas del curso" },
+    );
+    assert.equal(groupUpdateSchema.safeParse({ name: "x", description: "" }).success, false);
+    assert.equal(groupUpdateSchema.safeParse({ name: "Club", description: "x".repeat(301) }).success, false);
   });
 
   it("rechaza mensajes vacíos y demasiado largos", () => {

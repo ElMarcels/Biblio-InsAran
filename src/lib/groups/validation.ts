@@ -6,10 +6,13 @@ export const MAX_VOICE_PARTICIPANTS = 6;
 export const CALL_PARTICIPANT_TTL_MS = 30_000;
 export const MAX_GROUP_CALL_BOARD_EVENTS = 500;
 
-export const groupCreateSchema = z.object({
+const groupDetailsShape = {
   name: z.string().trim().min(2).max(60),
   description: z.string().trim().max(300).default(""),
-});
+};
+
+export const groupCreateSchema = z.object(groupDetailsShape);
+export const groupUpdateSchema = z.object(groupDetailsShape);
 
 export const groupMessageSchema = z.object({
   content: z.string().trim().min(1).max(1500),

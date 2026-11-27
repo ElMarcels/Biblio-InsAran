@@ -374,7 +374,7 @@ model GroupMessage {
   @@index([groupId, createdAt])
 }
 
-/// Sala de voz WebRTC abierta por una persona del grupo.
+/// Sala de voz o videollamada WebRTC abierta por una persona del grupo.
 model GroupCall {
   id              String   @id @default(cuid())
   groupId         String
@@ -384,6 +384,7 @@ model GroupCall {
   startedByReaderId String?
   startedByReader Reader?  @relation("GroupCallStarterReader", fields: [startedByReaderId], references: [id], onDelete: SetNull)
   startedByName   String
+  videoEnabled    Boolean  @default(false)
   createdAt       DateTime @default(now())
   endedAt         DateTime?
 

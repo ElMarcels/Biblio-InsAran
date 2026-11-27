@@ -11,10 +11,11 @@ type CallSnapshot = {
   id: string;
   startedByName: string;
   isStarter: boolean;
+  videoEnabled: boolean;
   participants: Participant[];
   createdAt: string;
 };
-type LocalCall = { id: string; connectionId: string; isStarter: boolean };
+type LocalCall = { id: string; connectionId: string; isStarter: boolean; videoEnabled: boolean };
 type Signal = {
   id: string;
   fromConnectionId: string;
@@ -23,13 +24,32 @@ type Signal = {
   createdAt: number;
 };
 
+function StreamVideo({ stream, label, muted = false }: { stream: MediaStream; label: string; muted?: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.srcObject = stream;
+    void video.play().catch(() => undefined);
+    return () => {
+      video.srcObject = null;
+    };
+  }, [stream]);
+
+  return <video ref={videoRef} autoPlay playsInline muted={muted} aria-label={label} className="h-full w-full object-cover" />;
+}
+
 export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorType; groupId: string }) {
   const t = useT();
   const [call, setCall] = useState<CallSnapshot | null>(null);
   const [localCall, setLocalCall] = useState<LocalCall | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteVideoStreams, setRemoteVideoStreams] = useState<Record<string, MediaStream>>({});
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(true);
   const callIdRef = useRef<string | null>(null);
   const connectionIdRef = useRef<string | null>(null);
   const callStarterRef = useRef(false);
@@ -76,6 +96,11 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
       audio.srcObject = null;
       audioRef.current.delete(connectionId);
     }
+    setRemoteVideoStreams((current) => {
+      const next = { ...current };
+      delete next[connectionId];
+      return next;
+    });
     pendingCandidatesRef.current.delete(connectionId);
   }, []);
 
@@ -91,7 +116,7 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
       iceServers: iceServersRef.current ?? [{ urls: "stun:stun.l.google.com:19302" }],
     });
     peersRef.current.set(remoteConnectionId, peer);
-    streamRef.current.getAudioTracks().forEach((track) => peer.addTrack(track, streamRef.current!));
+    streamRef.current.getTracks().forEach((track) => peer.addTrack(track, streamRef.current!));
     peer.onicecandidate = (event) => {
       if (!event.candidate) return;
       void sendSignal(callId, remoteConnectionId, "candidate", event.candidate.toJSON()).catch(() => {
@@ -99,11 +124,21 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
       });
     };
     peer.ontrack = (event) => {
+      const stream = event.streams[0] ?? new MediaStream([event.track]);
       const audio = audioRef.current.get(remoteConnectionId) ?? new Audio();
       audio.autoplay = true;
-      audio.srcObject = event.streams[0] ?? new MediaStream([event.track]);
+      audio.srcObject = stream;
       audioRef.current.set(remoteConnectionId, audio);
       void audio.play().catch(() => setError("groups.errors.audioPlayback"));
+      if (event.track.kind === "video") {
+        setRemoteVideoStreams((current) => ({ ...current, [remoteConnectionId]: stream }));
+        event.track.onmute = () => setRemoteVideoStreams((current) => {
+          const next = { ...current };
+          delete next[remoteConnectionId];
+          return next;
+        });
+        event.track.onunmute = () => setRemoteVideoStreams((current) => ({ ...current, [remoteConnectionId]: stream }));
+      }
     };
 
     if (ownConnectionId < remoteConnectionId) {
@@ -137,6 +172,8 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
     audioRef.current.clear();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+    setLocalStream(null);
+    setRemoteVideoStreams({});
     iceServersRef.current = null;
     pendingCandidatesRef.current.clear();
     seenSignalsRef.current.clear();
@@ -146,6 +183,7 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
     callStarterRef.current = false;
     setLocalCall(null);
     setMuted(false);
+    setCameraEnabled(true);
   }, [callsEndpoint, headers]);
 
   const reconcileParticipants = useCallback(async (participants: Participant[]) => {
@@ -261,9 +299,10 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
 
   useEffect(() => () => teardown(true), [teardown]);
 
-  async function startOrJoin() {
+  async function startOrJoin(videoEnabled = false) {
     setBusy(true);
     setError(null);
+    const useVideo = call?.videoEnabled ?? videoEnabled;
     let stream: MediaStream;
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
@@ -271,10 +310,14 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
         setBusy(false);
         return;
       }
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: useVideo ? { facingMode: "user" } : false,
+      });
       streamRef.current = stream;
+      setLocalStream(stream);
     } catch {
-      setError("groups.errors.microphonePermission");
+      setError(useVideo ? "groups.errors.cameraPermission" : "groups.errors.microphonePermission");
       setBusy(false);
       return;
     }
@@ -298,24 +341,21 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
         // Si no hay configuración adicional, se conserva el STUN predeterminado.
       }
 
-      let response = await fetch(callsEndpoint, {
+      const response = await fetch(callsEndpoint, {
         method: "POST",
         headers,
-        body: JSON.stringify({ action, ...(call ? { callId: call.id } : {}), connectionId }),
+        body: JSON.stringify({
+          action,
+          ...(call ? { callId: call.id } : {}),
+          connectionId,
+          ...(action === "start" ? { videoEnabled: useVideo } : {}),
+        }),
       });
-      let result = await response.json();
-      if (!response.ok && response.status === 409 && result.callId) {
-        const existingCallId = result.callId as string;
-        response = await fetch(callsEndpoint, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ action: "join", callId: existingCallId, connectionId }),
-        });
-        result = await response.json();
-      }
+      const result = await response.json();
       if (!response.ok) {
         stream.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
+        setLocalStream(null);
         setError(result.error ?? "groups.errors.voiceConnectionFailed");
         return;
       }
@@ -326,10 +366,11 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
       heartbeatAtRef.current = Date.now();
       sinceRef.current = Date.now() - 10_000;
       seenSignalsRef.current.clear();
-      setLocalCall({ id, connectionId, isStarter: callStarterRef.current });
+      setLocalCall({ id, connectionId, isStarter: callStarterRef.current, videoEnabled: useVideo });
     } catch {
       stream.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+      setLocalStream(null);
       setError("groups.errors.network");
     } finally {
       setBusy(false);
@@ -342,16 +383,24 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
     setMuted(next);
   }
 
+  function toggleCamera() {
+    const next = !cameraEnabled;
+    streamRef.current?.getVideoTracks().forEach((track) => { track.enabled = next; });
+    setCameraEnabled(next);
+  }
+
+  const isVideoCall = localCall?.videoEnabled ?? call?.videoEnabled ?? false;
+
   return (
     <section className="flex flex-wrap items-center justify-between gap-4 border-2 border-line bg-paper px-4 py-4">
       <div>
-        <h3 className="font-display text-[18px] font-bold">{t("groups.voiceTitle")}</h3>
+        <h3 className="font-display text-[18px] font-bold">{t(isVideoCall ? "groups.videoTitle" : "groups.voiceTitle")}</h3>
         <p className="mt-1 text-[13px] text-ink-soft">
           {localCall
-            ? t("groups.inVoiceCall", { count: call?.participants.length ?? 1 })
+            ? t(isVideoCall ? "groups.inVideoCall" : "groups.inVoiceCall", { count: call?.participants.length ?? 1 })
             : call
               ? t("groups.activeCall", { name: call.startedByName, count: call.participants.length })
-              : t("groups.voiceDescription")}
+              : t(isVideoCall ? "groups.videoDescription" : "groups.voiceDescription")}
         </p>
         {error ? <p role="alert" className="mt-1 text-[12px] text-danger">{t(error as never)}</p> : null}
       </div>
@@ -361,20 +410,54 @@ export function GroupVoiceCall({ actorType, groupId }: { actorType: GroupActorTy
             <button type="button" onClick={toggleMuted} className="btn-outline btn-sm">
               {t(muted ? "groups.unmute" : "groups.mute")}
             </button>
+            {localCall.videoEnabled ? (
+              <button type="button" onClick={toggleCamera} className="btn-outline btn-sm">
+                {t(cameraEnabled ? "groups.cameraOffAction" : "groups.cameraOn")}
+              </button>
+            ) : null}
             <button type="button" onClick={() => teardown(true)} className="btn-outline btn-sm">
               {call?.isStarter ? t("groups.endCall") : t("groups.leaveCall")}
             </button>
           </>
-        ) : (
+        ) : call ? (
           <button type="button" onClick={() => void startOrJoin()} disabled={busy} className="btn-primary btn-sm disabled:opacity-50">
-            {busy
-              ? t("groups.connecting")
-              : call
-                ? t("groups.joinCall")
-                : t("groups.startCall")}
+            {busy ? t("groups.connecting") : t("groups.joinCall")}
           </button>
+        ) : (
+          <>
+            <button type="button" onClick={() => void startOrJoin(false)} disabled={busy} className="btn-outline btn-sm disabled:opacity-50">
+              {busy ? t("groups.connecting") : t("groups.startCall")}
+            </button>
+            <button type="button" onClick={() => void startOrJoin(true)} disabled={busy} className="btn-primary btn-sm disabled:opacity-50">
+              {busy ? t("groups.connecting") : t("groups.startVideoCall")}
+            </button>
+          </>
         )}
       </div>
+      {isVideoCall ? (
+        <div className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {localCall && localStream ? (
+            <div className="relative aspect-video overflow-hidden bg-ink">
+              {cameraEnabled ? (
+                <StreamVideo stream={localStream} label={t("groups.you")} muted />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-white">{t("groups.cameraOff")}</div>
+              )}
+              <span className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 text-xs text-white">{t("groups.you")}</span>
+            </div>
+          ) : null}
+          {call?.participants.filter((participant) => participant.connectionId !== localCall?.connectionId).map((participant) => (
+            <div key={participant.connectionId} className="relative aspect-video overflow-hidden bg-ink">
+              {remoteVideoStreams[participant.connectionId] ? (
+                <StreamVideo stream={remoteVideoStreams[participant.connectionId]} label={participant.displayName} muted />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-white">{t("groups.videoConnecting")}</div>
+              )}
+              <span className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 text-xs text-white">{participant.displayName}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
       {call ? (
         <ul className="flex w-full flex-wrap gap-2" aria-label={t("groups.voiceParticipants")}>
           {call.participants.map((participant) => (

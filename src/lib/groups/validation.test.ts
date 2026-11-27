@@ -2,11 +2,12 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import {
-  iceServersSchema,
+  groupCallActionSchema,
   groupCallSignalSchema,
   groupCreateSchema,
   groupInviteSchema,
   groupMessageSchema,
+  iceServersSchema,
 } from "./validation";
 
 describe("validación de grupos privados", () => {
@@ -52,6 +53,17 @@ describe("validación de grupos privados", () => {
     assert.equal(groupCallSignalSchema.safeParse({ ...base, payload: { sdp: "offer" } }).success, true);
     assert.equal(groupCallSignalSchema.safeParse({ ...base, payload: "not-an-object" }).success, false);
     assert.equal(groupCallSignalSchema.safeParse({ ...base, type: "hangup", payload: {} }).success, false);
+  });
+
+  it("valida el modo de vídeo de las llamadas y mantiene voz como opción predeterminada", () => {
+    const base = {
+      action: "start",
+      connectionId: "9fef3fb7-7ad1-4673-b2a8-ec6fb97dfcb0",
+    };
+
+    assert.deepEqual(groupCallActionSchema.parse(base), { ...base, videoEnabled: false });
+    assert.equal(groupCallActionSchema.safeParse({ ...base, videoEnabled: true }).success, true);
+    assert.equal(groupCallActionSchema.safeParse({ ...base, videoEnabled: "yes" }).success, false);
   });
 
   it("valida la configuración opcional de servidores ICE", () => {

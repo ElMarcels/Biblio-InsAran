@@ -14,14 +14,14 @@ pública; la gestión del fondo está restringida a las cuentas de la plataforma
   recibe **avisos** (préstamo, reserva, retraso, sanción) y puede pedir
   títulos. El primer acceso obliga a elegir PIN propio. También puede crear o
   aceptar invitaciones a **grupos privados** con lectores y personal, escribir
-  mensajes y participar en llamadas de voz.
+  mensajes y participar en llamadas de voz o videollamadas.
 - **Editor** (cuenta creada por la dirección): añade, edita y borra libros, y
   gestiona préstamos, reservas, lectores, listas curadas y **solicitudes de
   compra** (al aprobar una, el título entra en el catálogo), además de añadir,
   editar y borrar recursos digitales desde el panel. Cuenta con un
   **calendario de vencimientos** para ver de un vistazo qué devoluciones tocan
   cada día del mes. También puede crear grupos privados, invitar cuentas y usar
-  su chat y llamadas de voz.
+  su chat, llamadas de voz y videollamadas.
 - **Dueño/dirección** (y rol ADMIN): además, gestiona las cuentas de la
   plataforma, consulta el registro de actividad y publica las novedades de
   AranOS con un tour opcional para las nuevas funciones; cada cuenta de personal

@@ -1,0 +1,2 @@
+ALTER TABLE "GroupCall"
+ADD COLUMN "videoEnabled" BOOLEAN NOT NULL DEFAULT false;

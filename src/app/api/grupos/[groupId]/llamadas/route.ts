@@ -67,6 +67,7 @@ export async function GET(request: Request, context: Context) {
       isStarter:
         (actor.type === "STAFF" && active.call.startedByUserId === actor.id) ||
         (actor.type === "READER" && active.call.startedByReaderId === actor.id),
+      videoEnabled: active.call.videoEnabled,
       participants: active.participants,
       createdAt: active.call.createdAt.toISOString(),
     },
@@ -90,7 +91,7 @@ export async function POST(request: Request, context: Context) {
   const parsed = groupCallActionSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "groups.errors.invalidCall" }, { status: 400 });
 
-  const { action, callId, connectionId } = parsed.data;
+  const { action, callId, connectionId, videoEnabled } = parsed.data;
   const now = new Date();
   const actorParticipant = actorCallParticipant(actor);
 
@@ -108,6 +109,7 @@ export async function POST(request: Request, context: Context) {
           groupId,
           ...actorCallStarter(actor),
           startedByName: actor.displayName,
+          videoEnabled,
         },
       });
       await transaction.groupCallParticipant.create({

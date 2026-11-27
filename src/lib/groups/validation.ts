@@ -27,6 +27,7 @@ export const groupCallActionSchema = z.object({
   action: z.enum(["start", "join", "heartbeat", "leave", "end"]),
   callId: z.string().trim().min(1).max(64).optional(),
   connectionId: z.string().uuid(),
+  videoEnabled: z.boolean().default(false),
 });
 
 export const groupCallSignalSchema = z.object({

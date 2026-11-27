@@ -1,5 +1,5 @@
 import { LicenseAttribution } from "@/components/LicenseAttribution";
-import { SITE_NAME } from "@/lib/constants";
+import { SITE_LIBRARY_NAME } from "@/lib/constants";
 import { getT } from "@/lib/i18n/server";
 
 // Se evalúa al cargar el módulo (no durante el render), evitando así el uso de
@@ -13,7 +13,7 @@ export async function SiteFooter() {
       <div className="shell flex flex-col py-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[13px] font-medium">
-            {SITE_NAME} · {t("footer.gestionDelFondoBibliografico")}
+            {SITE_LIBRARY_NAME} · {t("footer.gestionDelFondoBibliografico")}
           </p>
           <p className="text-[12px] text-ink-faint">
             {t("footer.plataformaInternaYear", { year: YEAR })}

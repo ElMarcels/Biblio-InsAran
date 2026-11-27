@@ -7,7 +7,7 @@ import { LocaleSwitcher } from "@/components/i18n/LocaleSwitcher";
 import { ScrollProgress } from "@/components/ScrollProgress";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { logoutAction } from "@/lib/actions/auth";
-import { SITE_INSTITUTION, SITE_SHORT } from "@/lib/constants";
+import { SITE_LIBRARY_NAME } from "@/lib/constants";
 import type { Locale } from "@/lib/i18n/config";
 import type { ThemePreference } from "@/lib/theme";
 
@@ -78,10 +78,7 @@ export function SiteHeader({
           className="flex items-baseline gap-2 transition-transform duration-150 hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-4"
         >
           <span className="font-display text-[20px] font-bold tracking-tight">
-            {SITE_SHORT}
-          </span>
-          <span className="hidden text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-faint sm:inline">
-            {SITE_INSTITUTION}
+            {SITE_LIBRARY_NAME}
           </span>
         </Link>
 

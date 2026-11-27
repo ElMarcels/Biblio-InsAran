@@ -2,6 +2,7 @@
 
 export const SITE_NAME = "AranOS";
 export const SITE_SHORT = "AranOS";
+export const SITE_LIBRARY_NAME = "Biblioteca";
 
 /** Institución a la que pertenece la biblioteca (aparece junto al logotipo). */
 export const SITE_INSTITUTION = "Institut d'Aran";
